@@ -1,4 +1,4 @@
-module github.com/stamford-syntax-club/course-compose/prisma-go
+module github.com/stamford-syntax-club/course-compose/prisma
 
 go 1.21.2
 
