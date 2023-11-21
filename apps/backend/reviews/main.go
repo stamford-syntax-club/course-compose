@@ -13,8 +13,8 @@ func main() {
 
 	data.NewPrismaClient()
 
-	fr := routers.NewFiberRouter(":8000")
-	if err := fr.ListenAndServe(); err != nil {
+	r := routers.NewFiberRouter(":8000")
+	if err := r.ListenAndServe(); err != nil {
 		log.Fatalf("fiber router: %v", err)
 	}
 }

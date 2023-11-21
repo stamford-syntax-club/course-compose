@@ -46,7 +46,7 @@ func NewFiberRouter(port string) *FiberRouter {
 
 	return &FiberRouter{
 		App:  app,
-		port: ":8000",
+		port: port,
 	}
 }
 
