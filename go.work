@@ -1,6 +1,6 @@
 go 1.21.2
 
 use (
-	./apps/backend/courses-api
+	./apps/backend/reviews
 	./apps/backend/prisma
 )
