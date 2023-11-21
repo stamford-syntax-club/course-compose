@@ -1,6 +1,6 @@
 generator client {
   provider = "go run github.com/steebchen/prisma-client-go"
-  output = "../../apps/backend/prisma"
+  output = "../../apps/backend/prisma/db"
 }
 
 datasource db {
@@ -10,7 +10,7 @@ datasource db {
 
 model Course {
     id            Int      @id @default(autoincrement())
-    code          Int      @unique
+    code          String      @unique
     full_name     String
     prerequisites String[]
     reviews       Review[]

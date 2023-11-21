@@ -2,19 +2,58 @@ package data
 
 import (
 	"context"
+	"database/sql"
 	"errors"
 	"fmt"
+	"time"
 
 	"github.com/stamford-syntax-club/course-compose/prisma/db"
 )
 
-func GetAllReviews() ([]db.ReviewModel, error) {
-	ctx := context.Background()
-	reviews, err := client.Review.FindMany().Exec(ctx)
+func GetAllReviews(courseCode string) ([]ReviewJSONResponse, error) {
+	ctx, cancelFunc := context.WithTimeout(context.Background(), 5*time.Second)
+    defer cancelFunc()
+
+	course, err := client.Course.FindFirst(
+		db.Course.Code.Equals(courseCode),
+	).Exec(ctx)
 	if err != nil {
-		return nil, errors.New(fmt.Sprintf("GetAllReviews: %v", err))
+        if errors.Is(err, sql.ErrNoRows) {
+            return []ReviewJSONResponse{}, nil  
+        }
+
+		return nil, errors.New(fmt.Sprintf("GetAllReviews: find course: %v", err))
 	}
-	return reviews, nil
+
+	reviews, err := client.Review.FindMany(
+		db.Review.CourseID.Equals(course.ID),
+	).With(
+		db.Review.Course.Fetch(),
+		db.Review.User.Fetch(),
+	).Exec(ctx)
+	if err != nil {
+		return nil, errors.New(fmt.Sprintf("GetAllReviews: find reviews: %v", err))
+	}
+
+	var reviewJSONResponses []ReviewJSONResponse
+	for _, review := range reviews {
+		reviewJSONResponses = append(reviewJSONResponses, ReviewJSONResponse{
+			ID:           review.ID,
+			AcademicYear: review.AcademicYear,
+			Description:  review.Description,
+			Rating:       review.Rating,
+			Votes:        review.Votes,
+			Course: CourseJSONResponse{
+				ID:   review.Course().ID,
+				Code: review.Course().Code,
+			},
+			User: UserJSONResponse{
+				ID:       review.User().ID,
+				Username: review.User().Username,
+			},
+		})
+	}
+	return reviewJSONResponses, nil
 }
 
 //func CreateNewCourse() {
