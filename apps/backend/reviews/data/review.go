@@ -9,8 +9,8 @@ import (
 	"github.com/stamford-syntax-club/course-compose/prisma/db"
 )
 
-func GetAllReviews(ctx context.Context, courseCode string) ([]ReviewJSONResponse, error) {
-	course, err := Client.Course.FindFirst(
+func GetAllReviews(ctx context.Context, client *db.PrismaClient, courseCode string) ([]ReviewJSONResponse, error) {
+	course, err := client.Course.FindFirst(
 		db.Course.Code.Equals(courseCode),
 	).Exec(ctx)
 	if err != nil {
@@ -21,7 +21,7 @@ func GetAllReviews(ctx context.Context, courseCode string) ([]ReviewJSONResponse
 		return nil, errors.New(fmt.Sprintf("GetAllReviews: find course: %v", err))
 	}
 
-	reviews, err := Client.Review.FindMany(
+	reviews, err := client.Review.FindMany(
 		db.Review.CourseID.Equals(course.ID),
 	).With(
 		db.Review.Course.Fetch(),

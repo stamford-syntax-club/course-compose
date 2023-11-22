@@ -21,10 +21,15 @@ services:
     networks:
       - course-compose
 
+  # TODO:
+  # Manual - create migration for testing with migrate dev 
+  # In here 
+  # mount migration to container
+  # add && go run github.com/steebchen/prisma-client-go migrate deploy and specify the mounted migration
   prisma-go:
     image: golang
     volumes:
-      - ./packages/prisma/schema.prisma:/app/schema.prisma
+      - ./packages/prisma/schema.prisma:/app/schema.prisma:ro
       - ./apps/backend/prisma/go.mod:/app/go.mod:ro
       - ./apps/backend/prisma/go.sum:/app/go.sum:ro
     working_dir: /app

@@ -9,15 +9,24 @@ import (
 
 	"github.com/gofiber/fiber/v2"
 	"github.com/lib/pq"
+	"github.com/stamford-syntax-club/course-compose/prisma/db"
 	"github.com/stamford-syntax-club/course-compose/reviews/data"
 )
 
-func HandleGetReviews(c *fiber.Ctx) error {
+type H struct {
+	client *db.PrismaClient
+}
+
+func New(client *db.PrismaClient) *H {
+    return &H{client: client}
+}
+
+func (h *H) HandleGetReviews(c *fiber.Ctx) error {
 	courseCode := c.Params("courseCode")
 	ctx, cancelFunc := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancelFunc()
 
-	reviews, err := data.GetAllReviews(ctx, courseCode)
+	reviews, err := data.GetAllReviews(ctx, h.client, courseCode)
 	if len(reviews) == 0 {
 		return fiber.NewError(fiber.StatusNotFound, fmt.Sprintf("No reviews found for course %s", courseCode))
 	}

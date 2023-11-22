@@ -8,6 +8,7 @@ import (
 
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/middleware/logger"
+	"github.com/stamford-syntax-club/course-compose/reviews/handlers"
 )
 
 type FiberRouter struct {
@@ -15,7 +16,7 @@ type FiberRouter struct {
 	port string
 }
 
-func NewFiberRouter(port string) *FiberRouter {
+func NewFiberRouter(port string, h *handlers.H) *FiberRouter {
 	app := fiber.New(fiber.Config{
 		AppName: "Course Compose - Reviews",
 		ErrorHandler: func(c *fiber.Ctx, err error) error {
@@ -42,7 +43,7 @@ func NewFiberRouter(port string) *FiberRouter {
 	}))
 
 	api := app.Group("/api")
-	registerPublicRoutes(api)
+	registerPublicRoutes(api, h)
 
 	return &FiberRouter{
 		App:  app,

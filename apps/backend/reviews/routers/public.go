@@ -5,6 +5,6 @@ import (
 	"github.com/stamford-syntax-club/course-compose/reviews/handlers"
 )
 
-func registerPublicRoutes(app fiber.Router) {
-    app.Get("/:courseCode/reviews", handlers.HandleGetReviews)
+func registerPublicRoutes(app fiber.Router, h *handlers.H) {
+    app.Get("/:courseCode/reviews", h.HandleGetReviews)
 }
