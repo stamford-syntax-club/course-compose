@@ -5,27 +5,23 @@ import (
 	"database/sql"
 	"errors"
 	"fmt"
-	"time"
 
 	"github.com/stamford-syntax-club/course-compose/prisma/db"
 )
 
-func GetAllReviews(courseCode string) ([]ReviewJSONResponse, error) {
-	ctx, cancelFunc := context.WithTimeout(context.Background(), 5*time.Second)
-    defer cancelFunc()
-
-	course, err := client.Course.FindFirst(
+func GetAllReviews(ctx context.Context, courseCode string) ([]ReviewJSONResponse, error) {
+	course, err := Client.Course.FindFirst(
 		db.Course.Code.Equals(courseCode),
 	).Exec(ctx)
 	if err != nil {
-        if errors.Is(err, sql.ErrNoRows) {
-            return []ReviewJSONResponse{}, nil  
-        }
+		if errors.Is(err, sql.ErrNoRows) {
+			return []ReviewJSONResponse{}, nil
+		}
 
 		return nil, errors.New(fmt.Sprintf("GetAllReviews: find course: %v", err))
 	}
 
-	reviews, err := client.Review.FindMany(
+	reviews, err := Client.Review.FindMany(
 		db.Review.CourseID.Equals(course.ID),
 	).With(
 		db.Review.Course.Fetch(),
@@ -57,7 +53,7 @@ func GetAllReviews(courseCode string) ([]ReviewJSONResponse, error) {
 }
 
 //func CreateNewCourse() {
-//	_, err := client.User.CreateOne(
+//	_, err := Client.User.CreateOne(
 //
 //		db.User.Username.Set("Test"),
 //		db.User.Email.Set("Test@gmail.com"),
@@ -68,7 +64,7 @@ func GetAllReviews(courseCode string) ([]ReviewJSONResponse, error) {
 //		panic(err)
 //	}
 //
-//	_, err = client.Course.CreateOne(
+//	_, err = Client.Course.CreateOne(
 //
 //		db.Course.Code.Set(101),
 //		db.Course.FullName.Set("Introduction to Information Technology"),
@@ -79,7 +75,7 @@ func GetAllReviews(courseCode string) ([]ReviewJSONResponse, error) {
 //		panic(err)
 //	}
 //
-//	_, err = client.Review.CreateOne(
+//	_, err = Client.Review.CreateOne(
 //
 //		db.Review.AcademicYear.Set(2021),
 //		db.Review.Description.Set("Test Review"),

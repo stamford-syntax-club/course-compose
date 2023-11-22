@@ -1,9 +1,11 @@
 package handlers
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"log"
+	"time"
 
 	"github.com/gofiber/fiber/v2"
 	"github.com/lib/pq"
@@ -12,7 +14,10 @@ import (
 
 func HandleGetReviews(c *fiber.Ctx) error {
 	courseCode := c.Params("courseCode")
-	reviews, err := data.GetAllReviews(courseCode)
+	ctx, cancelFunc := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancelFunc()
+
+	reviews, err := data.GetAllReviews(ctx, courseCode)
 	if len(reviews) == 0 {
 		return fiber.NewError(fiber.StatusNotFound, fmt.Sprintf("No reviews found for course %s", courseCode))
 	}

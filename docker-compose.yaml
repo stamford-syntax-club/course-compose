@@ -10,3 +10,8 @@ services:
       POSTGRES_PASSWORD: mypassword
     ports:
       - "5432:5432"
+
+  prisma-go:
+    image: golang
+
+

@@ -7,12 +7,12 @@ import (
 	"github.com/stamford-syntax-club/course-compose/prisma/db"
 )
 
-var client *db.PrismaClient
+var Client *db.PrismaClient
 
 func NewPrismaClient() error {
-	client = db.NewClient()
+	Client = db.NewClient()
 
-	if err := client.Prisma.Connect(); err != nil {
+	if err := Client.Prisma.Connect(); err != nil {
 		return errors.New(fmt.Sprintf("Prisma Connect: %v", err))
 	}
 	return nil
