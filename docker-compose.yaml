@@ -1,17 +1,40 @@
 version: '3.8'
 
+networks:
+  course-compose:
+
 services:
   postgres:
-    image: postgres:latest
+    image: postgres
     container_name: my_postgres
     environment:
       POSTGRES_DB: mydatabase
       POSTGRES_USER: myuser
       POSTGRES_PASSWORD: mypassword
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready"]
+      interval: 10s
+      timeout: 5s
+      retries: 5   
     ports:
       - "5432:5432"
+    networks:
+      - course-compose
 
   prisma-go:
     image: golang
-
+    volumes:
+      - ./packages/prisma/schema.prisma:/app/schema.prisma
+      - ./apps/backend/prisma/go.mod:/app/go.mod:ro
+      - ./apps/backend/prisma/go.sum:/app/go.sum:ro
+    working_dir: /app
+    command: sh -c "go run github.com/steebchen/prisma-client-go db push"
+    environment:
+      DATABASE_URL: "postgres://myuser:mypassword@postgres:5432/mydatabase"
+      PRISMA_PROVIDER: "go run github.com/steebchen/prisma-client-go"
+      PRISMA_OUTPUT: "test-output"
+    depends_on:
+      - postgres
+    networks:
+      - course-compose
 
