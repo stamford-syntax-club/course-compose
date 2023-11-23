@@ -45,6 +45,6 @@ func LoadEnvFile(appEnv string) error {
 		return errors.New(fmt.Sprintf("godotenv: %v", err))
 	}
 
-    log.Println("loaded env file: ", envPath)
+	log.Println("loaded env file: ", envPath)
 	return nil
 }
