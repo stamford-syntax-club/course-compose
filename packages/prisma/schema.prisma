@@ -1,40 +1,40 @@
 generator client {
   provider = env("PRISMA_PROVIDER")
-  output = env("PRISMA_OUTPUT") 
+  output   = env("PRISMA_OUTPUT")
 }
 
 datasource db {
-    provider = "postgresql"
-    url      = env("DATABASE_URL")
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
 }
 
 model Course {
-    id            Int      @id @default(autoincrement())
-    code          String      @unique
-    full_name     String
-    prerequisites String[]
-    reviews       Review[]
+  id            Int      @id @default(autoincrement())
+  code          String   @unique
+  full_name     String
+  prerequisites String[]
+  reviews       Review[]
 }
 
 model User {
-    id       Int      @id @default(autoincrement())
-    username String
-    email    String
-    verified Boolean
-    reviews  Review[]
+  id       Int      @id @default(autoincrement())
+  username String
+  email    String
+  verified Boolean
+  reviews  Review[]
 }
 
 model Review {
-    id            Int       @id @default(autoincrement())
-    academic_year Int
-    description   String
-    rating        Int
-    votes         Int
-    status        String
-    course        Course    @relation(fields: [course_id], references: [id])
-    course_id     Int
-    user          User      @relation(fields: [user_id], references: [id])
-    user_id       Int
-    created_at    DateTime  @default(now()) @db.Timestamp(6)
-    updated_at    DateTime? @updatedAt @db.Timestamp(6)
+  id            Int       @id @default(autoincrement())
+  academic_year Int
+  description   String
+  rating        Int
+  votes         Int
+  status        String
+  course_id     Int
+  user_id       Int
+  created_at    DateTime  @default(now()) @db.Timestamp(6)
+  updated_at    DateTime? @updatedAt @db.Timestamp(6)
+  course        Course    @relation(fields: [course_id], references: [id])
+  user          User      @relation(fields: [user_id], references: [id])
 }
