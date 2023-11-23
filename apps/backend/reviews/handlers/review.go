@@ -27,9 +27,6 @@ func (h *H) HandleGetReviews(c *fiber.Ctx) error {
 	defer cancelFunc()
 
 	reviews, err := data.GetAllReviews(ctx, h.client, courseCode)
-	if len(reviews) == 0 {
-		return fiber.NewError(fiber.StatusNotFound, fmt.Sprintf("No reviews found for course %s", courseCode))
-	}
 
 	if pqErr, ok := err.(*pq.Error); ok {
 		log.Println("HandleGetReviews: postgres error:", pqErr)

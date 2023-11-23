@@ -18,7 +18,9 @@ func init() {
 }
 
 func main() {
-	config.LoadEnvFile(environment)
+	if err := config.LoadEnvFile(environment); err != nil {
+        log.Fatalf("load env file: %v", err)
+	}
 
 	client := db.NewClient()
 	if err := client.Prisma.Connect(); err != nil {

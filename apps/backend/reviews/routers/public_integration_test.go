@@ -19,7 +19,9 @@ var (
 )
 
 func setupTest() {
-	config.LoadEnvFile("test")
+    if err := config.LoadEnvFile("test"); err != nil {
+        log.Fatalf("load env file: %v", err)
+    }
 	testClient = db.NewClient()
 	if err := testClient.Prisma.Connect(); err != nil {
 		log.Fatalf("Prisma Connect: %v", err)
