@@ -1,0 +1,35 @@
+version: "3.8"
+
+networks:
+    course-compose:
+
+services:
+    postgres:
+        image: postgres
+        container_name: coursecompose_db
+        environment:
+            POSTGRES_DB: coursecompose-dev
+            POSTGRES_USER: syntax
+            POSTGRES_PASSWORD: stamford
+        healthcheck:
+            test: ["CMD-SHELL", "pg_isready"]
+            interval: 10s
+            timeout: 5s
+            retries: 5
+        ports:
+            - "5432:5432"
+        networks:
+            - course-compose
+
+    prisma-bootstrap:
+        build:
+            context: .
+            dockerfile: ./Dockerfile.dev
+            args:
+                DATABASE_URL: "postgres://syntax:stamford@postgres:5432/coursecompose-dev"
+                PRISMA_PROVIDER: "prisma-client-js"
+                PRISMA_OUTPUT: "/app/node_modules/.prisma/client"
+        depends_on:
+            - postgres
+        networks:
+            - course-compose

@@ -3,6 +3,7 @@
 	"scripts": {
 		"build": "turbo run build",
 		"dev": "turbo run dev",
+		"bootstrap": "docker compose -f docker-compose.dev.yaml down -v && docker compose -f docker-compose.dev.yaml up -d --build --force-recreate",
 		"lint": "turbo run lint",
 		"format": "prettier --write \"**/*.{ts,tsx,md,go}\""
 	},

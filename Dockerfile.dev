@@ -1,0 +1,25 @@
+FROM node:alpine
+
+WORKDIR /app
+
+COPY ./packages/prisma/schema.prisma ./packages/prisma/seed.ts .
+
+ARG DATABASE_URL
+ARG PRISMA_PROVIDER
+ARG PRISMA_OUTPUT
+
+ENV DATABASE_URL $DATABASE_URL
+ENV PRISMA_PROVIDER $PRISMA_PROVIDER
+ENV PRISMA_OUTPUT $PRISMA_OUTPUT
+
+RUN npm init --yes
+
+RUN apk add --no-cache jq
+
+RUN jq '. |= . + { "prisma": { "seed": "ts-node /app/seed.ts" } }' package.json > package.json.tmp \
+    && mv package.json.tmp package.json
+
+RUN npm install -D typescript ts-node @types/node
+
+CMD ["sh", "-c", "npx prisma migrate dev --name init && npx prisma db seed"]
+
