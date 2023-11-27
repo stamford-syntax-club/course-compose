@@ -1,0 +1,53 @@
+name: Build and Push Docker Images
+
+on:
+  workflow_call:
+    inputs:
+      packages_deployment:
+        description: packages to build and deploy
+        required: true
+        type: string
+      environment:
+        description: environment to deploy (beta or prod)
+        required: true
+        type: string
+
+jobs:
+  build-and-push:
+    name: Build and Push Docker Image
+    runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        packages: ${{ fromJson(inputs.packages_deployment) }}
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Check if Dockerfile exists
+        run: |
+          if [ ! -f apps/${{ matrix.packages.name }}/Dockerfile ]; then
+            echo "Dockerfile does not exist"
+            exit 1
+          else
+            echo "Dockerfile exists"
+          fi
+
+      - name: Login ghcr.io
+        uses: docker/login-action@v2.1.0
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+          logout: true
+
+      - name: Build and Push to ghcr
+        uses: docker/build-push-action@v3.2.0
+        with:
+          context: .
+          file: apps/${{ matrix.packages.name }}/Dockerfile
+          build-args: |
+            "ENVIRONMENT=${{ inputs.environment }}"
+          tags: ${{ matrix.packages.imageTag }}
+          push: true
