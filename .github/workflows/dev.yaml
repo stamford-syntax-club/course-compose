@@ -4,7 +4,6 @@ on:
   push:
     branches:
       - main
-      - khing/ci-cd
 
 permissions:
   actions: read
