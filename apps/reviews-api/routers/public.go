@@ -6,5 +6,5 @@ import (
 )
 
 func registerPublicRoutes(app fiber.Router, h *handlers.H) {
-    app.Get("/:courseCode/reviews", h.HandleGetReviews)
+    app.Get("/courses/:courseCode/reviews", h.HandleGetReviews)
 }
