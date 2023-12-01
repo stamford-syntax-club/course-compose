@@ -19,14 +19,15 @@ func setupTestGateway(t *testing.T) {
 	go fiberRouter.ListenAndServe()
 }
 
-func TestAPIGateway(t *testing.T) {
+func TestGetMethod(t *testing.T) {
 	setupTestGateway(t)
 
 	tests := []struct {
-		name               string
-		url                string
-		expectedStatusCode int
-		expectedResponseId float64
+		name                  string
+		url                   string
+		expectedStatusCode    int
+		expectedResponseId    float64
+		expectedArrayResponse bool
 	}{
 		{
 			name:               "Test static path",
@@ -40,6 +41,17 @@ func TestAPIGateway(t *testing.T) {
 			expectedStatusCode: http.StatusOK,
 			expectedResponseId: 123,
 		},
+		{
+			name:               "Test unavailable path",
+			url:                "http://localhost:8000/api/integration-fail",
+			expectedStatusCode: http.StatusBadGateway,
+		},
+		{
+			name:                  "Test array response",
+			url:                   "http://localhost:8000/api/integration-test-array",
+			expectedStatusCode:    http.StatusOK,
+			expectedArrayResponse: true,
+		},
 	}
 
 	for _, test := range tests {
@@ -49,13 +61,30 @@ func TestAPIGateway(t *testing.T) {
 			assert.Equal(t, test.expectedStatusCode, res.StatusCode)
 
 			// https://jsonplaceholder.typicode.com/todos/:id
-			body, err := io.ReadAll(res.Body)
-			assert.NoError(t, err)
+			if test.expectedResponseId != 0 {
+				body, err := io.ReadAll(res.Body)
+				assert.NoError(t, err)
 
-			var responseBody map[string]interface{}
-			err = json.Unmarshal(body, &responseBody)
-			assert.NoError(t, err)
-			assert.Equal(t, test.expectedResponseId, responseBody["id"])
+				var responseBody map[string]interface{}
+				err = json.Unmarshal(body, &responseBody)
+				assert.NoError(t, err)
+				assert.Equal(t, test.expectedResponseId, responseBody["id"])
+			}
+
+			if test.expectedArrayResponse {
+				body, err := io.ReadAll(res.Body)
+				assert.NoError(t, err)
+
+				var responseBody []map[string]interface{}
+				err = json.Unmarshal(body, &responseBody)
+				assert.NoError(t, err)
+				assert.True(t, len(responseBody) > 0)
+			}
 		})
 	}
+}
+
+// TODO:
+func TestPostMethod(t *testing.T) {
+
 }

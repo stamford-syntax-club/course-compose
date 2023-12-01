@@ -10,3 +10,16 @@ routes:
     destination:
       service: get_dynamic
       endpoint: https://jsonplaceholder.typicode.com/todos/:id
+  
+  - path: /api/integration-fail
+    method: GET
+    destination:
+      service: this_should_fail
+      endpoint: https://chinathai-the-best.com/golang-lover
+
+  - path: /api/integration-test-array
+    method: GET
+    destination:
+      service: get_array_response
+      endpoint: https://jsonplaceholder.typicode.com/todos
+      is_array: true 

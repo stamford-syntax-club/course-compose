@@ -14,8 +14,6 @@ import (
 	"github.com/stamford-syntax-club/course-compose/api-gateway/config"
 )
 
-const internalServerErrorMsg = "Internal Server Error Please See System Logs for more Information"
-
 func sendHTTPRequest(c *fiber.Ctx, method, endpoint string) (int, []byte, error) {
 	req, err := http.NewRequest(method, endpoint, bytes.NewBuffer(c.Body()))
 	if err != nil {
@@ -66,13 +64,13 @@ func createHandler(route config.Route) fiber.Handler {
 		respCode, respBody, err := sendHTTPRequest(c, route.Method, endpoint)
 		if err != nil {
 			log.Printf("sendHTTPRequest: %v", err)
-			return errors.New(internalServerErrorMsg)
+			return fiber.NewError(http.StatusBadGateway, "Cannot reach specified service")
 		}
 
 		resp, err := parseResponse(route, respBody)
 		if err != nil {
 			log.Printf("parseResponse: %v", err)
-			return errors.New(internalServerErrorMsg)
+			return errors.New("Internal Server Error Please See System Logs for more Information")
 		}
 
 		return c.Status(respCode).JSON(resp)
