@@ -26,6 +26,6 @@ COPY --from=build-base /review-app/out/reviews-api ./
 COPY --from=build-base /review-app/go.mod ./
 # go.mod is needed for determining the root dir
 
-EXPOSE 8000
+EXPOSE 8003
 
 CMD ["sh", "-c", "./reviews-api -environment=$ENVIRONMENT"]
