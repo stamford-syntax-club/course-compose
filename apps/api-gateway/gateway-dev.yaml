@@ -8,14 +8,12 @@ routes:
 
     - path: /api/courses/:courseCode
       method: GET
-      array: false
       destination:
           service: get_course_info
           endpoint: http://localhost:8002/courses/:courseCode
 
     - path: /api/courses/:courseCode/reviews
       method: GET
-      array: true
       destination:
           service: get_course_reviews
           endpoint: http://localhost:8003/api/courses/:courseCode/reviews
