@@ -3,7 +3,7 @@ routes:
       method: GET
       destination:
           service: list_all_courses
-          endpoint: https://center-be.stamford.dev/api/resources/resourcesssss
+          endpoint: https://center-be.stamford.dev/api/resources/resources # temp url
           is_array: true
 
     - path: /api/courses/:courseCode
