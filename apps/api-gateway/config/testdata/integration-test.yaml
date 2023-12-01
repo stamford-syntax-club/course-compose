@@ -1,0 +1,12 @@
+routes:
+  - path: /api/integration-test
+    method: GET
+    destination:
+      service: get_static
+      endpoint: https://jsonplaceholder.typicode.com/todos/1
+
+  - path: /api/integration-test/:id 
+    method: GET
+    destination:
+      service: get_dynamic
+      endpoint: https://jsonplaceholder.typicode.com/todos/:id
