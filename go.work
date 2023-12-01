@@ -2,5 +2,6 @@ go 1.21.2
 
 use (
 	./apps/reviews-api
+    ./apps/api-gateway
 	./apps/prisma
 )

@@ -1,0 +1,23 @@
+routes:
+    - path: /api/courses
+      method: GET
+      destination:
+          service: list_all_courses
+          endpoint: https://center-be.stamford.dev/api/resources/resourcesssss
+          is_array: true
+
+    - path: /api/courses/:courseCode
+      method: GET
+      array: false
+      destination:
+          service: get_course_info
+          endpoint: http://localhost:8002/courses/:courseCode
+          is_array: false
+
+    - path: /api/courses/:courseCode/reviews
+      method: GET
+      array: true
+      destination:
+          service: get_course_reviews
+          endpoint: http://localhost:8003/api/courses/:courseCode/reviews
+          is_array: true
