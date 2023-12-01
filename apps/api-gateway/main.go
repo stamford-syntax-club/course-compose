@@ -8,7 +8,7 @@ import (
 )
 
 func main() {
-	gatewayConfig, err := config.ReadGatewayConfig()
+	gatewayConfig, err := config.ReadGatewayConfig("syntax-config.yaml")
 	if err != nil {
 		log.Fatal("Read gateway config: ", err)
 	}

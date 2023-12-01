@@ -1,0 +1,6 @@
+routes:
+  - path: /api/courses
+    destination:
+      service: list_all_courses
+      endpoint: http://localhost:8002/courses
+      is_array: true

@@ -24,8 +24,8 @@ type Destination struct {
 	IsArray  bool   `yaml:"is_array"`
 }
 
-func ReadGatewayConfig() (*Gateway, error) {
-	data, err := os.ReadFile("syntax-config.yaml")
+func ReadGatewayConfig(filename string) (*Gateway, error) {
+	data, err := os.ReadFile(filename)
 	if err != nil {
 		return nil, errors.New(fmt.Sprintf("read syntax-config.yaml: %v", err))
 	}
@@ -34,6 +34,33 @@ func ReadGatewayConfig() (*Gateway, error) {
 	if err := yaml.Unmarshal(data, &gatewayConf); err != nil {
 		return nil, errors.New(fmt.Sprintf("unmarshal syntax-config.yaml: %v", err))
 	}
+    
+    if err := validateGatewayConfig(gatewayConf); err != nil {
+        return nil, err
+    }
 
 	return gatewayConf, nil
+}
+
+func validateGatewayConfig(gatewayConf *Gateway) error {
+    if len(gatewayConf.Routes) <= 0 {
+        return errors.New("no routes found in syntax-config.yaml")
+    }
+
+    for _, route := range gatewayConf.Routes {
+        if route.Path == "" {
+            return errors.New("route path cannot be empty")
+        }
+
+        if route.Method == "" {
+            return errors.New("route method cannot be empty")
+        }
+        
+        if route.Dest.Endpoint == "" {
+            return errors.New("route destination endpoint cannot be empty")
+        }
+
+        // no need to check for route.Dest.Service because it is only used for logging
+    }
+    return nil
 }
