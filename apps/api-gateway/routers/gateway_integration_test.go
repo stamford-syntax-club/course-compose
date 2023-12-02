@@ -1,4 +1,4 @@
-package main
+package routers
 
 import (
 	"encoding/json"
@@ -7,15 +7,14 @@ import (
 	"testing"
 
 	"github.com/stamford-syntax-club/course-compose/api-gateway/config"
-	"github.com/stamford-syntax-club/course-compose/api-gateway/routers"
 	"github.com/stretchr/testify/assert"
 )
 
 func setupTestGateway(t *testing.T) {
-	gatewayConfig, err := config.ReadGatewayConfig("config/testdata/integration-test.yaml")
+	gatewayConfig, err := config.ReadGatewayConfig("../config/testdata/integration-test.yaml")
 	assert.NoError(t, err)
 
-	fiberRouter := routers.NewFiberRouter(":8000", gatewayConfig.Routes)
+	fiberRouter := NewFiberRouter(":8000", gatewayConfig.Routes)
 	go fiberRouter.ListenAndServe()
 }
 

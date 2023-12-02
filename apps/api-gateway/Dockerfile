@@ -15,8 +15,6 @@ FROM alpine:3.16.2
 WORKDIR /app
 
 COPY --from=build-base /app/out/api-gateway ./
-COPY --from=build-base /app/go.mod ./
-# go mod is needed for determining the root dir
 
 EXPOSE 8000
 
