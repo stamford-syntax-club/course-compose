@@ -55,6 +55,7 @@ jobs:
 
   deploy-ghcr:
     needs: pre-release
+    if: ${{ needs.pre-release.outputs.packages_deployment | length > 0 }}
     uses: ./.github/workflows/deploy-ghcr.yaml
     with:
       packages_deployment: ${{ needs.pre-release.outputs.packages_deployment }}
