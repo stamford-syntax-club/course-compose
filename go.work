@@ -1,6 +1,6 @@
 go 1.21.2
 
 use (
-	./apps/backend/reviews
-	./apps/backend/prisma
+	./apps/reviews-api
+	./apps/prisma
 )

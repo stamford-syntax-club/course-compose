@@ -20,15 +20,13 @@ func findRootDir() (string, error) {
 		return "", fmt.Errorf("Error getting working directory: %v", err)
 	}
 
-	for currentDir != "/" {
-		// Look for a marker file (e.g., go.mod)
-		if _, err := os.Stat(filepath.Join(currentDir, "go.mod")); err == nil {
-			return currentDir, nil
-		}
-
-		// Move up one directory
-		currentDir = filepath.Dir(currentDir)
+	// Look for a marker file (e.g., go.mod)
+	if _, err := os.Stat(filepath.Join(currentDir, "go.mod")); err == nil {
+		return currentDir, nil
 	}
+
+	// Move up one directory
+	currentDir = filepath.Dir(currentDir)
 
 	return "", fmt.Errorf("Marker file not found, please make sure you are inside the project directory")
 }

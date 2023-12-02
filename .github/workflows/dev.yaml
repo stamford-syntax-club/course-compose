@@ -1,0 +1,61 @@
+name: Beta Release CI/CD
+
+on:
+  push:
+    branches:
+      - main
+
+permissions:
+  actions: read
+  packages: write
+
+jobs:
+  pre-release:
+    name: Prepare for release to Beta Environment
+    runs-on: ubuntu-latest
+
+    outputs:
+      packages_deployment: ${{ steps.generate-deployment.outputs.PACKAGES_DEPLOYMENT }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+
+      - name: Setup SHA
+        run: echo "GITHUB_SHA=${{ github.sha }}" >> $GITHUB_ENV
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: 18
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v2.2.2
+        with:
+          version: 8
+          run_install: false
+
+      - name: Install turbo
+        run: pnpm install --global turbo
+
+      - name: Get modified packages
+        run: |
+          packages=$(pnpm turbo run build --filter='...[origin/main]' --dry=json | jq -c '.packages | map(select(. != "//"))')
+          echo "PACKAGES=$packages" >> $GITHUB_ENV
+          echo "PACKAGES=$packages"
+
+      - name: Generate package deployment information
+        id: generate-deployment
+        run: |
+          packages_deployment=$(echo '${{ env.PACKAGES }}' | jq -c 'map({name: ., imageTag:"ghcr.io/stamford-syntax-club/course-compose:\(.)-${{ env.GITHUB_SHA }}"})')
+          echo "PACKAGES_DEPLOYMENT=$packages_deployment" >> $GITHUB_OUTPUT
+          echo "PACKAGES_DEPLOYMENT=$packages_deployment"
+
+  deploy-ghcr:
+    needs: pre-release
+    uses: ./.github/workflows/deploy-ghcr.yaml
+    with:
+      packages_deployment: ${{ needs.pre-release.outputs.packages_deployment }}
+      environment: beta

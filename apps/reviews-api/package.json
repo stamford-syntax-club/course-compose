@@ -1,0 +1,9 @@
+{
+  "name": "reviews-api",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "dev": "go run cmd/main.go -environment=development",
+    "integration": "go clean -testcache && go test -v ./..."
+  }
+}
