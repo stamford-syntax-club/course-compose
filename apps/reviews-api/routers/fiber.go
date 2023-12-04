@@ -43,7 +43,7 @@ func NewFiberRouter(port string, h *handlers.H) *FiberRouter {
 	}))
 
 	api := app.Group("/api")
-	registerPublicRoutes(api, h)
+	registerRoutes(api, h)
 
 	return &FiberRouter{
 		App:  app,

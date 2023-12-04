@@ -1,0 +1,11 @@
+FROM golang:alpine
+
+WORKDIR /go/src/review-api
+
+COPY . .
+
+RUN go run github.com/steebchen/prisma-client-go generate 
+
+# Wait for prisma bootstrap to finish
+CMD sh -c "sleep 10 && go test -v -tags=integration ./..."
+
