@@ -7,6 +7,6 @@ import (
 )
 
 func registerRoutes(app fiber.Router, h *handlers.H) {
-	app.Get("/courses/:courseCode/reviews", h.HandleGetReviews)
+	app.Get("/courses/:courseCode/reviews", middleware.JWTAuth(), h.HandleGetReviews)
 	app.Post("/courses/:courseCode/reviews", middleware.JWTAuth(), h.HandleSubmitReview)
 }

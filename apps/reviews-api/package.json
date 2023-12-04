@@ -4,7 +4,7 @@
   "private": true,
   "scripts": {
     "dev": "go run cmd/main.go -environment=development",
-    "unit": "go clean -testcache && go test -v ./...",
+    "unit": "go clean -testcache && go test -tags=unit -v ./...",
     "integration": "docker compose -f docker-compose.integration.yaml down -v && docker compose -f docker-compose.integration.yaml up --build --force-recreate --exit-code-from integration-test"
   }
 }

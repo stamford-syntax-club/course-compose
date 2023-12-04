@@ -2,14 +2,10 @@ package handlers
 
 import (
 	"context"
-	"errors"
-	"fmt"
-	"log"
 	"net/http"
 	"time"
 
 	"github.com/gofiber/fiber/v2"
-	"github.com/lib/pq"
 	"github.com/stamford-syntax-club/course-compose/prisma/db"
 	"github.com/stamford-syntax-club/course-compose/reviews/data"
 	"github.com/stamford-syntax-club/course-compose/reviews/utils"
@@ -25,21 +21,19 @@ func New(client *db.PrismaClient) *H {
 
 func (h *H) HandleGetReviews(c *fiber.Ctx) error {
 	courseCode := c.Params("courseCode")
+	pageSize := c.QueryInt("pageSize", 2)
+	pageNumber := c.QueryInt("pageNumber", 1)
+
 	ctx, cancelFunc := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancelFunc()
 
-	reviews, err := data.GetAllReviews(ctx, h.client, courseCode)
-
-	if pqErr, ok := err.(*pq.Error); ok {
-		log.Println("HandleGetReviews: postgres error:", pqErr)
-		return fiber.ErrInternalServerError
-	}
-
+	userID := utils.GetUserID(c)
+	result, err := data.GetCourseReviews(ctx, h.client, courseCode, userID, pageSize, pageNumber)
 	if err != nil {
-		return errors.New(fmt.Sprintf("HandleGetReviews: %v", err))
+		return err
 	}
 
-	return c.Status(http.StatusOK).JSON(reviews)
+	return c.Status(http.StatusOK).JSON(result)
 }
 
 func (h *H) HandleSubmitReview(c *fiber.Ctx) error {
