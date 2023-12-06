@@ -18,3 +18,9 @@ routes:
           service: get_course_reviews
           endpoint: http://localhost:8003/api/courses/:courseCode/reviews
           is_array: true
+
+    - path: /api/:courseCode/reviews
+      method: POST
+      destination:
+          service: submit_new_review
+          endpoint: http://localhost:8003/api/courses/:courseCode/reviews

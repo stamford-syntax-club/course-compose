@@ -1,6 +1,7 @@
 package routers
 
 import (
+	"bytes"
 	"encoding/json"
 	"io"
 	"net/http"
@@ -83,7 +84,27 @@ func TestGetMethod(t *testing.T) {
 	}
 }
 
-// TODO:
 func TestPostMethod(t *testing.T) {
+	setupTestGateway(t)
+	url := "http://localhost:8000/api/integration-header"
+	reqBody := map[string]interface{}{
+		"title":  "foo",
+		"body":   "bar",
+		"userId": float64(1),
+	}
 
+	reqBodyBytes, _ := json.Marshal(reqBody)
+	res, err := http.Post(url, "application/json", bytes.NewBuffer(reqBodyBytes))
+	assert.NoError(t, err)
+	respBody, err := io.ReadAll(res.Body)
+	assert.NoError(t, err)
+	defer res.Body.Close()
+
+	var respBodyMap map[string]interface{}
+	err = json.Unmarshal(respBody, &respBodyMap)
+	assert.NoError(t, err)
+	assert.Equal(t, http.StatusCreated, res.StatusCode)
+	assert.Equal(t, reqBody["title"], respBodyMap["title"])
+	assert.Equal(t, reqBody["body"], respBodyMap["body"])
+	assert.Equal(t, reqBody["userId"], respBodyMap["userId"])
 }

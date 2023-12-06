@@ -19,6 +19,12 @@ func sendHTTPRequest(c *fiber.Ctx, method, endpoint string) (int, []byte, error)
 	if err != nil {
 		return 0, nil, errors.New(fmt.Sprintf("http new request: %v", err))
 	}
+	headers := c.GetReqHeaders()
+	req.Header.Set("Content-Type", string(c.Request().Header.ContentType()))
+
+	if len(headers["Authorization"]) > 0 {
+		req.Header.Set("Authorization", headers["Authorization"][0])
+	}
 
 	client := &http.Client{}
 	resp, err := client.Do(req)

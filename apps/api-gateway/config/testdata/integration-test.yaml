@@ -23,3 +23,9 @@ routes:
       service: get_array_response
       endpoint: https://jsonplaceholder.typicode.com/todos
       is_array: true 
+
+  - path: /api/integration-header
+    method: POST
+    destination:
+      service: test_post_service
+      endpoint: https://jsonplaceholder.typicode.com/posts
