@@ -1,0 +1,9 @@
+{
+  "name": "api-gateway",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "dev": "go run main.go -config=gateway-dev.yaml",
+    "test": "go clean -testcache && go test -v ./..."
+  }
+}

@@ -1,0 +1,5 @@
+routes:
+  - method: GET
+    destination:
+      service: get_course_reviews
+      endpoint: http://localhost:8003/api/courses/:courseCode/reviews

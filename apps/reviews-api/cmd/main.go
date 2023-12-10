@@ -29,7 +29,7 @@ func main() {
 
 	h := handlers.New(client)
 
-	r := routers.NewFiberRouter(":8000", h)
+	r := routers.NewFiberRouter(":8003", h)
 	if err := r.ListenAndServe(); err != nil {
 		log.Fatalf("fiber router: %v", err)
 	}

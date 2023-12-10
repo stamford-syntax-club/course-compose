@@ -1,0 +1,31 @@
+routes:
+  - path: /api/integration-test
+    method: GET
+    destination:
+      service: get_static
+      endpoint: https://jsonplaceholder.typicode.com/todos/1
+
+  - path: /api/integration-test/:id 
+    method: GET
+    destination:
+      service: get_dynamic
+      endpoint: https://jsonplaceholder.typicode.com/todos/:id
+  
+  - path: /api/integration-fail
+    method: GET
+    destination:
+      service: this_should_fail
+      endpoint: https://chinathai-the-best.com/golang-lover
+
+  - path: /api/integration-test-array
+    method: GET
+    destination:
+      service: get_array_response
+      endpoint: https://jsonplaceholder.typicode.com/todos
+      is_array: true 
+
+  - path: /api/integration-header
+    method: POST
+    destination:
+      service: test_post_service
+      endpoint: https://jsonplaceholder.typicode.com/posts

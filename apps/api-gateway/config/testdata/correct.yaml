@@ -1,0 +1,20 @@
+routes:
+    - path: /api/courses
+      method: GET
+      destination:
+          service: list_all_courses
+          endpoint: http://localhost:8002/courses 
+          is_array: true
+
+    - path: /api/courses/:courseCode
+      method: GET
+      destination:
+          service: get_course_info
+          endpoint: http://localhost:8002/courses/:courseCode
+
+    - path: /api/courses/:courseCode/reviews
+      method: GET
+      destination:
+          service: get_course_reviews
+          endpoint: http://localhost:8003/api/courses/:courseCode/reviews
+          is_array: true
