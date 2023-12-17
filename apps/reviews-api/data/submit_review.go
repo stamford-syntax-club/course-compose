@@ -22,11 +22,11 @@ func SubmitReview(ctx context.Context, client *db.PrismaClient, courseCode strin
 		return fiber.ErrInternalServerError
 	}
 
-	if err := hasExistingReview(ctx, client, course.ID, userID); err != nil {
+	if _, err := getUser(ctx, client, userID); err != nil {
 		return err
 	}
 
-	if err := addToActiveUser(ctx, client, userID); err != nil {
+	if err := hasExistingReview(ctx, client, course.ID, userID); err != nil {
 		return err
 	}
 
@@ -37,7 +37,7 @@ func SubmitReview(ctx context.Context, client *db.PrismaClient, courseCode strin
 		db.Review.Votes.Set(0),
 		db.Review.Status.Set("PENDING"),
 		db.Review.Course.Link(db.Course.ID.Equals(course.ID)),
-		db.Review.User.Link(db.ActiveUser.ID.Equals(userID)),
+		db.Review.Profile.Link(db.Profile.ID.Equals(userID)),
 	).Exec(ctx)
 	if err != nil {
 		log.Println("exec create review query: ", err)
@@ -66,25 +66,5 @@ func hasExistingReview(ctx context.Context, client *db.PrismaClient, courseID in
 		return fiber.NewError(http.StatusBadRequest, "You have already written a review for this course")
 	}
 
-	return nil
-}
-
-// add user to active user table if they are not already there
-// this allows us to keep track of users who have written reviews at least once
-// activeUser will be able to see more than 2 reviews per course
-func addToActiveUser(ctx context.Context, client *db.PrismaClient, userID string) error {
-	_, err := client.ActiveUser.UpsertOne(
-		db.ActiveUser.ID.Equals(userID),
-	).Create(
-		db.ActiveUser.ID.Set(userID),
-		db.ActiveUser.Username.Set(""),
-	).Update(
-		db.ActiveUser.ID.Set(userID), // TODO: this is just a placeholder, maybe add field 'number of reviews' and increment it here
-	).Exec(ctx)
-
-	if err != nil {
-		log.Println("exec upsert active user query: ", err)
-		return fiber.ErrInternalServerError
-	}
 	return nil
 }

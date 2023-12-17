@@ -41,7 +41,7 @@ func TestPrivateRoutes(t *testing.T) {
 		}{
 			{
 				name:                 "student email should accept",
-				userID:               "00000000-0000-0000-0000-000000000001",
+				userID:               "8a7b3c2e-3e5f-4f1a-a8b7-3c2e1a4f5b6d",
 				email:                "test@students.stamford.edu",
 				tokenExp:             time.Hour * 1,
 				courseCode:           "MATH201",
@@ -58,7 +58,7 @@ func TestPrivateRoutes(t *testing.T) {
 			},
 			{
 				name:                 "invalid course code should reject with 400",
-				userID:               "00000000-0000-0000-0000-000000000001",
+				userID:               "8a7b3c2e-3e5f-4f1a-a8b7-3c2e1a4f5b6d",
 				email:                "test@students.stamford.edu",
 				tokenExp:             time.Hour * 1,
 				courseCode:           "ITE9999",

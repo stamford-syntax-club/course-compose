@@ -25,7 +25,7 @@ func GetAllReviews(ctx context.Context, client *db.PrismaClient, courseCode stri
 		db.Review.CourseID.Equals(course.ID),
 	).With(
 		db.Review.Course.Fetch(),
-		db.Review.User.Fetch(),
+        db.Review.Profile.Fetch(),
 	).Exec(ctx)
 	if err != nil {
 		return nil, errors.New(fmt.Sprintf("GetAllReviews: find reviews: %v", err))
