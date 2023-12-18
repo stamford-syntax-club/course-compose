@@ -21,22 +21,23 @@ async function seed() {
 
 		await prisma.course.createMany({ data: courseData });
 
+        // Seed data for Profile table
+        const profileData = [
+            { id: "8a7b3c2e-3e5f-4f1a-a8b7-3c2e1a4f5b6d" },
+            { id: "2d1f3c4e-5a6b-7c8d-9e0f-1a2b3c4d5e6f" }, // This user wrote 2 reviews
+            { id: "1a2b3c4d-5e6f-7a8b-9c0d-1e2f3a4b5c6d" } // This user does not have any reviews (inactive user)
+        ];
+
+        await prisma.profile.createMany({ data: profileData });
+
+
 		// Seed data for User table
-		const userData = [
-			{ username: "john_doe", email: "john.doe@example.com", verified: true },
-			{
-				username: "jane_smith",
-				email: "jane.smith@example.com",
-				verified: true
-			},
-			{
-				username: "bob_jones",
-				email: "bob.jones@example.com",
-				verified: false
-			}
+		const activeUserData = [
+			{ id: "8a7b3c2e-3e5f-4f1a-a8b7-3c2e1a4f5b6d" },
+			{ id: "2d1f3c4e-5a6b-7c8d-9e0f-1a2b3c4d5e6f" }
 		];
 
-		await prisma.user.createMany({ data: userData });
+		await prisma.activeUser.createMany({ data: activeUserData });
 
 		// Seed data for Review table
 		const reviewData = [
@@ -47,7 +48,7 @@ async function seed() {
 				votes: 10,
 				status: "APPROVED",
 				course_id: 1,
-				user_id: 1,
+				user_id: "8a7b3c2e-3e5f-4f1a-a8b7-3c2e1a4f5b6d",
 				created_at: new Date("2023-11-23T12:00:00"),
 				updated_at: new Date("2023-11-23T12:30:00")
 			},
@@ -58,7 +59,7 @@ async function seed() {
 				votes: 8,
 				status: "APPROVED",
 				course_id: 2,
-				user_id: 2,
+				user_id: "2d1f3c4e-5a6b-7c8d-9e0f-1a2b3c4d5e6f",
 				created_at: new Date("2023-11-23T13:00:00"),
 				updated_at: null
 			},
@@ -69,7 +70,7 @@ async function seed() {
 				votes: 5,
 				status: "PENDING",
 				course_id: 3,
-				user_id: 3,
+				user_id: "2d1f3c4e-5a6b-7c8d-9e0f-1a2b3c4d5e6f",
 				created_at: new Date("2023-11-23T14:00:00"),
 				updated_at: null
 			}

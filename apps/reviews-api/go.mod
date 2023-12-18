@@ -5,6 +5,7 @@ go 1.21.2
 replace github.com/stamford-syntax-club/course-compose/prisma => ../prisma
 
 require (
+	github.com/gofiber/contrib/jwt v1.0.7
 	github.com/gofiber/fiber/v2 v2.51.0
 	github.com/joho/godotenv v1.5.1
 	github.com/lib/pq v1.10.9
@@ -13,8 +14,10 @@ require (
 )
 
 require (
+	github.com/MicahParks/keyfunc/v2 v2.1.0 // indirect
 	github.com/andybalholm/brotli v1.0.5 // indirect
 	github.com/davecgh/go-spew v1.1.1 // indirect
+	github.com/golang-jwt/jwt/v5 v5.0.0 // indirect
 	github.com/google/uuid v1.4.0 // indirect
 	github.com/iancoleman/strcase v0.3.0 // indirect
 	github.com/klauspost/compress v1.16.7 // indirect

@@ -21,5 +21,5 @@ RUN jq '. |= . + { "prisma": { "seed": "ts-node /app/seed.ts" } }' package.json 
 
 RUN npm install -D typescript ts-node @types/node
 
-CMD ["sh", "-c", "npx prisma migrate dev --name init && npx prisma db seed"]
+CMD ["sh", "-c", "npx prisma migrate dev --name init && npx prisma db seed && sleep 100"]
 
