@@ -12,7 +12,8 @@ type Pagination struct {
 	Data               interface{} `json:"data"`
 }
 
-// TODO: test this!
+// totalNumberOfItems is needed as it represents the total number of items in the database
+// the value of len(displayData) may differ from totalNumberOfItems since it may be filtered out by parseJSONRespone()
 func NewPagination[T any](displayData []T, pageSize, pageNumber, totalNumberOfItems int) *Pagination {
 	totalPages := (totalNumberOfItems + pageSize - 1) / pageSize
 	return &Pagination{
