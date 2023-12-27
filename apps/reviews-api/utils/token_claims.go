@@ -27,7 +27,7 @@ func IsStudent(c *fiber.Ctx) bool {
 func GetUserID(c *fiber.Ctx) string {
 	user := c.Locals("user")
 	if user == nil {
-		return ""
+		return "00000000-0000-0000-0000-000000000000"
 	}
 
 	token := user.(*jwt.Token)
