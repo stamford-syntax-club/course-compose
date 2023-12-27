@@ -554,5 +554,118 @@ func TestGetCourseReviews(t *testing.T) {
 			assert.Equal(t, 3, result.TotalNumberOfItems)
 			assert.Equal(t, 3, len(data))
 		})
+
+		t.Run("increment totalNumberOfItems if myReview exists", func(t *testing.T) {
+			activeUserID = "4"
+			mock.Review.Expect(
+				client.Review.FindMany(
+					db.Review.CourseID.Equals(courseID),
+					db.Review.UserID.Not(activeUserID),
+					db.Review.Status.Equals("APPROVED"),
+				).With(
+					db.Review.Course.Fetch(),
+					db.Review.Profile.Fetch(),
+				).OrderBy(
+					db.Review.CreatedAt.Order(db.SortOrderDesc),
+				),
+			).ReturnsMany(reviewsData)
+			mock.ActiveUser.Expect(
+				client.ActiveUser.FindFirst(
+					db.ActiveUser.ID.Equals(activeUserID),
+				),
+			).Returns(db.ActiveUserModel{
+				InnerActiveUser: db.InnerActiveUser{
+					ID: activeUserID,
+				},
+			})
+			mock.Review.Expect(
+				client.Review.FindFirst(
+					db.Review.CourseID.Equals(courseID),
+					db.Review.UserID.Equals(activeUserID),
+				).With(
+					db.Review.Course.Fetch(),
+					db.Review.Profile.Fetch(),
+				),
+			).Returns(db.ReviewModel{
+				InnerReview: db.InnerReview{
+					ID: 1,
+				},
+				RelationsReview: db.RelationsReview{
+					Course: &db.CourseModel{
+						InnerCourse: db.InnerCourse{
+							ID:   courseID,
+							Code: courseCode,
+						},
+					},
+					Profile: &db.ProfileModel{
+						InnerProfile: db.InnerProfile{
+							ID: activeUserID,
+						},
+					},
+				},
+			})
+
+			result, err := GetCourseReviews(context.Background(), client, courseCode, activeUserID, 10, 1)
+
+			assert.NoError(t, err)
+			assert.Equal(t, 4, result.TotalNumberOfItems)
+		})
+
+		t.Run("return empty reviews if offset is greater than total number of reviews", func(t *testing.T) {
+			activeUserID = "5"
+			mock.Review.Expect(
+				client.Review.FindMany(
+					db.Review.CourseID.Equals(courseID),
+					db.Review.UserID.Not(activeUserID),
+					db.Review.Status.Equals("APPROVED"),
+				).With(
+					db.Review.Course.Fetch(),
+					db.Review.Profile.Fetch(),
+				).OrderBy(
+					db.Review.CreatedAt.Order(db.SortOrderDesc),
+				),
+			).ReturnsMany(reviewsData)
+			mock.ActiveUser.Expect(
+				client.ActiveUser.FindFirst(
+					db.ActiveUser.ID.Equals(activeUserID),
+				),
+			).Returns(db.ActiveUserModel{
+				InnerActiveUser: db.InnerActiveUser{
+					ID: activeUserID,
+				},
+			})
+			mock.Review.Expect(
+				client.Review.FindFirst(
+					db.Review.CourseID.Equals(courseID),
+					db.Review.UserID.Equals(activeUserID),
+				).With(
+					db.Review.Course.Fetch(),
+					db.Review.Profile.Fetch(),
+				),
+			).Returns(db.ReviewModel{
+				InnerReview: db.InnerReview{
+					ID: 1,
+				},
+				RelationsReview: db.RelationsReview{
+					Course: &db.CourseModel{
+						InnerCourse: db.InnerCourse{
+							ID:   courseID,
+							Code: courseCode,
+						},
+					},
+					Profile: &db.ProfileModel{
+						InnerProfile: db.InnerProfile{
+							ID: activeUserID,
+						},
+					},
+				},
+			})
+
+			result, err := GetCourseReviews(context.Background(), client, courseCode, activeUserID, 10, 2) // pageNumber is now 2 - offset is 10
+
+			assert.NoError(t, err)
+			assert.Equal(t, 4, result.TotalNumberOfItems)
+			assert.Equal(t, 0, len(result.Data.([]ReviewJSONResponse)))
+		})
 	})
 }
