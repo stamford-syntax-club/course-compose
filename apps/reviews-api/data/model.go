@@ -11,8 +11,14 @@ type ReviewJSONResponse struct {
 	ID           int                `json:"id"`
 	AcademicYear int                `json:"academicYear"`
 	Description  string             `json:"description"`
-	IsOwner      bool               `json:"isOwner"`
+	IsOwner      bool               `json:"isOwner,omitempty"`
 	Rating       int                `json:"rating"`
 	Votes        int                `json:"votes"`
 	Course       CourseJSONResponse `json:"course"`
+	Profile      UserJSONResponse   `json:"profile"`
+}
+
+type UserJSONResponse struct {
+	ID       string `json:"id"`
+	Username string `json:"username,omitempty"`
 }

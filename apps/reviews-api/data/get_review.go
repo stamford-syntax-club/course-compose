@@ -31,17 +31,17 @@ func getCourseID(ctx context.Context, client *db.PrismaClient, courseCode string
 	return course.ID, nil
 }
 
-func getReviews(ctx context.Context, client *db.PrismaClient, courseID, pageSize, pageNumber int) ([]db.ReviewModel, error) {
+func getReviews(ctx context.Context, client *db.PrismaClient, userID string, courseID int) ([]db.ReviewModel, error) {
 	reviewsQuery := client.Review.FindMany(
 		db.Review.CourseID.Equals(courseID),
+		db.Review.UserID.Not(userID), // get everything that's not my review
+		db.Review.Status.Equals("APPROVED"),
 	).With(
 		db.Review.Course.Fetch(),
-	).Take(pageSize)
-
-	if pageNumber > 1 {
-		reviewsQuery = reviewsQuery.Skip((pageNumber - 1) * pageSize)
-	}
-
+		db.Review.Profile.Fetch(),
+	).OrderBy(
+		db.Review.CreatedAt.Order(db.SortOrderDesc), // latest reviews first
+	)
 	reviews, err := reviewsQuery.Exec(ctx)
 	if err != nil {
 		if errors.Is(err, db.ErrNotFound) {
@@ -54,22 +54,24 @@ func getReviews(ctx context.Context, client *db.PrismaClient, courseID, pageSize
 	return reviews, nil
 }
 
-func getMyReviewID(ctx context.Context, client *db.PrismaClient, courseID int, userID string, myReviewIDChan chan<- int) {
+// pagination might not find my review, we need to run this concurrently
+func getMyReview(ctx context.Context, client *db.PrismaClient, courseID int, userID string, myReviewIDChan chan<- *db.ReviewModel) {
 	myReview, err := client.Review.FindFirst(
 		db.Review.CourseID.Equals(courseID),
 		db.Review.UserID.Equals(userID),
 	).With(
 		db.Review.Course.Fetch(),
+		db.Review.Profile.Fetch(),
 	).Exec(ctx)
 	if err != nil {
 		if !errors.Is(err, db.ErrNotFound) {
 			log.Println("exec find my reviews query: ", err)
 		}
-		myReviewIDChan <- 0
+		myReviewIDChan <- nil
 		return
 	}
 
-	myReviewIDChan <- myReview.ID
+	myReviewIDChan <- myReview
 }
 
 func isActiveUser(ctx context.Context, client *db.PrismaClient, userID string) bool {
@@ -93,10 +95,10 @@ func isActiveUser(ctx context.Context, client *db.PrismaClient, userID string) b
 func parseReviewJSONResponse(reviews []db.ReviewModel, myReviewID int) []ReviewJSONResponse {
 	reviewJSONResponses := []ReviewJSONResponse{}
 	for _, review := range reviews {
-
-		// if review is pending and not my review, skip
-		if review.Status == "PENDING" && review.ID != myReviewID {
-			continue
+		profile, ok := review.Profile()
+		if !ok {
+			log.Println("failed to get profile for normal review")
+			return reviewJSONResponses
 		}
 
 		reviewJSONResponses = append(reviewJSONResponses, ReviewJSONResponse{
@@ -110,14 +112,18 @@ func parseReviewJSONResponse(reviews []db.ReviewModel, myReviewID int) []ReviewJ
 				ID:   review.Course().ID,
 				Code: review.Course().Code,
 			},
+			Profile: UserJSONResponse{
+				ID: profile.ID,
+			},
 		})
 	}
+
 	return reviewJSONResponses
 }
 
 func GetCourseReviews(ctx context.Context, client *db.PrismaClient, courseCode, userID string, pageSize, pageNumber int) (*utils.Pagination, error) {
-	myReviewIDChan := make(chan int)
-	defer close(myReviewIDChan)
+	myReviewChan := make(chan *db.ReviewModel)
+	defer close(myReviewChan)
 
 	courseID, err := getCourseID(ctx, client, courseCode)
 	if err != nil {
@@ -130,15 +136,26 @@ func GetCourseReviews(ctx context.Context, client *db.PrismaClient, courseCode, 
 		pageNumber = 1
 	}
 
-	// run getMyReviewID concurrently with getReviews
-	go getMyReviewID(ctx, client, courseID, userID, myReviewIDChan)
-	rawReviews, err := getReviews(ctx, client, courseID, pageSize, pageNumber)
+	// run getMyReview concurrently with getReviews
+	go getMyReview(ctx, client, courseID, userID, myReviewChan)
+	rawReviews, err := getReviews(ctx, client, userID, courseID)
 	if err != nil {
 		return nil, err
 	}
 
-	myReviewID := <-myReviewIDChan
-	reviews := parseReviewJSONResponse(rawReviews, myReviewID)
+	myReview := <-myReviewChan
+	// add my review to the front of the list if it exists
+	if myReview != nil {
+		rawReviews = append([]db.ReviewModel{*myReview}, rawReviews...)
+	}
 
-	return utils.NewPagination(pageSize, pageNumber, reviews), nil
+	start, end := utils.CalculateStartEnd(rawReviews, pageSize, pageNumber)
+	totalNumberOfItems := len(rawReviews)
+	totalPages := (totalNumberOfItems + pageSize - 1) / pageSize
+	if start > len(rawReviews) {
+		return utils.NewPagination([]ReviewJSONResponse{}, pageSize, pageNumber, totalNumberOfItems, totalPages), nil
+	}
+
+	reviews := parseReviewJSONResponse(rawReviews[start:end], myReview.ID)
+	return utils.NewPagination(reviews, pageSize, pageNumber, totalNumberOfItems, totalPages), nil
 }
