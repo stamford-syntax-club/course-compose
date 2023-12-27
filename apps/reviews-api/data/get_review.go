@@ -34,7 +34,7 @@ func getCourseID(ctx context.Context, client *db.PrismaClient, courseCode string
 func getReviews(ctx context.Context, client *db.PrismaClient, userID string, courseID int) ([]db.ReviewModel, error) {
 	reviewsQuery := client.Review.FindMany(
 		db.Review.CourseID.Equals(courseID),
-		db.Review.UserID.Not(userID), // get everything that's not my review
+		db.Review.UserID.Not(userID), // get others' reviews only - find user's review separately
 		db.Review.Status.Equals("APPROVED"),
 	).With(
 		db.Review.Course.Fetch(),
@@ -54,7 +54,6 @@ func getReviews(ctx context.Context, client *db.PrismaClient, userID string, cou
 	return reviews, nil
 }
 
-// pagination might not find my review, we need to run this concurrently
 func getMyReview(ctx context.Context, client *db.PrismaClient, courseID int, userID string, myReviewIDChan chan<- *db.ReviewModel) {
 	myReview, err := client.Review.FindFirst(
 		db.Review.CourseID.Equals(courseID),
@@ -74,28 +73,10 @@ func getMyReview(ctx context.Context, client *db.PrismaClient, courseID int, use
 	myReviewIDChan <- myReview
 }
 
-func isActiveUser(ctx context.Context, client *db.PrismaClient, userID string) bool {
-	if userID == "" {
-		return false
-	}
-
-	user, err := client.ActiveUser.FindFirst(
-		db.ActiveUser.ID.Equals(userID),
-	).Exec(ctx)
-	if err != nil {
-		if !errors.Is(err, db.ErrNotFound) {
-			log.Println("exec find active user query: ", err)
-		}
-		return false
-	}
-
-	return user != nil
-}
-
 func parseReviewJSONResponse(reviews []db.ReviewModel, myReview *db.ReviewModel) []ReviewJSONResponse {
 	myReviewID := 0 // prevent nil pointer dereference in case myReview does not exist
 	if myReview != nil {
-		reviews = append([]db.ReviewModel{*myReview}, reviews...)
+		reviews = append([]db.ReviewModel{*myReview}, reviews...) // add myReview to the beginning of reviews
 		myReviewID = myReview.ID
 	}
 
