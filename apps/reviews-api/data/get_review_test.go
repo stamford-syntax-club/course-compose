@@ -504,7 +504,7 @@ func TestGetCourseReviews(t *testing.T) {
 			assert.True(t, ok)
 			assert.Equal(t, 2, result.PageInformation.Size)
 			assert.Equal(t, 1, result.PageInformation.Number)
-			assert.Equal(t, 2, result.TotalNumberofItems) // force to 2 reviews, though there are 3 reviews in db
+			assert.Equal(t, 2, result.TotalNumberOfItems) // force to 2 reviews, though there are 3 reviews in db
 			assert.Equal(t, 2, len(data))                 // force to 2 reviews, though there are 3 reviews in db
 		})
 
@@ -551,7 +551,7 @@ func TestGetCourseReviews(t *testing.T) {
 			assert.True(t, ok)
 			assert.Equal(t, testPageSize, result.PageInformation.Size)
 			assert.Equal(t, testPageNumber, result.PageInformation.Number)
-			assert.Equal(t, 3, result.TotalNumberofItems)
+			assert.Equal(t, 3, result.TotalNumberOfItems)
 			assert.Equal(t, 3, len(data))
 		})
 	})

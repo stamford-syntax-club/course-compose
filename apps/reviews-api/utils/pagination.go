@@ -7,21 +7,22 @@ type PageInformation struct {
 
 type Pagination struct {
 	*PageInformation   `json:"pageInformation"`
-	TotalNumberofItems int         `json:"totalNumberofItems"`
+	TotalNumberOfItems int         `json:"totalNumberOfItems"`
 	TotalPages         int         `json:"totalPages"`
 	Data               interface{} `json:"data"`
 }
 
 // TODO: test this!
-func NewPagination[T any](data []T, pageSize, pageNumber, totalNumberOfItems, totalPages int) *Pagination {
+func NewPagination[T any](displayData []T, pageSize, pageNumber, totalNumberOfItems int) *Pagination {
+	totalPages := (totalNumberOfItems + pageSize - 1) / pageSize
 	return &Pagination{
 		PageInformation: &PageInformation{
 			Number: pageNumber,
 			Size:   pageSize,
 		},
-		TotalNumberofItems: totalNumberOfItems,
+		TotalNumberOfItems: totalNumberOfItems,
 		TotalPages:         totalPages,
-		Data:               data,
+		Data:               displayData,
 	}
 }
 

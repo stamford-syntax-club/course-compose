@@ -113,6 +113,7 @@ func parseReviewJSONResponse(reviews []db.ReviewModel, myReview *db.ReviewModel)
 			Description:  review.Description,
 			IsOwner:      review.ID == myReviewID,
 			Rating:       review.Rating,
+			Status:       review.Status,
 			Votes:        review.Votes,
 			Course: CourseJSONResponse{
 				ID:   review.Course().ID,
@@ -153,13 +154,16 @@ func GetCourseReviews(ctx context.Context, client *db.PrismaClient, courseCode, 
 	}
 
 	myReview := <-myReviewChan
+	if myReview != nil {
+		totalNumberOfItems++
+	}
+
 	start, end := utils.CalculateStartEnd(rawReviews, pageSize, pageNumber)
-	totalPages := (totalNumberOfItems + pageSize - 1) / pageSize
 	if start > len(rawReviews) {
-		return utils.NewPagination([]ReviewJSONResponse{}, pageSize, pageNumber, totalNumberOfItems, totalPages), nil
+		return utils.NewPagination([]ReviewJSONResponse{}, pageSize, pageNumber, totalNumberOfItems), nil
 	}
 
 	data := parseReviewJSONResponse(rawReviews[start:end], myReview)
 
-	return utils.NewPagination(data, pageSize, pageNumber, totalNumberOfItems, totalPages), nil
+	return utils.NewPagination(data, pageSize, pageNumber, totalNumberOfItems), nil
 }
