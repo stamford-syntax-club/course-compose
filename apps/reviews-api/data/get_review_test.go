@@ -129,9 +129,14 @@ func TestGetReviews(t *testing.T) {
 			mockExpect := mock.Review.Expect(
 				client.Review.FindMany(
 					db.Review.CourseID.Equals(test.courseID),
+					db.Review.UserID.Not("00000000-0000-0000-0000-000000000000"),
+					db.Review.Status.Equals("APPROVED"),
 				).With(
 					db.Review.Course.Fetch(),
-				).Take(2),
+					db.Review.Profile.Fetch(),
+				).OrderBy(
+					db.Review.CreatedAt.Order(db.SortOrderDesc), // latest reviews FindFirst
+				),
 			)
 			if len(test.expectedReview) != 0 {
 				mockExpect.ReturnsMany(test.expectedReview)
@@ -139,7 +144,7 @@ func TestGetReviews(t *testing.T) {
 				mockExpect.Errors(test.queryError)
 			}
 
-			reviews, err := getReviews(context.Background(), client, test.courseID, 2, 1)
+			reviews, err := getReviews(context.Background(), client, "00000000-0000-0000-0000-000000000000", test.courseID)
 
 			assert.Equal(t, test.expectedReview, reviews)
 			if len(test.expectedReview) != 0 {
@@ -163,14 +168,14 @@ func TestGetMyReviewID(t *testing.T) {
 		expectedReviewID int
 	}{
 		{
-			name:             "return my review ID when found",
+			name:             "return my review when found",
 			reviewID:         555,
 			courseID:         123,
 			userID:           "1",
 			expectedReviewID: 555,
 		},
 		{
-			name:     "return 0 when not found",
+			name:     "return nil when not found",
 			courseID: 123,
 			userID:   "2",
 		},
@@ -178,8 +183,8 @@ func TestGetMyReviewID(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
-			myReviewIDChan := make(chan int)
-			defer close(myReviewIDChan)
+			myReviewChan := make(chan *db.ReviewModel)
+			defer close(myReviewChan)
 			expected := db.ReviewModel{
 				InnerReview: db.InnerReview{
 					ID: test.reviewID,
@@ -191,8 +196,8 @@ func TestGetMyReviewID(t *testing.T) {
 							Code: "ITE343",
 						},
 					},
-					User: &db.ActiveUserModel{
-						InnerActiveUser: db.InnerActiveUser{
+					Profile: &db.ProfileModel{
+						InnerProfile: db.InnerProfile{
 							ID: test.userID,
 						},
 					},
@@ -205,6 +210,7 @@ func TestGetMyReviewID(t *testing.T) {
 					db.Review.UserID.Equals(test.userID),
 				).With(
 					db.Review.Course.Fetch(),
+					db.Review.Profile.Fetch(),
 				),
 			)
 
@@ -214,9 +220,14 @@ func TestGetMyReviewID(t *testing.T) {
 				mockExpect.Errors(db.ErrNotFound)
 			}
 
-			go getMyReviewID(context.Background(), client, test.courseID, test.userID, myReviewIDChan)
+			go getMyReview(context.Background(), client, test.courseID, test.userID, myReviewChan)
 
-			assert.Equal(t, test.expectedReviewID, <-myReviewIDChan)
+			actual := <-myReviewChan
+			if test.expectedReviewID == 0 {
+				assert.Nil(t, actual)
+			} else {
+				assert.Equal(t, test.expectedReviewID, actual.ID)
+			}
 		})
 	}
 }
@@ -273,180 +284,101 @@ func TestIsActiveUser(t *testing.T) {
 }
 
 func TestParseReviewJSONResponse(t *testing.T) {
-	rawReviewsNoPending := []db.ReviewModel{
-		{
-			InnerReview: db.InnerReview{
-				ID:           1,
-				CourseID:     1,
-				AcademicYear: 2021,
-				Description:  "This is a test review",
-			},
-			RelationsReview: db.RelationsReview{
-				Course: &db.CourseModel{
-					InnerCourse: db.InnerCourse{
-						ID:   1,
-						Code: "ITE343",
-					},
-				},
-			},
-		},
+	const (
+		courseID   = 333
+		courseCode = "ITE343"
+		myUserID   = "1"
+	)
+	reviewsData := []db.ReviewModel{
 		{
 			InnerReview: db.InnerReview{
 				ID:           2,
-				CourseID:     1,
-				AcademicYear: 2021,
-				Description:  "This is a test review 2",
+				AcademicYear: 2023,
+				Description:  "This is a review from someone else",
 			},
 			RelationsReview: db.RelationsReview{
 				Course: &db.CourseModel{
 					InnerCourse: db.InnerCourse{
-						ID:   1,
-						Code: "ITE343",
+						ID:   courseID,
+						Code: courseCode,
+					},
+				},
+				Profile: &db.ProfileModel{
+					InnerProfile: db.InnerProfile{
+						ID: "2",
+					},
+				},
+			},
+		},
+		{
+			InnerReview: db.InnerReview{
+				ID:           3,
+				AcademicYear: 2023,
+				Description:  "This is another review from someone else",
+			},
+			RelationsReview: db.RelationsReview{
+				Course: &db.CourseModel{
+					InnerCourse: db.InnerCourse{
+						ID:   courseID,
+						Code: courseCode,
+					},
+				},
+				Profile: &db.ProfileModel{
+					InnerProfile: db.InnerProfile{
+						ID: "3",
 					},
 				},
 			},
 		},
 	}
-	rawReviewsWithPending := []db.ReviewModel{
-		{
+	t.Run("return empty reviewJSONResponses when empty reviews", func(t *testing.T) {
+		reviewsJSONResponses := parseReviewJSONResponse([]db.ReviewModel{}, nil)
+
+		assert.Equal(t, []ReviewJSONResponse{}, reviewsJSONResponses)
+	})
+
+	t.Run("return correct reviewJSONResponses when non-empty reviews", func(t *testing.T) {
+		reviewsJSONResponses := parseReviewJSONResponse(reviewsData, nil)
+
+		assert.Equal(t, 2, len(reviewsJSONResponses))
+		assert.Equal(t, reviewsData[0].ID, reviewsJSONResponses[0].ID)
+		assert.Equal(t, reviewsData[0].AcademicYear, reviewsJSONResponses[0].AcademicYear)
+		assert.Equal(t, reviewsData[0].Description, reviewsJSONResponses[0].Description)
+		assert.Equal(t, reviewsData[0].RelationsReview.Course.Code, reviewsJSONResponses[0].Course.Code)
+		assert.Equal(t, reviewsData[0].RelationsReview.Profile.ID, reviewsJSONResponses[0].Profile.ID)
+		assert.Equal(t, reviewsData[1].ID, reviewsJSONResponses[1].ID)
+		assert.Equal(t, reviewsData[1].AcademicYear, reviewsJSONResponses[1].AcademicYear)
+		assert.Equal(t, reviewsData[1].Description, reviewsJSONResponses[1].Description)
+		assert.Equal(t, reviewsData[1].RelationsReview.Course.Code, reviewsJSONResponses[1].Course.Code)
+		assert.Equal(t, reviewsData[1].RelationsReview.Profile.ID, reviewsJSONResponses[1].Profile.ID)
+	})
+
+	t.Run("put myReview as first item in list if exist", func(t *testing.T) {
+		myReview := &db.ReviewModel{
 			InnerReview: db.InnerReview{
 				ID:           1,
-				CourseID:     1,
-				AcademicYear: 2021,
-				Description:  "This review should be skipped",
-				Status:       "PENDING",
+				AcademicYear: 2023,
+				Description:  "This is my review",
 			},
 			RelationsReview: db.RelationsReview{
 				Course: &db.CourseModel{
 					InnerCourse: db.InnerCourse{
-						ID:   1,
-						Code: "ITE343",
+						ID:   courseID,
+						Code: courseCode,
 					},
 				},
-				User: &db.ActiveUserModel{
-					InnerActiveUser: db.InnerActiveUser{
-						ID: "999", // pending and not my review
-					},
-				},
-			},
-		},
-		{
-			InnerReview: db.InnerReview{
-				ID:           2,
-				CourseID:     1,
-				AcademicYear: 2021,
-				Description:  "This review should not be skipped",
-			},
-			RelationsReview: db.RelationsReview{
-				Course: &db.CourseModel{
-					InnerCourse: db.InnerCourse{
-						ID:   1,
-						Code: "ITE343",
-					},
-				},
-				User: &db.ActiveUserModel{
-					InnerActiveUser: db.InnerActiveUser{
-						ID: "1",
+				Profile: &db.ProfileModel{
+					InnerProfile: db.InnerProfile{
+						ID: myUserID,
 					},
 				},
 			},
-		},
-	}
+		}
 
-	tests := []struct {
-		name       string
-		myReviewID int
-		rawReview  []db.ReviewModel
-		expected   []ReviewJSONResponse
-	}{
-		{
-			name:       "correctly parse reviews response (with no matching myReviewID)",
-			myReviewID: 0,
-			rawReview:  rawReviewsNoPending,
-			expected: []ReviewJSONResponse{
-				{
-					ID:           1,
-					AcademicYear: 2021,
-					Description:  "This is a test review",
-					IsOwner:      false,
-					Rating:       0,
-					Votes:        0,
-					Course: CourseJSONResponse{
-						ID:   1,
-						Code: "ITE343",
-					},
-				},
-				{
-					ID:           2,
-					AcademicYear: 2021,
-					Description:  "This is a test review 2",
-					IsOwner:      false,
-					Rating:       0,
-					Votes:        0,
-					Course: CourseJSONResponse{
-						ID:   1,
-						Code: "ITE343",
-					},
-				},
-			},
-		},
-		{
-			name:       "show isOwner true if matching myReviewID",
-			myReviewID: 1,
-			rawReview:  rawReviewsNoPending,
-			expected: []ReviewJSONResponse{
-				{
-					ID:           1,
-					AcademicYear: 2021,
-					Description:  "This is a test review",
-					IsOwner:      true, // reviewID matches with myReviewID
-					Rating:       0,
-					Votes:        0,
-					Course: CourseJSONResponse{
-						ID:   1,
-						Code: "ITE343",
-					},
-				},
-				{
-					ID:           2,
-					AcademicYear: 2021,
-					Description:  "This is a test review 2",
-					IsOwner:      false,
-					Rating:       0,
-					Votes:        0,
-					Course: CourseJSONResponse{
-						ID:   1,
-						Code: "ITE343",
-					},
-				},
-			},
-		},
-		{
-			name:       "skip pending reviews if not my review",
-			myReviewID: 0,
-			rawReview:  rawReviewsWithPending,
-			expected: []ReviewJSONResponse{
-				{
-					ID:           2,
-					AcademicYear: 2021,
-					Description:  "This review should not be skipped",
-					IsOwner:      false,
-					Course: CourseJSONResponse{
-						ID:   1,
-						Code: "ITE343",
-					},
-				},
-			},
-		},
-	}
+		reviewsJSONResponses := parseReviewJSONResponse(reviewsData, myReview)
 
-	for _, test := range tests {
-		t.Run(test.name, func(t *testing.T) {
-			reviewsJSONResponses := parseReviewJSONResponse(test.rawReview, test.myReviewID)
-
-			assert.Equal(t, test.expected, reviewsJSONResponses)
-		})
-	}
+		assert.Equal(t, myReview.ID, reviewsJSONResponses[0].ID)
+	})
 }
 
 func TestGetCourseReviews(t *testing.T) {
@@ -459,9 +391,68 @@ func TestGetCourseReviews(t *testing.T) {
 			courseID        = 333
 			nonActiveUserID = "1"
 			activeUserID    = "2"
-
-			testPageNumber = 2
-			testPageSize   = 10
+			reviewsData     = []db.ReviewModel{
+				{
+					InnerReview: db.InnerReview{
+						ID:           2,
+						AcademicYear: 2023,
+						Description:  "This is a review from someone else",
+					},
+					RelationsReview: db.RelationsReview{
+						Course: &db.CourseModel{
+							InnerCourse: db.InnerCourse{
+								ID:   courseID,
+								Code: courseCode,
+							},
+						},
+						Profile: &db.ProfileModel{
+							InnerProfile: db.InnerProfile{
+								ID: "2",
+							},
+						},
+					},
+				},
+				{
+					InnerReview: db.InnerReview{
+						ID:           3,
+						AcademicYear: 2023,
+						Description:  "This is another review from someone else",
+					},
+					RelationsReview: db.RelationsReview{
+						Course: &db.CourseModel{
+							InnerCourse: db.InnerCourse{
+								ID:   courseID,
+								Code: courseCode,
+							},
+						},
+						Profile: &db.ProfileModel{
+							InnerProfile: db.InnerProfile{
+								ID: "3",
+							},
+						},
+					},
+				},
+				{
+					InnerReview: db.InnerReview{
+						ID:           4,
+						AcademicYear: 2023,
+						Description:  "This is another review from someone else",
+					},
+					RelationsReview: db.RelationsReview{
+						Course: &db.CourseModel{
+							InnerCourse: db.InnerCourse{
+								ID:   courseID,
+								Code: courseCode,
+							},
+						},
+						Profile: &db.ProfileModel{
+							InnerProfile: db.InnerProfile{
+								ID: "4",
+							},
+						},
+					},
+				},
+			}
 		)
 		mock.Course.Expect(
 			client.Course.FindFirst(
@@ -475,13 +466,22 @@ func TestGetCourseReviews(t *testing.T) {
 		})
 
 		t.Run("force only 2 reviews to be retrived for non-active users", func(t *testing.T) {
+			var (
+				testPageNumber = 5
+				testPageSize   = 10
+			)
 			mock.Review.Expect(
 				client.Review.FindMany(
 					db.Review.CourseID.Equals(courseID),
+					db.Review.UserID.Not(nonActiveUserID),
+					db.Review.Status.Equals("APPROVED"),
 				).With(
 					db.Review.Course.Fetch(),
-				).Take(2), // should force only 2 reviews to be retrived regardless the specified vvalue
-			).ReturnsMany([]db.ReviewModel{}) // no need for actual data since we're focusing on expectation being met
+					db.Review.Profile.Fetch(),
+				).OrderBy(
+					db.Review.CreatedAt.Order(db.SortOrderDesc),
+				),
+			).ReturnsMany(reviewsData)
 			mock.ActiveUser.Expect(
 				client.ActiveUser.FindFirst(
 					db.ActiveUser.ID.Equals(nonActiveUserID),
@@ -493,24 +493,38 @@ func TestGetCourseReviews(t *testing.T) {
 					db.Review.UserID.Equals(nonActiveUserID),
 				).With(
 					db.Review.Course.Fetch(),
+					db.Review.Profile.Fetch(),
 				),
 			).Errors(db.ErrNotFound) // mock no my reviewID found for user
 
 			result, err := GetCourseReviews(context.Background(), client, courseCode, nonActiveUserID, testPageSize, testPageNumber)
+			data, ok := result.Data.([]ReviewJSONResponse)
 
 			assert.NoError(t, err)
+			assert.True(t, ok)
 			assert.Equal(t, 2, result.PageInformation.Size)
 			assert.Equal(t, 1, result.PageInformation.Number)
+			assert.Equal(t, 2, result.TotalNumberofItems) // force to 2 reviews, though there are 3 reviews in db
+			assert.Equal(t, 2, len(data))                 // force to 2 reviews, though there are 3 reviews in db
 		})
 
 		t.Run("allow pagination if in active user", func(t *testing.T) {
+			var (
+				testPageNumber = 1
+				testPageSize   = 3
+			)
 			mock.Review.Expect(
 				client.Review.FindMany(
 					db.Review.CourseID.Equals(courseID),
+					db.Review.UserID.Not(activeUserID),
+					db.Review.Status.Equals("APPROVED"),
 				).With(
 					db.Review.Course.Fetch(),
-				).Take(testPageSize).Skip((testPageNumber - 1) * testPageSize),
-			).ReturnsMany([]db.ReviewModel{})
+					db.Review.Profile.Fetch(),
+				).OrderBy(
+					db.Review.CreatedAt.Order(db.SortOrderDesc),
+				),
+			).ReturnsMany(reviewsData)
 			mock.ActiveUser.Expect(
 				client.ActiveUser.FindFirst(
 					db.ActiveUser.ID.Equals(activeUserID),
@@ -526,15 +540,19 @@ func TestGetCourseReviews(t *testing.T) {
 					db.Review.UserID.Equals(activeUserID),
 				).With(
 					db.Review.Course.Fetch(),
+					db.Review.Profile.Fetch(),
 				),
 			).Errors(db.ErrNotFound) // mock no my reviewID found for user
 
 			result, err := GetCourseReviews(context.Background(), client, courseCode, activeUserID, testPageSize, testPageNumber)
+			data, ok := result.Data.([]ReviewJSONResponse)
 
 			assert.NoError(t, err)
+			assert.True(t, ok)
 			assert.Equal(t, testPageSize, result.PageInformation.Size)
 			assert.Equal(t, testPageNumber, result.PageInformation.Number)
+			assert.Equal(t, 3, result.TotalNumberofItems)
+			assert.Equal(t, 3, len(data))
 		})
-
 	})
 }
