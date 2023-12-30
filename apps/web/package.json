@@ -9,18 +9,26 @@
     "lint": "next lint"
   },
   "dependencies": {
-    "next": "^13.4.19",
+    "@mantine/core": "^7.3.2",
+    "@mantine/hooks": "^7.3.2",
+    "next": "^14.0.4",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
+    "swr": "^2.2.4",
     "ui": "workspace:*"
   },
   "devDependencies": {
-    "@next/eslint-plugin-next": "^13.4.19",
-    "@types/node": "^17.0.12",
-    "@types/react": "^18.0.22",
-    "@types/react-dom": "^18.0.7",
+    "@next/eslint-plugin-next": "^14.0.4",
+    "@types/node": "^20.10.5",
+    "@types/react": "^18.2.46",
+    "@types/react-dom": "^18.2.18",
+    "autoprefixer": "^10.4.16",
     "eslint-config-custom": "workspace:*",
+    "postcss": "^8.4.32",
+    "postcss-preset-mantine": "^1.12.2",
+    "postcss-simple-vars": "^7.0.1",
+    "tailwindcss": "^3.4.0",
     "tsconfig": "workspace:*",
-    "typescript": "^5.2.2"
+    "typescript": "^5.3.3"
   }
 }
