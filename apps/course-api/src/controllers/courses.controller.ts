@@ -6,6 +6,7 @@ import { paginate } from "../utils/pagination";
 const getAllCourses = async (req: Request, res: Response) => {
 	const pageSize = parseInt(req.query.pageSize as string) ? parseInt(req.query.pageSize as string) : 10;
 	const pageNumber = parseInt(req.query.pageNumber as string) ? parseInt(req.query.pageNumber as string) : 1;
+	const search = (req.query.search as string) || "";
 
 	if (pageSize < 1 || pageNumber < 1) {
 		return res.status(400).json({
@@ -13,32 +14,45 @@ const getAllCourses = async (req: Request, res: Response) => {
 		});
 	}
 
-	const searchQuery = {
-		where: {
-			OR: [
-				{
-					code: {
-						contains: (req.query.search as string) || ""
-					}
-				},
-				{
-					full_name: {
-						contains: (req.query.search as string) || ""
-					}
-				}
-			]
-		}
-	};
-
 	try {
 		const courses = await prismaClient.course.findMany({
-			...searchQuery,
+			where: {
+				OR: [
+					{
+						full_name: {
+							contains: search,
+							mode: "insensitive"
+						}
+					},
+					{
+						code: {
+							contains: search,
+							mode: "insensitive"
+						}
+					}
+				]
+			},
 			skip: pageSize * (pageNumber - 1),
 			take: pageSize
 		});
 
 		const courseCount = await prismaClient.course.count({
-			...searchQuery
+			where: {
+				OR: [
+					{
+						full_name: {
+							contains: search,
+							mode: "insensitive"
+						}
+					},
+					{
+						code: {
+							contains: search,
+							mode: "insensitive"
+						}
+					}
+				]
+			}
 		});
 
 		const data = paginate(courses, pageSize, pageNumber, courseCount);
