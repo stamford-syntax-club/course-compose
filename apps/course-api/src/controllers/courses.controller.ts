@@ -2,6 +2,7 @@ import { Request, Response } from "express";
 import { paginate } from "@utils/pagination";
 import { getAllCourses, getCourseByCode } from "./get-courses";
 import { getRedisClient } from "@utils/redis_utils";
+import { addCourses } from "./add-courses";
 
 const cacheTTL = 60 * 60 * 7; // cache will expire after 1 week
 
@@ -56,4 +57,23 @@ const handleGetCourseByCode = async (req: Request, res: Response) => {
 	}
 };
 
-export { handleGetAllCourses, handleGetCourseByCode };
+const handleAddCourses = async (req: Request, res: Response) => {
+	const body = req.body;
+	if (!body) {
+		return res.status(400).json({
+			message: "Missing request body"
+		});
+	}
+
+	try {
+		const result = await addCourses(req.body);
+		res.status(201).json(result);
+	} catch (error) {
+		console.log("Error: ", error);
+		res.status(500).json({
+			message: "Internal server error"
+		});
+	}
+};
+
+export { handleAddCourses, handleGetAllCourses, handleGetCourseByCode };
