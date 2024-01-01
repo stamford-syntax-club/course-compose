@@ -28,28 +28,16 @@ async function seed() {
 
 		// Seed data for Profile table
 		const profileData = [
-			{ id: "8a7b3c2e-3e5f-4f1a-a8b7-3c2e1a4f5b6d" },
-			{ id: "2d1f3c4e-5a6b-7c8d-9e0f-1a2b3c4d5e6f" }, // This user wrote 2 reviews
+			{ id: "8a7b3c2e-3e5f-4f1a-a8b7-3c2e1a4f5b6d", isActive: true },
+			{ id: "2d1f3c4e-5a6b-7c8d-9e0f-1a2b3c4d5e6f", isActive: true }, // This user wrote 2 reviews
 			{ id: "1a2b3c4d-5e6f-7a8b-9c0d-1e2f3a4b5c6d" }, // This user does not have any reviews (inactive user)
-			{ id: "d5a59cb2-1f22-4e23-8ef0-7108e54f842b" },
-			{ id: "6c7b1dd2-aa9d-4f5e-8a98-2c7c2895a95e" },
-			{ id: "8b84c3b5-5b87-4c9b-832d-60d0966d4f7d" },
-			{ id: "3f9e87a9-6d27-4a09-8a0a-20e58d609315" }
+			{ id: "d5a59cb2-1f22-4e23-8ef0-7108e54f842b", isActive: true },
+			{ id: "6c7b1dd2-aa9d-4f5e-8a98-2c7c2895a95e", isActive: true },
+			{ id: "8b84c3b5-5b87-4c9b-832d-60d0966d4f7d", isActive: true },
+			{ id: "3f9e87a9-6d27-4a09-8a0a-20e58d609315", isActive: true }
 		];
 
 		await prisma.profile.createMany({ data: profileData });
-
-		// Seed data for User table
-		const activeUserData = [
-			{ id: "8a7b3c2e-3e5f-4f1a-a8b7-3c2e1a4f5b6d" },
-			{ id: "2d1f3c4e-5a6b-7c8d-9e0f-1a2b3c4d5e6f" },
-			{ id: "d5a59cb2-1f22-4e23-8ef0-7108e54f842b" },
-			{ id: "6c7b1dd2-aa9d-4f5e-8a98-2c7c2895a95e" },
-			{ id: "8b84c3b5-5b87-4c9b-832d-60d0966d4f7d" },
-			{ id: "3f9e87a9-6d27-4a09-8a0a-20e58d609315" }
-		];
-
-		await prisma.activeUser.createMany({ data: activeUserData });
 
 		// Seed data for Review table
 		const reviewData = [

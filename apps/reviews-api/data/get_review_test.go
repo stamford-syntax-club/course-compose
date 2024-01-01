@@ -267,15 +267,16 @@ func TestIsActiveUser(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
-			expected := db.ActiveUserModel{
-				InnerActiveUser: db.InnerActiveUser{
-					ID: test.userID,
+			expected := db.ProfileModel{
+				InnerProfile: db.InnerProfile{
+					ID:       test.userID,
+					IsActive: test.isActive,
 				},
 			}
 
-			mockExpect := mock.ActiveUser.Expect(
-				client.ActiveUser.FindFirst(
-					db.ActiveUser.ID.Equals(test.userID),
+			mockExpect := mock.Profile.Expect(
+				client.Profile.FindFirst(
+					db.Profile.ID.Equals(test.userID),
 				),
 			)
 

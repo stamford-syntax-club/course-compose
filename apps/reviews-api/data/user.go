@@ -29,8 +29,8 @@ func isActiveUser(ctx context.Context, client *db.PrismaClient, userID string) b
 		return false
 	}
 
-	user, err := client.ActiveUser.FindFirst(
-		db.ActiveUser.ID.Equals(userID),
+	user, err := client.Profile.FindFirst(
+		db.Profile.ID.Equals(userID),
 	).Exec(ctx)
 	if err != nil {
 		if !errors.Is(err, db.ErrNotFound) {
@@ -39,5 +39,5 @@ func isActiveUser(ctx context.Context, client *db.PrismaClient, userID string) b
 		return false
 	}
 
-	return user != nil
+	return user.IsActive
 }
