@@ -9,6 +9,8 @@ const app = express();
 
 app.use(cors());
 app.use(morgan("combined"));
+app.use(cacheEndpoint);
+app.use(express.json());
 
 if (process.env.APP_ENV === "beta" || process.env.APP_ENV === "prod") {
 	app.use(cacheEndpoint);
