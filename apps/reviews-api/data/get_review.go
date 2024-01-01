@@ -3,8 +3,10 @@ package data
 import (
 	"context"
 	"errors"
+	"fmt"
 	"log"
 	"net/http"
+	"strconv"
 
 	"github.com/gofiber/fiber/v2"
 	"github.com/stamford-syntax-club/course-compose/prisma/db"
@@ -31,7 +33,25 @@ func getCourseID(ctx context.Context, client *db.PrismaClient, courseCode string
 	return course.ID, nil
 }
 
-func getReviews(ctx context.Context, client *db.PrismaClient, userID string, courseID int) ([]db.ReviewModel, error) {
+func getReviewsCount(ctx context.Context, client *db.PrismaClient, status string, courseID int, courseCountChan chan<- int) {
+	var result []map[string]string
+	query := fmt.Sprintf(`SELECT COUNT(*) FROM public."Review" WHERE status = '%s' AND course_id = %d`, status, courseID)
+
+	if err := client.Prisma.QueryRaw(query).Exec(ctx, &result); err != nil {
+		log.Println("exec get approved reviews count query: ", err)
+		courseCountChan <- 0
+	}
+
+	count, err := strconv.Atoi(result[0]["count"])
+	if err != nil {
+		log.Println("parse approved reviews count: ", err)
+		courseCountChan <- 0
+	}
+
+	courseCountChan <- count
+}
+
+func getReviews(ctx context.Context, client *db.PrismaClient, userID string, courseID, pageSize, pageNumber int) ([]db.ReviewModel, error) {
 	reviewsQuery := client.Review.FindMany(
 		db.Review.CourseID.Equals(courseID),
 		db.Review.UserID.Not(userID), // get others' reviews only - find user's review separately
@@ -39,9 +59,12 @@ func getReviews(ctx context.Context, client *db.PrismaClient, userID string, cou
 	).With(
 		db.Review.Course.Fetch(),
 		db.Review.Profile.Fetch(),
-	).OrderBy(
-		db.Review.CreatedAt.Order(db.SortOrderDesc), // latest reviews first
-	)
+	).Take(pageSize).OrderBy(db.Review.CreatedAt.Order(db.SortOrderDesc))
+
+	if pageNumber > 1 {
+		reviewsQuery = reviewsQuery.Skip((pageNumber - 1) * pageSize)
+	}
+
 	reviews, err := reviewsQuery.Exec(ctx)
 	if err != nil {
 		if errors.Is(err, db.ErrNotFound) {
@@ -54,7 +77,13 @@ func getReviews(ctx context.Context, client *db.PrismaClient, userID string, cou
 	return reviews, nil
 }
 
-func getMyReview(ctx context.Context, client *db.PrismaClient, courseID int, userID string, myReviewIDChan chan<- *db.ReviewModel) {
+func getMyReview(ctx context.Context, client *db.PrismaClient, userID string, courseID, pageNumber int, myReviewIDChan chan<- *db.ReviewModel) {
+	// only retrieve on the first page
+	if pageNumber > 1 {
+		myReviewIDChan <- nil
+		return
+	}
+
 	myReview, err := client.Review.FindFirst(
 		db.Review.CourseID.Equals(courseID),
 		db.Review.UserID.Equals(userID),
@@ -110,41 +139,36 @@ func parseReviewJSONResponse(reviews []db.ReviewModel, myReview *db.ReviewModel)
 }
 
 func GetCourseReviews(ctx context.Context, client *db.PrismaClient, courseCode, userID string, pageSize, pageNumber int) (*utils.Pagination, error) {
-	myReviewChan := make(chan *db.ReviewModel)
-	defer close(myReviewChan)
-
 	courseID, err := getCourseID(ctx, client, courseCode)
 	if err != nil {
 		return nil, err
 	}
 
-	// run getMyReview concurrently with getReviews
-	go getMyReview(ctx, client, courseID, userID, myReviewChan)
-	rawReviews, err := getReviews(ctx, client, userID, courseID)
-	if err != nil {
-		return nil, err
-	}
-
-	totalNumberOfItems := len(rawReviews)
-
 	// force only 2 reviews to be retrived for non-active users
 	if !isActiveUser(ctx, client, userID) {
 		pageSize = 2
 		pageNumber = 1
-		totalNumberOfItems = maxReviewsForNonActiveUsers
+	}
+
+	// run getMyReview concurrently with getReviews
+	myReviewChan := make(chan *db.ReviewModel)
+	defer close(myReviewChan)
+	go getMyReview(ctx, client, userID, courseID, pageNumber, myReviewChan)
+
+	// get total number of reviews concurrently
+	courseCountChan := make(chan int)
+	defer close(courseCountChan)
+	go getReviewsCount(ctx, client, "APPROVED", courseID, courseCountChan)
+
+	rawReviews, err := getReviews(ctx, client, userID, courseID, pageSize, pageNumber)
+	if err != nil {
+		return nil, err
 	}
 
 	myReview := <-myReviewChan
-	if myReview != nil {
-		totalNumberOfItems++
-	}
+	totalNumberOfItems := <-courseCountChan
 
-	start, end := utils.CalculateStartEnd(rawReviews, pageSize, pageNumber)
-	if start > len(rawReviews) {
-		return utils.NewPagination([]ReviewJSONResponse{}, pageSize, pageNumber, totalNumberOfItems), nil
-	}
-
-	data := parseReviewJSONResponse(rawReviews[start:end], myReview)
+	data := parseReviewJSONResponse(rawReviews, myReview)
 
 	return utils.NewPagination(data, pageSize, pageNumber, totalNumberOfItems), nil
 }
