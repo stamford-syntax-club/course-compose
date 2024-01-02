@@ -1,8 +1,8 @@
 import express from "express";
-import { getAllCourses } from "../controllers/courses.controller";
+import { handleGetAllCourses } from "../controllers/courses.controller";
 
 const courseRouter = express.Router();
 
-courseRouter.get("/", getAllCourses);
+courseRouter.get("/", handleGetAllCourses);
 
 export default courseRouter;
