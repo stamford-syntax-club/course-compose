@@ -7,6 +7,7 @@ import (
 	"os/signal"
 
 	"github.com/gofiber/fiber/v2"
+	"github.com/gofiber/fiber/v2/middleware/cors"
 	"github.com/gofiber/fiber/v2/middleware/logger"
 	"github.com/stamford-syntax-club/course-compose/api-gateway/config"
 )
@@ -37,6 +38,8 @@ func NewFiberRouter(port string, routes []config.Route) *FiberRouter {
 			return nil
 		},
 	})
+
+	app.Use(cors.New())
 
 	app.Use(logger.New(logger.Config{
 		Format: "[${ip}]:${port} ${status} - ${method} ${path}\n",

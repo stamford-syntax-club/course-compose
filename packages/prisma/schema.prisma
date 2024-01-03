@@ -19,13 +19,8 @@ model Course {
 model Profile {
   id         String      @id @db.Uuid
   username   String?
-  activeUser ActiveUser?
+  isActive   Boolean @default(false)
   Review     Review[]
-}
-
-model ActiveUser {
-  id       String   @id @db.Uuid
-  profile  Profile? @relation(fields: [id], references: [id])
 }
 
 model Review {
