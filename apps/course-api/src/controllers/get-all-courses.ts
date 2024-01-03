@@ -22,7 +22,7 @@ function setupSearchQuery(search: string): Prisma.CourseFindManyArgs {
 	};
 }
 
-export async function getAllCourses(search: string, pageSize: number = 10, pageNumber: number = 1) {
+export async function getAllCourses(search: string, pageSize: number, pageNumber: number) {
 	const query = setupSearchQuery(search);
 	const [courses, count] = await prismaClient.$transaction([
 		prismaClient.course.findMany({
