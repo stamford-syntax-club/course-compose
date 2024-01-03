@@ -8,11 +8,13 @@ beforeAll(async () => {
 		data: [
 			{
 				code: "ITE221",
-				full_name: "Programming 1"
+				full_name: "Programming 1",
+				prerequisites: ["ITE103"]
 			},
 			{
 				code: "ITE222",
-				full_name: "Programming 2"
+				full_name: "Programming 2",
+				prerequisites: ["ITE221"]
 			},
 			{
 				code: "ITE104",
@@ -26,7 +28,7 @@ beforeAll(async () => {
 	});
 });
 
-const parseResponse = (res: any) => {
+const parsePaginatedResponse = (res: any) => {
 	const courses = res.body.data;
 	const { size, number } = res.body.pageInformation;
 	const totalNumberOfItems = res.body.totalNumberOfItems;
@@ -41,11 +43,34 @@ const parseResponse = (res: any) => {
 	};
 };
 
+describe("Get course by code", () => {
+	describe("GET /api/courses/ITE221", () => {
+		it("should return course with code ITE221", async () => {
+			const res = await request(app).get("/api/courses/ITE221");
+			const { code, full_name, prerequisites } = res.body;
+
+			expect(res.statusCode).toBe(200);
+			expect(code).toBe("ITE221");
+			expect(full_name).toBe("Programming 1");
+			expect(prerequisites).toEqual(["ITE103"]);
+		});
+	});
+
+	describe("GET /api/courses/KHING555", () => {
+		it("should return 404 not found", async () => {
+			const res = await request(app).get("/api/courses/KHING555");
+
+			expect(res.statusCode).toBe(404);
+			expect(res.body.message).toBe("Course not found");
+		});
+	});
+});
+
 describe("Get all courses", () => {
 	describe("GET /api/courses", () => {
 		it("should paginate with pageNumber 1 and pageSize 10", async () => {
 			const res = await request(app).get("/api/courses");
-			const { courses, size, number, totalNumberOfItems, totalPages } = parseResponse(res);
+			const { courses, size, number, totalNumberOfItems, totalPages } = parsePaginatedResponse(res);
 
 			expect(res.statusCode).toBe(200);
 			expect(courses.length).toBe(4);
@@ -59,7 +84,7 @@ describe("Get all courses", () => {
 	describe("GET /api/courses?pageSize=2&pageNumber=1", () => {
 		it("should return the first 2 courses, totalPages = 2, totalNumberOfItems = 4", async () => {
 			const res = await request(app).get("/api/courses?pageSize=2&pageNumber=1");
-			const { courses, size, number, totalNumberOfItems, totalPages } = parseResponse(res);
+			const { courses, size, number, totalNumberOfItems, totalPages } = parsePaginatedResponse(res);
 
 			expect(res.statusCode).toBe(200);
 			expect(courses.length).toBe(2);
@@ -75,7 +100,7 @@ describe("Get all courses", () => {
 	describe("GET /api/courses?pageSize=2&pageNumber=2", () => {
 		it("should return the last 2 courses, totalPages = 2, totalNumberOfItems = 4", async () => {
 			const res = await request(app).get("/api/courses?pageSize=2&pageNumber=2");
-			const { courses, size, number, totalNumberOfItems, totalPages } = parseResponse(res);
+			const { courses, size, number, totalNumberOfItems, totalPages } = parsePaginatedResponse(res);
 
 			expect(res.statusCode).toBe(200);
 			expect(courses.length).toBe(2);
@@ -91,7 +116,7 @@ describe("Get all courses", () => {
 	describe("GET /api/courses?pageSize=2&pageNumber=3", () => {
 		it("should return empty array, totalPages = 2, totalNumberOfItems = 4", async () => {
 			const res = await request(app).get("/api/courses?pageSize=2&pageNumber=3");
-			const { courses, size, number, totalNumberOfItems, totalPages } = parseResponse(res);
+			const { courses, size, number, totalNumberOfItems, totalPages } = parsePaginatedResponse(res);
 
 			expect(res.statusCode).toBe(200);
 			expect(courses.length).toBe(0);
@@ -105,7 +130,7 @@ describe("Get all courses", () => {
 	describe("GET /api/courses?pageSize=0&pageNumber=1", () => {
 		it("should force pageSize to be default value (10)", async () => {
 			const res = await request(app).get("/api/courses?pageSize=0&pageNumber=1");
-			const { size, number } = parseResponse(res);
+			const { size, number } = parsePaginatedResponse(res);
 
 			expect(res.statusCode).toBe(200);
 			expect(size).toBe(10);
@@ -125,7 +150,7 @@ describe("Get all courses", () => {
 	describe("GET /api/courses?pageSize=1&pageNumber=0", () => {
 		it("should force pageNumber to be default value (1)", async () => {
 			const res = await request(app).get("/api/courses?pageSize=1&pageNumber=0");
-			const { size, number } = parseResponse(res);
+			const { size, number } = parsePaginatedResponse(res);
 
 			expect(res.statusCode).toBe(200);
 			expect(size).toBe(1);
@@ -145,7 +170,7 @@ describe("Get all courses", () => {
 	describe("GET /api/courses?search=ITE", () => {
 		it("should return 3 ITE courses", async () => {
 			const res = await request(app).get("/api/courses?search=ITE");
-			const { courses, size, number, totalNumberOfItems, totalPages } = parseResponse(res);
+			const { courses, size, number, totalNumberOfItems, totalPages } = parsePaginatedResponse(res);
 
 			expect(res.statusCode).toBe(200);
 			expect(courses.length).toBe(3);
@@ -162,7 +187,7 @@ describe("Get all courses", () => {
 	describe("GET /api/courses?search=ITE&pageSize=2&pageNumber=1", () => {
 		it("should return the first 2 ITE courses, totalPages = 2, totalNumberOfItems = 3", async () => {
 			const res = await request(app).get("/api/courses?search=ITE&pageSize=2&pageNumber=1");
-			const { courses, size, number, totalNumberOfItems, totalPages } = parseResponse(res);
+			const { courses, size, number, totalNumberOfItems, totalPages } = parsePaginatedResponse(res);
 
 			expect(res.statusCode).toBe(200);
 			expect(courses.length).toBe(2);
@@ -178,7 +203,7 @@ describe("Get all courses", () => {
 	describe("GET /api/courses?search=ITE&pageSize=2&pageNumber=2", () => {
 		it("should return the remaining ITE courses, totalPages = 2, totalNumberOfItems = 3", async () => {
 			const res = await request(app).get("/api/courses?search=ITE&pageSize=2&pageNumber=2");
-			const { courses, size, number, totalNumberOfItems, totalPages } = parseResponse(res);
+			const { courses, size, number, totalNumberOfItems, totalPages } = parsePaginatedResponse(res);
 
 			expect(res.statusCode).toBe(200);
 			expect(courses.length).toBe(1);
@@ -193,7 +218,7 @@ describe("Get all courses", () => {
 	describe("GET /api/courses?search=Prog", () => {
 		it("should return any course that contains 'Prog' ", async () => {
 			const res = await request(app).get("/api/courses?search=Prog");
-			const { courses, size, number, totalNumberOfItems, totalPages } = parseResponse(res);
+			const { courses, size, number, totalNumberOfItems, totalPages } = parsePaginatedResponse(res);
 
 			expect(res.statusCode).toBe(200);
 			expect(courses.length).toBe(2);
