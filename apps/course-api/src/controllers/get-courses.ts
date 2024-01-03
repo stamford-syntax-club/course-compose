@@ -1,8 +1,18 @@
 import { Prisma } from "../../.prisma/client";
 import prismaClient from "../utils/prisma_utils";
 
-function setupSearchQuery(search: string): Prisma.CourseFindManyArgs {
-	return {
+const getCourseByCode = async (code: string) => {
+	const course = await prismaClient.course.findUnique({
+		where: {
+			code: code
+		}
+	});
+
+	return course;
+};
+
+const getAllCourses = async (search: string, pageSize: number, pageNumber: number) => {
+	const query: Prisma.CourseFindManyArgs = {
 		where: {
 			OR: [
 				{
@@ -20,10 +30,7 @@ function setupSearchQuery(search: string): Prisma.CourseFindManyArgs {
 			]
 		}
 	};
-}
 
-export async function getAllCourses(search: string, pageSize: number, pageNumber: number) {
-	const query = setupSearchQuery(search);
 	const [courses, count] = await prismaClient.$transaction([
 		prismaClient.course.findMany({
 			...query,
@@ -37,4 +44,6 @@ export async function getAllCourses(search: string, pageSize: number, pageNumber
 		courses,
 		count
 	};
-}
+};
+
+export { getAllCourses, getCourseByCode };
