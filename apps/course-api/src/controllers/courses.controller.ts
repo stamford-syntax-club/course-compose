@@ -4,8 +4,8 @@ import { getAllCourses } from "./get-all-courses";
 
 // TODO: some caching here
 const handleGetAllCourses = async (req: Request, res: Response) => {
-	const pageSize = parseInt(req.query.pageSize as string);
-	const pageNumber = parseInt(req.query.pageNumber as string);
+	const pageSize = parseInt(req.query.pageSize as string) ? parseInt(req.query.pageSize as string) : 10;
+	const pageNumber = parseInt(req.query.pageNumber as string) ? parseInt(req.query.pageNumber as string) : 1;
 	const search = (req.query.search as string) || "";
 
 	if (pageSize < 1 || pageNumber < 1) {
