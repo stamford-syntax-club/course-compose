@@ -21,17 +21,22 @@ jobs:
       matrix:
         packages: ${{ fromJson(inputs.packages_deployment) }}
 
+    outputs:
+      DOCKERFILE_EXISTS: ${{ steps.check-dockerfile.outputs.DOCKERFILE_EXISTS }}
+
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
 
       - name: Check if Dockerfile exists
+        id: check-dockerfile
         run: |
           if [ ! -f apps/${{ matrix.packages.name }}/Dockerfile ]; then
             echo "Dockerfile does not exist"
-            exit 1
+            echo "DOCKERFILE_EXISTS=false" >> $GITHUB_OUTPUT
           else
             echo "Dockerfile exists"
+            echo "DOCKERFILE_EXISTS=true" >> $GITHUB_OUTPUT
           fi
 
       - name: Login ghcr.io
@@ -43,6 +48,7 @@ jobs:
           logout: true
 
       - name: Build and Push to ghcr
+        if: steps.check-dockerfile.outputs.DOCKERFILE_EXISTS == 'true'
         uses: docker/build-push-action@v3.2.0
         with:
           context: .
