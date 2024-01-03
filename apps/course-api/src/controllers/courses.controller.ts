@@ -1,5 +1,5 @@
 import { Request, Response } from "express";
-import { paginate } from "../utils/pagination";
+import { paginate } from "@utils/pagination";
 import { getAllCourses, getCourseByCode } from "./get-courses";
 
 // TODO: some caching here
@@ -27,7 +27,7 @@ const handleGetAllCourses = async (req: Request, res: Response) => {
 };
 
 const handleGetCourseByCode = async (req: Request, res: Response) => {
-	const courseCode = req.params.code;
+	const courseCode = req.params.code || "";
 
 	try {
 		const course = await getCourseByCode(courseCode);
