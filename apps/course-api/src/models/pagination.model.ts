@@ -10,4 +10,4 @@ interface PageInformation {
 	number: number;
 }
 
-export { PageInformation, Pagination };
+export type { PageInformation, Pagination };

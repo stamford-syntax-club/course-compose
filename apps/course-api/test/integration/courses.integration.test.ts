@@ -1,6 +1,6 @@
-import prismaClient from "../../src/utils/prisma_utils";
+import prismaClient from "@utils/prisma_utils";
 import { agent as request } from "supertest";
-import app from "../../src/app";
+import app from "@root/src/app";
 
 beforeAll(async () => {
 	await prismaClient.$connect();

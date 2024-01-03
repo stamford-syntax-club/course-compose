@@ -1,5 +1,5 @@
-import { Prisma } from "../../.prisma/client";
-import prismaClient from "../utils/prisma_utils";
+import { Prisma } from "@root/.prisma/client";
+import prismaClient from "@utils/prisma_utils";
 
 const getCourseByCode = async (code: string) => {
 	const course = await prismaClient.course.findUnique({
