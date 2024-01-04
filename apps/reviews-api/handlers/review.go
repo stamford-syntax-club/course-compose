@@ -3,6 +3,7 @@ package handlers
 import (
 	"context"
 	"net/http"
+	"strconv"
 	"time"
 
 	"github.com/gofiber/fiber/v2"
@@ -62,7 +63,18 @@ func (h *H) HandleSubmitReview(c *fiber.Ctx) error {
 }
 
 func (h *H) HandleApproveReview(c *fiber.Ctx) error {
-	reviewID := c.Params("reviewID")
+	id := c.Params("reviewID")
+	reviewID, err := strconv.Atoi(id)
+	if err != nil {
+		return fiber.NewError(http.StatusBadRequest, "Invalid review ID")
+	}
 
-	return c.Status(http.StatusOK).JSON(reviewID)
+	ctx, cancelFunc := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancelFunc()
+	updatedReview, err := data.ApproveReview(ctx, h.client, reviewID)
+	if err != nil {
+		return err
+	}
+
+	return c.Status(http.StatusOK).JSON(updatedReview)
 }
