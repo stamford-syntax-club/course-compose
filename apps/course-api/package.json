@@ -9,6 +9,7 @@
     "dev": "concurrently \"npx tsc --watch\" \"nodemon -q dist/src/index.js\"",
     "integration": "docker compose -f docker-compose.integration.yaml down -v && docker compose -f docker-compose.integration.yaml up --build --force-recreate --abort-on-container-exit --exit-code-from app",
     "integration:jest": "jest test/integration --detectOpenHandles",
+    "docker:test_build": "docker compose -f docker-compose.test-build.yaml down -v && docker compose -f docker-compose.test-build.yaml up -d --build --force-recreate",
     "prisma:generate_types": "pnpm prisma generate --schema=../../packages/prisma/schema.prisma"
   },
   "prisma": {
