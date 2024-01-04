@@ -60,3 +60,9 @@ func (h *H) HandleSubmitReview(c *fiber.Ctx) error {
 
 	return c.Status(http.StatusCreated).JSON("Success")
 }
+
+func (h *H) HandleApproveReview(c *fiber.Ctx) error {
+	reviewID := c.Params("reviewID")
+
+	return c.Status(http.StatusOK).JSON(reviewID)
+}
