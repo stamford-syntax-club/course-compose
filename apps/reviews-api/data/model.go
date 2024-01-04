@@ -23,3 +23,9 @@ type UserJSONResponse struct {
 	ID       string `json:"id"`
 	Username string `json:"username,omitempty"`
 }
+
+type ReviewDecision struct {
+	ID             int    `json:"id"`
+	Status         string `json:"status"`
+	RejectedReason string `json:"rejectedReason,omitempty"`
+}

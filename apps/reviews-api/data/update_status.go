@@ -9,11 +9,12 @@ import (
 	"github.com/stamford-syntax-club/course-compose/prisma/db"
 )
 
-func ApproveReview(ctx context.Context, client *db.PrismaClient, reviewID int) (*db.ReviewModel, error) {
+func UpdateReviewStatus(ctx context.Context, client *db.PrismaClient, reviewID int, status, rejectedReason string) (*db.ReviewModel, error) {
 	updatedReview, err := client.Review.FindUnique(
 		db.Review.ID.Equals(reviewID),
 	).Update(
-		db.Review.Status.Set("APPROVED"),
+		db.Review.Status.Set(status),
+		db.Review.RejectedReason.Set(rejectedReason),
 	).Exec(ctx)
 
 	if err != nil {

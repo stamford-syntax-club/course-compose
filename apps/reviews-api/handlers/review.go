@@ -3,7 +3,7 @@ package handlers
 import (
 	"context"
 	"net/http"
-	"strconv"
+	"strings"
 	"time"
 
 	"github.com/gofiber/fiber/v2"
@@ -62,19 +62,27 @@ func (h *H) HandleSubmitReview(c *fiber.Ctx) error {
 	return c.Status(http.StatusCreated).JSON("Success")
 }
 
-func (h *H) HandleApproveReview(c *fiber.Ctx) error {
-	id := c.Params("reviewID")
-	reviewID, err := strconv.Atoi(id)
-	if err != nil {
-		return fiber.NewError(http.StatusBadRequest, "Invalid review ID")
+func (h *H) HandleReviewDecision(c *fiber.Ctx) error {
+	reviewDecision := data.ReviewDecision{}
+	if err := c.BodyParser(&reviewDecision); err != nil || reviewDecision.ID == 0 || reviewDecision.Status == "" {
+		return fiber.NewError(http.StatusBadRequest, "Invalid request body")
 	}
 
 	ctx, cancelFunc := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancelFunc()
-	updatedReview, err := data.ApproveReview(ctx, h.client, reviewID)
+	updatedReview, err := data.UpdateReviewStatus(ctx, h.client, reviewDecision.ID, strings.ToUpper(reviewDecision.Status), reviewDecision.RejectedReason)
 	if err != nil {
 		return err
 	}
 
-	return c.Status(http.StatusOK).JSON(updatedReview)
+	rejectedReason, ok := updatedReview.RejectedReason()
+	if !ok {
+		rejectedReason = "" 
+	}
+
+	return c.Status(http.StatusOK).JSON(data.ReviewDecision{
+		ID:             updatedReview.ID,
+		Status:         updatedReview.Status,
+		RejectedReason: rejectedReason,
+	})
 }
