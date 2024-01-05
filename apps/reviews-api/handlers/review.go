@@ -63,21 +63,31 @@ func (h *H) HandleSubmitReview(c *fiber.Ctx) error {
 }
 
 func (h *H) HandleReviewDecision(c *fiber.Ctx) error {
-	reviewDecision := data.ReviewDecision{}
-	if err := c.BodyParser(&reviewDecision); err != nil || reviewDecision.ID == 0 || reviewDecision.Status == "" {
+	reviewDecision := &data.ReviewDecision{}
+	if err := c.BodyParser(reviewDecision); err != nil || reviewDecision.ID == 0 || reviewDecision.Status == "" {
 		return fiber.NewError(http.StatusBadRequest, "Invalid request body")
 	}
+	reviewDecision.Status = strings.ToUpper(reviewDecision.Status)
 
 	ctx, cancelFunc := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancelFunc()
-	updatedReview, err := data.UpdateReviewStatus(ctx, h.client, reviewDecision.ID, strings.ToUpper(reviewDecision.Status), reviewDecision.RejectedReason)
+
+	if reviewDecision.Status != "APPROVED" && reviewDecision.Status != "REJECTED" {
+		return fiber.NewError(http.StatusBadRequest, "Invalid review status")
+	}
+
+	if reviewDecision.Status == "REJECTED" && reviewDecision.RejectedReason == "" {
+		return fiber.NewError(http.StatusBadRequest, "Rejected reason is required")
+	}
+
+	updatedReview, err := data.UpdateReviewStatus(ctx, h.client, reviewDecision.ID, reviewDecision.Status, reviewDecision.RejectedReason)
 	if err != nil {
 		return err
 	}
 
 	rejectedReason, ok := updatedReview.RejectedReason()
 	if !ok {
-		rejectedReason = "" 
+		rejectedReason = ""
 	}
 
 	return c.Status(http.StatusOK).JSON(data.ReviewDecision{
