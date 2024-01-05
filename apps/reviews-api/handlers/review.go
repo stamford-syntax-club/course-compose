@@ -85,14 +85,9 @@ func (h *H) HandleReviewDecision(c *fiber.Ctx) error {
 		return err
 	}
 
-	rejectedReason, ok := updatedReview.RejectedReason()
-	if !ok {
-		rejectedReason = ""
-	}
-
 	return c.Status(http.StatusOK).JSON(data.ReviewDecision{
 		ID:             updatedReview.ID,
 		Status:         updatedReview.Status,
-		RejectedReason: rejectedReason,
+		RejectedReason: updatedReview.RejectedReason,
 	})
 }
