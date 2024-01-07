@@ -1,51 +1,50 @@
 name: Run test pull request
 
 on:
-  push:
-    branches:
-      - bas
-    
+    push:
+        branches:
+            - bas
+
 jobs:
-  test:
-    name: Course compose CI/CD testing
-    runs-on: ubuntu-latest
-    env:
-     DATABASE_URL: ${{ secrets.DATABASE_URL }}
-     PRISMA_PROVIDER: go run github.com/steebchen/prisma-client-go
-     PRISMA_OUTPUT: ../../apps/prisma/db
+    test:
+        name: Course compose CI/CD testing
+        runs-on: ubuntu-latest
+        env:
+            DATABASE_URL: ${{ secrets.DATABASE_URL }}
+            PRISMA_PROVIDER: go run github.com/steebchen/prisma-client-go
+            PRISMA_OUTPUT: ../../apps/prisma/db
 
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v3
+        steps:
+            - name: Checkout
+              uses: actions/checkout@v3
 
-      - name: Install libaries
-        run: npm install -g pnpm
-        
-      - name: Install jest and dependencies with pnpm
-        working-directory: ./apps/course-api
-        run: pnpm add --save-dev jest @types/jest ts-jest
-      
-      - name: Run course-api integration
-        working-directory: ./apps/course-api
-        run: pnpm run integration
+            - name: Setup pnpm
+              uses: pnpm/action-setup@v2.2.2
+              with:
+                  version: 8
+                  run_install: false
 
-      - name: Setup Go 1.21.5
-        uses: actions/setup-go@v4
-        with:
-          go-version: '1.21.5'
+            - name: Install turbo
+              run: pnpm install --global turbo
 
-      - name: Generate ORM
-        working-directory: ./apps/reviews-api
-        run: go run github.com/steebchen/prisma-client-go generate --schema=../../packages/prisma/schema.prisma
+            - name: Install jest
+              working-directory: ./apps/course-api
+              run: pnpm add --save-dev jest @types/jest ts-jest
 
-      - name: Run reviews-api unit
-        working-directory: ./apps/reviews-api
-        run: pnpm run unit
-      
-      - name: Run reviews-api integration
-        working-directory: ./apps/reviews-api
-        run: pnpm run integration 
+            - name: Setup Go 1.21.5
+              uses: actions/setup-go@v4
+              with:
+                  go-version: "1.21.5"
 
-      - name: Run api-gateway test
-        working-directory: ./apps/api-gateway
-        run: pnpm run test
+            - name: Generate ORM
+              working-directory: ./apps/reviews-api
+              run: go run github.com/steebchen/prisma-client-go generate --schema=../../packages/prisma/schema.prisma
+
+            - name: Unit test
+              run: pnpm run unit
+
+            - name: Integration test
+              run: pnpm run integration
+
+            - name: Test
+              run: pnpm run test
