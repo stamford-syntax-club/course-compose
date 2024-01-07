@@ -1,9 +1,7 @@
-name: Run test pull request
+name: Pipeline for testing
 
 on:
-    push:
-        branches:
-            - bas
+    pull_request:
 
 jobs:
     test:
