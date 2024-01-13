@@ -3,11 +3,13 @@ import cors from "cors";
 import prismaClient from "@utils/prisma_utils";
 import courseRouter from "@routes/courses.route";
 import morgan from "morgan";
+import cacheEndpoint from "@middlewares/caching";
 
 const app = express();
 
 app.use(cors());
 app.use(morgan("combined"));
+app.use(cacheEndpoint);
 
 app.get("/", (req: Request, res: Response) => {
 	res.send("Welcome to Express & TypeScript Server");
