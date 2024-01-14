@@ -67,7 +67,9 @@ const handleAddCourses = async (req: Request, res: Response) => {
 
 	try {
 		const result = await addCourses(req.body);
-		res.status(201).json(result);
+		res.status(201).json({
+			rows_added: result.count
+		});
 	} catch (error) {
 		console.log("Error: ", error);
 		res.status(500).json({
