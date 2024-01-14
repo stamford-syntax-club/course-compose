@@ -17,7 +17,7 @@ pnpm install
 
 2. Make sure that [Docker](https://www.docker.com/get-started/) is installed
 
-3. Bootstrap a sandbox database with seeded data:
+3. Bootstrap project for development 
 ```bash
 pnpm run bootstrap
 ```

@@ -3,7 +3,7 @@
   "scripts": {
     "build": "turbo run build",
     "dev": "turbo run dev",
-    "bootstrap": "docker compose -f docker-compose.dev.yaml down -v && docker compose -f docker-compose.dev.yaml up -d --build --force-recreate",
+    "bootstrap": "turbo run bootstrap && docker compose -f docker-compose.dev.yaml down -v && docker compose -f docker-compose.dev.yaml up -d --build --force-recreate",
     "test": "turbo run test",
     "unit": "turbo run unit",
     "integration": "turbo run integration",

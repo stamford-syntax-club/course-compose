@@ -26,6 +26,9 @@
     "dev": {
       "cache": false,
       "persistent": true
+    },
+    "bootstrap": {
+      "cache": false
     }
   }
 }
