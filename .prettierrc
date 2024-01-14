@@ -5,5 +5,5 @@
 	"singleQuote": false,
 	"printWidth": 120,
 	"trailingComma": "none",
-    "plugins": ["prettier-plugin-go-template"]
+	"plugins": ["prettier-plugin-go-template", "prettier-plugin-tailwindcss"]
 }
