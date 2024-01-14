@@ -1,48 +1,35 @@
 "use client";
 
-import fetcher from "@utils/fetcher";
-import useSWR from "swr";
-
-interface ResourceFile {
-	name: string;
-	url: string;
-}
-
-interface ResourceCategory {
-	files: ResourceFile[];
-	iconURL: string;
-	name: string;
-}
-
-type ResourceData = ResourceCategory[];
+import { Button, Flex, Grid, Paper, TextInput } from "@mantine/core";
+import { IconFilter, IconSearch } from "@tabler/icons-react";
 
 export default function HomePage(): JSX.Element {
-	const { data, error, isLoading } = useSWR<ResourceData, Error>("http://localhost:8000/api/courses", fetcher);
-
 	return (
-		<div>
-			<h1>Course Compose</h1>
-			<p>Course Review Website by Stamford Syntax Club</p>
-
-			{isLoading ? <p>Loading...</p> : null}
-
-			{!error && data ? (
-				data.map((course) => (
-					<li key={course.name}>
-						<h2>{course.name}</h2>
-						<img alt="Some" src={course.iconURL} />
-						<ul>
-							{course.files.map((file) => (
-								<li key={file.name}>
-									<a href={file.url}>{file.name}</a>
-								</li>
-							))}
-						</ul>
-					</li>
-				))
-			) : (
-				<p>Error: {error?.message}</p>
-			)}
-		</div>
+		<Grid>
+			<Grid.Col span={8}>
+				<Flex direction="column" rowGap="md">
+					<Flex direction="row" gap="md">
+						<TextInput
+							leftSection={<IconSearch className="size-4" />}
+							className="w-full"
+							placeholder="Search"
+						/>
+						<div className="flex flex-row gap-x-2">
+							<Button variant="outline">
+								<IconFilter className="size-4" aria-label="Filter" />
+							</Button>
+							{/* Adding a space here because without it, the text is weirdly clipped???? */}
+							<Button variant="gradient" gradient={{ from: "blue", to: "cyan", deg: 90 }}>
+								Search&nbsp;
+							</Button>
+						</div>
+					</Flex>
+					<Paper p="sm" withBorder>
+						Thingy
+					</Paper>
+				</Flex>
+			</Grid.Col>
+			<Grid.Col span={4}>2</Grid.Col>
+		</Grid>
 	);
 }
