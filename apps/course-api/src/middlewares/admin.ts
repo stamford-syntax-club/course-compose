@@ -10,8 +10,10 @@ export default function adminAuth(): RequestHandler {
 	}
 
 	return basicAuth({
-		users: {
-			username: password
+		authorizer: (usernameInput: string, passwordInput: string) => {
+			const userMatches = basicAuth.safeCompare(usernameInput, username);
+			const passwdMatches = basicAuth.safeCompare(passwordInput, password);
+			return userMatches && passwdMatches;
 		},
 		unauthorizedResponse: { status: "Invalid Admin Credentials" }
 	});
