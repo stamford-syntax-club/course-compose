@@ -6,26 +6,27 @@ import { IconFilter, IconSearch } from "@tabler/icons-react";
 export default function HomePage(): JSX.Element {
 	return (
 		<Grid>
-			<Grid.Col span={8}>
+			<Grid.Col span={{ base: 12, lg: 8 }}>
 				<Flex direction="column" rowGap="md">
-					<Flex direction="row" gap="md">
+					<Flex direction="row" gap="xs">
 						<TextInput
 							leftSection={<IconSearch className="size-4" />}
 							className="w-full"
 							placeholder="Search"
 						/>
-						<div className="flex flex-row gap-x-2">
-							<Button variant="outline">
-								<IconFilter className="size-4" aria-label="Filter" />
-							</Button>
-							{/* Adding a space here because without it, the text is weirdly clipped???? */}
-							<Button variant="gradient" gradient={{ from: "blue", to: "cyan", deg: 90 }}>
-								Search&nbsp;
-							</Button>
-						</div>
+						<Button variant="outline">
+							<IconFilter className="size-4" aria-label="Filter" />
+						</Button>
+						<Button>
+							<IconSearch className="size-4" aria-label="Filter" />
+						</Button>
 					</Flex>
 					<Paper p="sm" withBorder>
-						Thingy
+						<Grid>
+							<Grid.Col span={{ base: 6, lg: 4 }}>1</Grid.Col>
+							<Grid.Col span={4}>2</Grid.Col>
+							<Grid.Col span={4}>3</Grid.Col>
+						</Grid>
 					</Paper>
 				</Flex>
 			</Grid.Col>

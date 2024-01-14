@@ -1,5 +1,5 @@
 import { ApplicationShell } from "@components/core/application-shell";
-import { ColorSchemeScript, MantineProvider } from "@mantine/core";
+import { ColorSchemeScript, MantineProvider, createTheme } from "@mantine/core";
 import "@mantine/core/styles.css";
 import type { Metadata } from "next";
 import "./globals.css";
@@ -10,13 +10,24 @@ export const metadata: Metadata = {
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }): JSX.Element {
+	const theme = createTheme({
+		breakpoints: {
+			xs: "576px",
+			sm: "640px",
+			md: "768px",
+			lg: "1024px",
+			xl: "1280px",
+			"2xl": "1536px"
+		}
+	});
+
 	return (
 		<html lang="en">
 			<head>
 				<ColorSchemeScript />
 			</head>
 			<body>
-				<MantineProvider>
+				<MantineProvider theme={theme}>
 					<ApplicationShell>{children}</ApplicationShell>
 				</MantineProvider>
 			</body>
