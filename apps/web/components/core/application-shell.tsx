@@ -21,7 +21,8 @@ export function ApplicationShell({ children }: { children: React.ReactNode }): J
 			<ApplicationHeader opened={opened} toggle={toggle} />
 			<ApplicationNavbar />
 
-			<AppShell.Main>{children}</AppShell.Main>
+			{/* TODO: Make this not stupid  Lets you use 100% height for the main content (?) */}
+			<AppShell.Main className="h-dvh">{children}</AppShell.Main>
 		</AppShell>
 	);
 }
