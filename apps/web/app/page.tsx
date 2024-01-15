@@ -92,8 +92,6 @@ export default function HomePage(): JSX.Element {
 							classNames={{
 								inner: "h-full"
 							}}
-							justify="center"
-							align="center"
 						>
 							<CourseCard
 								courseName="Basic Mathematics"
@@ -159,7 +157,7 @@ export default function HomePage(): JSX.Element {
 								courseReviewCount={25}
 							/>
 
-							<Grid.Col>
+							<Grid.Col className="mt-auto">
 								<Flex justify="center">
 									<Pagination withEdges total={10} />
 								</Flex>
