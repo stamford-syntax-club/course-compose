@@ -1,6 +1,7 @@
 import { Prisma } from "@root/.prisma/client";
 import prismaClient from "@utils/prisma_utils";
 
+// TODO: unit test this
 const filterDuplicateCourse = (
 	newCourses: Prisma.CourseCreateManyInput[],
 	existingCourseCodes: Prisma.CourseCreateManyInput[]
@@ -30,6 +31,7 @@ const filterDuplicateCourse = (
 		}
 	}
 
+	console.log(courseMap);
 	return filteredCourses;
 };
 
