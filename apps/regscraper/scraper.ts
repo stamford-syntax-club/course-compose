@@ -1,13 +1,12 @@
 import axios from "axios";
 import * as cheerio from "cheerio";
-import { next } from "cheerio/lib/api/traversing";
 import { Command } from "commander";
-import fs from "fs";
 
 const BASE_URL = "https://reg.stamford.edu/registrar/";
 const URL = BASE_URL + "class_info_1.asp?avs517859457=6&backto=student";
 // TODO: make acadyear and semester dynamic
-const PAYLOAD = "facultyid=all&acadyear=2023&semester=1&CAMPUSID=&LEVELID=&coursecode=&coursename=&cmd=2";
+const PAYLOAD = (acadyear: number, sem: number) =>
+	`facultyid=all&acadyear=${acadyear}&semester=${sem}&CAMPUSID=&LEVELID=&coursecode=&coursename=&cmd=2`;
 const HEADERS = {
 	Accept: "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7",
 	"Accept-Language": "en-US,en;q=0.9",
@@ -17,6 +16,7 @@ const HEADERS = {
 	Origin: "https://reg.stamford.edu",
 	Referer: "https://reg.stamford.edu/registrar/class_info.asp"
 };
+
 type Course = {
 	course_code: string;
 	course_name: string;
@@ -29,13 +29,11 @@ class CourseScraper {
 	private pageCounter = 1;
 	private startTime: number = Date.now();
 
-	// TODO: instead of writing to file, have it send to `POST - /api/courses` (attach admin username and password for basic auth)
-	public async scrapeCourses(outputFilename: string) {
+	public async scrapeCourses(acadyear: number, sem: number) {
 		console.log("Stamford Scraper v1.0.0 starting...");
-		let response = await this.getFromReg(URL);
+		let response = await this.getFromReg(URL, acadyear, sem);
 		let $ = cheerio.load(response.data);
 		this.scrapePage($);
-
 		while (true) {
 			console.log(`Scraping course list page ${this.pageCounter}...`);
 			const nextButton = $("a").filter(function () {
@@ -52,13 +50,6 @@ class CourseScraper {
 			this.pageCounter++;
 		}
 
-		//		const json = JSON.parse(fs.readFileSync(outputFilename, { encoding: "utf8" })) as Course[];
-		//		json.forEach((course) => {
-		//			this.addToCourses(course);
-		//		});
-
-		console.log(this.courses);
-
 		const data = this.courses.map((course) => {
 			return {
 				code: course.course_code,
@@ -73,19 +64,21 @@ class CourseScraper {
 				password: "hi"
 			}
 		});
-		console.log(res.data);
-		//	fs.writeFileSync(outputFilename, JSON.stringify(this.courses, null, 4));
+
+		if (res.status !== 201) {
+			throw new Error(res.data);
+		}
 
 		console.log(
 			`\nSuccessfully scraped ${this.courses.length} courses from ${
 				this.pageCounter
 			} pages in ${this.returnMillisecondsElapsed()}ms.`
 		);
-		console.log(`Data has been scraped and written to "${outputFilename}" successfully.`);
+		console.log(`${res.data.rows_added} courses has been stored to database successfully.`);
 	}
 
-	private async getFromReg(url: string) {
-		return axios.post(url, PAYLOAD, { headers: HEADERS });
+	private async getFromReg(url: string, acadyear: number, sem: number) {
+		return axios.post(url, PAYLOAD(acadyear, sem), { headers: HEADERS });
 	}
 
 	private async getNextPageInCourseList(urlSuffix: string) {
@@ -190,10 +183,11 @@ class CourseScraper {
 }
 
 const program = new Command();
-program.requiredOption("-f, --filename <type>", "Output JSON filename");
+program.requiredOption("--acadyear <type>", "Academic year for scraping");
+program.requiredOption("--sem <type>", "Semester(Term) for scraping");
 
 program.parse(process.argv);
 const options = program.opts();
 
 const scraper = new CourseScraper();
-scraper.scrapeCourses(options.filename);
+scraper.scrapeCourses(options.acadyear, options.sem);
