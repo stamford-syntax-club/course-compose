@@ -1,5 +1,6 @@
 import { Prisma } from "@root/.prisma/client";
 import prismaClient from "@utils/prisma_utils";
+import { mapCourseToCourseResponse } from "@utils/mapper";
 
 const getCourseByCode = async (code: string) => {
 	const course = await prismaClient.course.findUnique({
@@ -35,13 +36,21 @@ const getAllCourses = async (search: string, pageSize: number, pageNumber: numbe
 		prismaClient.course.findMany({
 			...query,
 			skip: pageSize * (pageNumber - 1),
-			take: pageSize
+			take: pageSize,
+			include: {
+				reviews: {
+					select: {
+						rating: true
+					}
+				}
+			}
 		}),
 		prismaClient.course.count({ where: query.where })
 	]);
 
+	const courseResponse = courses.map((course) => mapCourseToCourseResponse(course));
 	return {
-		courses,
+		courseResponse,
 		count
 	};
 };
