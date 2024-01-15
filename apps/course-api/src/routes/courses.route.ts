@@ -6,6 +6,8 @@ const courseRouter = express.Router();
 
 courseRouter.get("/", handleGetAllCourses);
 courseRouter.get("/:code", handleGetCourseByCode);
+
+// TODO: integration test this
 courseRouter.post("/", adminAuth(), handleAddCourses);
 
 export default courseRouter;
