@@ -32,7 +32,7 @@ class CourseScraper {
 	public async scrapeCourses(acadyear: number, sem: number) {
 		const courseEndpoint = process.env.COURSE_ENDPOINT;
 		if (!courseEndpoint) {
-            throw new Error("missing course endpoint")
+			throw new Error("missing course endpoint");
 		}
 
 		console.log("Stamford Scraper v1.0.0 starting...");
@@ -75,9 +75,7 @@ class CourseScraper {
 		}
 
 		console.log(
-			`\nSuccessfully scraped ${this.courses.length} courses from ${
-				this.pageCounter
-			} pages in ${this.returnMillisecondsElapsed()}ms.`
+			`\nSuccessfully scraped ${this.courses.length} courses from ${this.pageCounter} pages in ${this.returnMillisecondsElapsed()}ms.`
 		);
 		console.log(`${res.data.rows_added} courses has been stored to database successfully.`);
 	}

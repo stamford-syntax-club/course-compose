@@ -31,7 +31,6 @@ const filterDuplicateCourse = (
 		}
 	}
 
-	console.log(courseMap);
 	return filteredCourses;
 };
 
