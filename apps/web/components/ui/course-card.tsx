@@ -21,7 +21,7 @@ export function CourseCard({
 	return (
 		<Grid.Col span={{ base: 12, sm: 6, xl: 4 }}>
 			<Card
-				className="h-52 shadow-sm transition-shadow duration-150 hover:shadow-lg"
+				className="h-52 shadow-sm transition-colors duration-150 hover:border-white"
 				padding="lg"
 				radius="md"
 				withBorder
