@@ -32,7 +32,7 @@ class CourseScraper {
 	public async scrapeCourses(acadyear: number, sem: number) {
 		const courseEndpoint = process.env.COURSE_ENDPOINT;
 		if (!courseEndpoint) {
-			return;
+            throw new Error("missing course endpoint")
 		}
 
 		console.log("Stamford Scraper v1.0.0 starting...");
