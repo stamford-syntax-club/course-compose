@@ -1,10 +1,10 @@
+import "dotenv/config";
 import axios from "axios";
 import * as cheerio from "cheerio";
 import { Command } from "commander";
 
 const BASE_URL = "https://reg.stamford.edu/registrar/";
 const URL = BASE_URL + "class_info_1.asp?avs517859457=6&backto=student";
-// TODO: make acadyear and semester dynamic
 const PAYLOAD = (acadyear: number, sem: number) =>
 	`facultyid=all&acadyear=${acadyear}&semester=${sem}&CAMPUSID=&LEVELID=&coursecode=&coursename=&cmd=2`;
 const HEADERS = {
@@ -30,6 +30,11 @@ class CourseScraper {
 	private startTime: number = Date.now();
 
 	public async scrapeCourses(acadyear: number, sem: number) {
+		const courseEndpoint = process.env.COURSE_ENDPOINT;
+		if (!courseEndpoint) {
+			return;
+		}
+
 		console.log("Stamford Scraper v1.0.0 starting...");
 		let response = await this.getFromReg(URL, acadyear, sem);
 		let $ = cheerio.load(response.data);
@@ -58,10 +63,10 @@ class CourseScraper {
 			};
 		});
 
-		const res = await axios.post("http://localhost:8002/api/courses/", data, {
+		const res = await axios.post(courseEndpoint, data, {
 			auth: {
-				username: "yo",
-				password: "hi"
+				username: process.env.ADMIN_USERNAME || "",
+				password: process.env.ADMIN_PASSWORD || ""
 			}
 		});
 
@@ -95,7 +100,6 @@ class CourseScraper {
 				const data = columns.map((_, col) => $(col).text().replace(/\xa0/g, " ").trim()).get();
 				const course = this.createCourseObject(data, columns.eq(1));
 				this.addToCourses(course);
-				console.log(this.courses);
 			}
 		});
 	}
