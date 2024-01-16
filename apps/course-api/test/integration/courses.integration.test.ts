@@ -26,6 +26,26 @@ beforeAll(async () => {
 			}
 		]
 	});
+	await prismaClient.review.createMany({
+		data: [
+			{
+				academic_year: 2020,
+				description: "I hate it",
+				rating: 3,
+				votes: 2,
+				status: "APPROVED",
+				course_id: 1
+			},
+			{
+				academic_year: 2021,
+				description: "I hate it more",
+				rating: 1.5,
+				votes: 2,
+				status: "APPROVED",
+				course_id: 1
+			}
+		]
+	});
 });
 
 const parsePaginatedResponse = (res: any) => {
@@ -47,12 +67,14 @@ describe("Get course by code", () => {
 	describe("GET /api/courses/ITE221", () => {
 		it("should return course with code ITE221", async () => {
 			const res = await request(app).get("/api/courses/ITE221");
-			const { code, full_name, prerequisites } = res.body;
+			const { code, full_name, prerequisites, overall_ratings, reviews_count } = res.body;
 
 			expect(res.statusCode).toBe(200);
 			expect(code).toBe("ITE221");
 			expect(full_name).toBe("Programming 1");
 			expect(prerequisites).toEqual(["ITE103"]);
+			expect(overall_ratings).toEqual(2.25); // (3+1.5)/2
+			expect(reviews_count).toEqual(2);
 		});
 	});
 
@@ -78,6 +100,8 @@ describe("Get all courses", () => {
 			expect(number).toBe(1);
 			expect(totalNumberOfItems).toBe(4);
 			expect(totalPages).toBe(1);
+			expect(courses[0].overall_ratings).toBe(2.25);
+			expect(courses[0].reviews_count).toBe(2);
 		});
 	});
 

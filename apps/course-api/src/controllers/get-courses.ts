@@ -6,10 +6,19 @@ const getCourseByCode = async (code: string) => {
 	const course = await prismaClient.course.findUnique({
 		where: {
 			code: code
+		},
+		include: {
+			reviews: {
+				select: {
+					rating: true
+				}
+			}
 		}
 	});
 
-	return course;
+	if (course) {
+		return mapCourseToCourseResponse(course);
+	}
 };
 
 const getAllCourses = async (search: string, pageSize: number, pageNumber: number) => {
