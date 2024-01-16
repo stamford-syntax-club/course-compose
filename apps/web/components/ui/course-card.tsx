@@ -1,4 +1,4 @@
-import { Badge, Button, Card, Grid, Group, Rating, Stack, Text } from "@mantine/core";
+import { Badge, Button, Card, Group, Rating, Stack, Text } from "@mantine/core";
 
 interface CourseCardProps {
 	courseName: string;
@@ -19,7 +19,8 @@ export function CourseCard({
 		coursePrerequisites.length > 0 ? `Pre: ${coursePrerequisites.join(", ")}` : "No Prerequisites";
 
 	return (
-		<Grid.Col span={{ base: 12, sm: 6, xl: 4 }}>
+		// base: 12, sm: 6, xl: 4
+		<div className="col-span-12 sm:col-span-6 xl:col-span-4">
 			<Card
 				className="h-52 shadow-sm transition-colors duration-150 hover:border-white"
 				padding="lg"
@@ -65,6 +66,6 @@ export function CourseCard({
 					</Group>
 				</Stack>
 			</Card>
-		</Grid.Col>
+		</div>
 	);
 }
