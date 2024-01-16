@@ -6,7 +6,7 @@
   "scripts": {
     "build": "npx tsc",
     "start": "node dist/src/index.js",
-    "dev": "concurrently \"npx tsc --watch\" \"nodemon -q dist/src/index.js\"",
+    "dev": "pnpm exec dotenv -e .env.development -- concurrently \"npx tsc --watch\" \"nodemon -q dist/src/index.js\"",
     "integration": "docker compose -f docker-compose.integration.yaml down -v && docker compose -f docker-compose.integration.yaml up --build --force-recreate --abort-on-container-exit --exit-code-from app",
     "integration:jest": "jest test/integration --detectOpenHandles",
     "docker:test_build": "docker compose -f docker-compose.test-build.yaml down -v && docker compose -f docker-compose.test-build.yaml up -d --build --force-recreate",
@@ -27,7 +27,8 @@
     "module-alias": "^2.2.3",
     "mongodb": "^6.3.0",
     "mongoose": "^8.0.3",
-    "morgan": "^1.10.0"
+    "morgan": "^1.10.0",
+    "redis": "^4.6.12"
   },
   "devDependencies": {
     "@types/cors": "^2.8.17",
@@ -52,6 +53,7 @@
     "@models": "dist/src/models",
     "@routes": "dist/src/routes",
     "@utils": "dist/src/utils",
+    "@middlewares": "dist/src/middlewares",
     "@root": "."
   }
 }
