@@ -73,29 +73,4 @@ func TestMapReviewToReviewDTO(t *testing.T) {
 		assert.Equal(t, reviewsData[1].RelationsReview.Course.Code, reviewsJSONResponses[1].Course.Code)
 		assert.Equal(t, reviewsData[1].RelationsReview.Profile.ID, reviewsJSONResponses[1].Profile.ID)
 	})
-//	t.Run("put myReview as first item in list if exist", func(t *testing.T) {
-//		myReview := &db.ReviewModel{
-//			InnerReview: db.InnerReview{
-//				ID:           1,
-//				AcademicYear: 2023,
-//				Description:  "This is my review",
-//				UserID:       myUserID,
-//			},
-//			RelationsReview: db.RelationsReview{
-//				Course: &db.CourseModel{
-//					InnerCourse: db.InnerCourse{
-//						ID:   courseID,
-//						Code: courseCode,
-//					},
-//				},
-//				Profile: &db.ProfileModel{
-//					InnerProfile: db.InnerProfile{
-//						ID: myUserID,
-//					},
-//				},
-//			},
-//		}
-//		reviewsJSONResponses := MapReviewToReviewDTO(reviewsData, myReview.UserID)
-//		assert.Equal(t, myReview.ID, reviewsJSONResponses[0].ID)
-//	})
 }
