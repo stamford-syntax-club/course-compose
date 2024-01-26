@@ -7,22 +7,23 @@ import (
 
 	"github.com/gofiber/fiber/v2"
 	"github.com/stamford-syntax-club/course-compose/reviews/common/utils"
-	"github.com/stamford-syntax-club/course-compose/reviews/review/data/datasource/db"
-	review_db "github.com/stamford-syntax-club/course-compose/reviews/review/data/datasource/db"
-	"github.com/stamford-syntax-club/course-compose/reviews/review/domain/dto"
+	review_DB "github.com/stamford-syntax-club/course-compose/reviews/review/data/datasource/db"
+	review_kafka "github.com/stamford-syntax-club/course-compose/reviews/review/data/datasource/kafka"
 )
 
 type reviewRepositoryImpl struct {
-	reviewDB *review_db.PrismaClient
+	reviewDB    *review_DB.PrismaClient
+	reviewKafka *review_kafka.ReviewProducer
 }
 
-func NewReviewRepositoryImpl(db *review_db.PrismaClient) *reviewRepositoryImpl {
+func NewReviewRepositoryImpl(db *review_DB.PrismaClient, reviewProducer *review_kafka.ReviewProducer) *reviewRepositoryImpl {
 	return &reviewRepositoryImpl{
-		reviewDB: db,
+		reviewDB:    db,
+		reviewKafka: reviewProducer,
 	}
 }
 
-func (rr *reviewRepositoryImpl) GetCourseReviews(ctx context.Context, courseCode string, userID string, pageInformation *utils.PageInformation) ([]review_db.ReviewModel, int, error) {
+func (rr *reviewRepositoryImpl) GetCourseReviews(ctx context.Context, courseCode string, userID string, pageInformation *utils.PageInformation) ([]review_DB.ReviewModel, int, error) {
 	courseID, err := getCourseID(ctx, rr.reviewDB, courseCode)
 	if err != nil {
 		return nil, 0, err
@@ -66,6 +67,10 @@ func (r *reviewRepositoryImpl) SubmitReview(ctx context.Context, review *review_
 
 	if _, err := getUser(ctx, r.reviewDB, userID); err != nil {
 		return nil, err
+	}
+
+	if err := r.reviewKafka.Produce(review); err != nil {
+		return err
 	}
 
 	if err := hasExistingReview(ctx, r.reviewDB, courseID, userID); err != nil {
@@ -138,8 +143,6 @@ func (r *reviewRepositoryImpl) DeleteReview(ctx context.Context, reviewId int, c
 	}
 
 	log.Printf("Deleted review %+v\n", deletedReview)
-	return nil
-}
 
 func (r *reviewRepositoryImpl) UpdateReviewStatus(ctx context.Context, reviewDecision *dto.ReviewDecisionDTO) (*review_db.ReviewModel, error) {
 	updatedReview, err := r.reviewDB.Review.FindUnique(
