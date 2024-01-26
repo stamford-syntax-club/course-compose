@@ -71,41 +71,5 @@ func (rc *ReviewController) SubmitReview(c *fiber.Ctx) error {
 		return err
 	}
 
-	// if err := data.SubmitReview(ctx, h.prisma, h.reviewPlacer, courseCode, &review, userID); err != nil {
-	// 	return err
-	// }
-
 	return c.Status(http.StatusCreated).JSON("Success")
 }
-
-//	con, err := kafka.NewConsumer(&kafka.ConfigMap{
-//		"bootstrap.servers": "localhost:9092",
-//		"group.id":          "glloooo",
-//		"auto.offset.reset": "earliest",
-//	})
-//	if err != nil {
-//		log.Fatal("Consumer: ", err)
-//	}
-//
-//	go func() {
-//		// Use this to read all items inside the topic (like when an API is called :3)
-//		if err := con.Assign([]kafka.TopicPartition{topic}); err != nil {
-//			log.Fatal(err)
-//		}
-//
-//		for {
-//			msg, err := con.ReadMessage(-1)
-//			if err != nil {
-//				if err.(kafka.Error).Code() == kafka.ErrTimedOut {
-//					log.Println("Time out waiting for new event")
-//				} else {
-//					log.Println("Error while readng event: ", err)
-//				}
-//				break
-//			}
-//
-//			fmt.Printf("Received: %s\n", string(msg.Value))
-//		}
-//		con.Close()
-//	}()
-//

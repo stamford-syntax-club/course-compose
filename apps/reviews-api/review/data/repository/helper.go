@@ -79,7 +79,7 @@ func getReviews(ctx context.Context, client *db.PrismaClient, userID string, cou
 func getMyReview(ctx context.Context, client *db.PrismaClient, userID string, courseID, pageNumber int, myReviewIDChan chan<- *db.ReviewModel) {
 	// only retrieve on the first page
 	if pageNumber > 1 {
-        log.Println("Skipping, it's greater than 1")
+		log.Println("Skipping, it's greater than 1")
 		myReviewIDChan <- nil
 		return
 	}
