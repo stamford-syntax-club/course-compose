@@ -30,6 +30,7 @@ func MapReviewToReviewDTO(reviews []db.ReviewModel, userID string) []ReviewDTO {
 			Profile: UserDTO{
 				ID: profile.ID,
 			},
+			CreatedAt: review.CreatedAt,
 		})
 	}
 

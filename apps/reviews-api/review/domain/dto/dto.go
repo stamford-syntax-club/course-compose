@@ -1,5 +1,7 @@
 package dto
 
+import "time"
+
 type CourseDTO struct {
 	ID            int      `json:"id,omitempty"`
 	Code          string   `json:"code,omitempty"`
@@ -17,6 +19,7 @@ type ReviewDTO struct {
 	Votes        int       `json:"votes"`
 	Course       CourseDTO `json:"course"`
 	Profile      UserDTO   `json:"profile"`
+	CreatedAt    time.Time `json:"created_at"`
 }
 
 type UserDTO struct {
