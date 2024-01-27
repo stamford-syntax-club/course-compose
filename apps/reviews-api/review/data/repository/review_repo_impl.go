@@ -67,8 +67,7 @@ func (r *reviewRepositoryImpl) SubmitReview(ctx context.Context, review *review_
 		return err
 	}
 
-    // TODO: check in DB first, then check if it is in kafka
-	if err := hasExistingReview(ctx, r.reviewDB, courseID, userID); err != nil {
+	if err := hasExistingReview(ctx, r.reviewDB, r.reviewKafka.TopicPartition, courseID, userID); err != nil {
 		return err
 	}
 
