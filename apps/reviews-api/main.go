@@ -7,6 +7,7 @@ import (
 	"github.com/stamford-syntax-club/course-compose/reviews/common/config"
 	"github.com/stamford-syntax-club/course-compose/reviews/common/presentation/router"
 	review_db "github.com/stamford-syntax-club/course-compose/reviews/review/data/datasource/db"
+	review_kafka "github.com/stamford-syntax-club/course-compose/reviews/review/data/datasource/kafka"
 	review_repo_impl "github.com/stamford-syntax-club/course-compose/reviews/review/data/repository"
 	review_controller "github.com/stamford-syntax-club/course-compose/reviews/review/domain/controller"
 	review_router "github.com/stamford-syntax-club/course-compose/reviews/review/presentation/router"
@@ -29,7 +30,15 @@ func main() {
 		log.Fatalln("Prisma connect: ", err)
 	}
 	defer reviewDB.Prisma.Disconnect()
-	reviewRepo := review_repo_impl.NewReviewRepositoryImpl(reviewDB)
+
+	reviewKafka, err := review_kafka.NewReviewProducer("Woohoo", "MrChinathai", "localhost:9092")
+	if err != nil {
+		log.Fatalf("create review producer: %v", err)
+	}
+
+	go reviewKafka.ReportDeliveryStatus()
+
+	reviewRepo := review_repo_impl.NewReviewRepositoryImpl(reviewDB, reviewKafka)
 	reviewController := review_controller.NewReviewController(reviewRepo)
 
 	router := router.NewFiberRouter()
@@ -40,3 +49,11 @@ func main() {
 		log.Fatalf("fiber router: %v", err)
 	}
 }
+
+//
+//	token, err := utils.GenerateNewAccessToken("8a7b3c2e-3e5f-4f1a-a8b7-3c2e1a4f5b6d", "khing@students.stamford.edu", time.Now().Add(time.Hour).Unix())
+//	if err != nil {
+//		log.Fatalf("generate new access token: %v", err)
+//	}
+//	log.Println(token)
+//
