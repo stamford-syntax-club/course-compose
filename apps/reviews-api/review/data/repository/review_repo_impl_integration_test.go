@@ -27,12 +27,13 @@ func setupTestDB(t *testing.T) *db.PrismaClient {
 func TestGetCourseReview(t *testing.T) {
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	client := setupTestDB(t)
-	defer func() {
-		cancel()
-		if err := client.Prisma.Disconnect(); err != nil {
-			t.Fatalf("Prisma Disconnect: %v", err)
-		}
-	}()
+	t.Cleanup(
+		func() {
+			cancel()
+			if err := client.Prisma.Disconnect(); err != nil {
+				t.Fatalf("Prisma Disconnect: %v", err)
+			}
+		})
 
 	repo := NewReviewRepositoryImpl(client)
 
@@ -142,6 +143,111 @@ func TestGetCourseReview(t *testing.T) {
 		assert.Equal(t, 4, count)
 		assert.NotEqual(t, "Yikes!", result[0].Description)
 	})
+}
+
+func TestSubmitReview(t *testing.T) {
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	client := setupTestDB(t)
+	t.Cleanup(
+		func() {
+			cancel()
+			if err := client.Prisma.Disconnect(); err != nil {
+				t.Fatalf("Prisma Disconnect: %v", err)
+			}
+		})
+
+	repo := NewReviewRepositoryImpl(client)
+
+	const (
+		validCourseCode   = "MATH201"
+		invalidCourseCode = "UWU123456"
+	)
+
+	t.Run("should accept if user never writes a review for that course", func(t *testing.T) {
+		userID := "8b84c3b5-5b87-4c9b-832d-60d0966d4f7d"
+		review := &db.ReviewModel{
+			InnerReview: db.InnerReview{
+				AcademicYear: 2022,
+				Description:  "This is a review that should be approved because I've never written one for this course before!",
+				Rating:       2,
+			},
+		}
+		result, err := repo.SubmitReview(ctx, review, validCourseCode, userID)
+
+		assert.NoError(t, err)
+		assert.Equal(t, review.AcademicYear, result.AcademicYear)
+		assert.Equal(t, review.Description, result.Description)
+		assert.Equal(t, review.Rating, result.Rating)
+		assert.Equal(t, "PENDING", result.Status)
+		assert.Equal(t, 0, result.Votes)
+		assert.Equal(t, userID, result.UserID)
+		assert.Equal(t, 2, result.CourseID)
+	})
+
+	t.Run("should reject if the same user tries to submit another review for the same course", func(t *testing.T) {
+		userID := "8b84c3b5-5b87-4c9b-832d-60d0966d4f7d"
+		review := &db.ReviewModel{
+			InnerReview: db.InnerReview{
+				AcademicYear: 2022,
+				Description:  "This is another review of the same course, it should be rejected",
+				Rating:       2,
+			},
+		}
+		result, err := repo.SubmitReview(ctx, review, validCourseCode, userID)
+
+		assert.Error(t, err)
+		assert.Equal(t, "You have already written a review for this course", err.Error())
+		assert.Nil(t, result)
+	})
+
+	t.Run("should reject course code does not exist", func(t *testing.T) {
+		userID := "8b84c3b5-5b87-4c9b-832d-60d0966d4f7d"
+		review := &db.ReviewModel{
+			InnerReview: db.InnerReview{
+				AcademicYear: 2022,
+				Description:  "This is another review of the same course, it should be rejected",
+				Rating:       2,
+			},
+		}
+		result, err := repo.SubmitReview(ctx, review, invalidCourseCode, userID)
+
+		assert.Error(t, err)
+		assert.Equal(t, "Course does not exist", err.Error())
+		assert.Nil(t, result)
+	})
+
+	t.Run("should reject course code does not exist", func(t *testing.T) {
+		userID := "8b84c3b5-5b87-4c9b-832d-60d0966d4f7d"
+		review := &db.ReviewModel{
+			InnerReview: db.InnerReview{
+				AcademicYear: 2022,
+				Description:  "Some review data",
+				Rating:       2,
+			},
+		}
+		result, err := repo.SubmitReview(ctx, review, invalidCourseCode, userID)
+
+		assert.Error(t, err)
+		assert.Equal(t, "Course does not exist", err.Error())
+		assert.Nil(t, result)
+	})
+
+	t.Run("should reject user does not exist", func(t *testing.T) {
+		userID := "7b84c3b5-5b87-4c9b-832d-60d0966d4f7d" // some random uuid
+		review := &db.ReviewModel{
+			InnerReview: db.InnerReview{
+				AcademicYear: 2022,
+				Description:  "Some review data",
+				Rating:       2,
+			},
+		}
+		result, err := repo.SubmitReview(ctx, review, validCourseCode, userID)
+
+		assert.Error(t, err)
+		assert.Equal(t, "User does not exist", err.Error())
+		assert.Nil(t, result)
+	})
+
 }
 
 func seedReviewData(client *db.PrismaClient) {

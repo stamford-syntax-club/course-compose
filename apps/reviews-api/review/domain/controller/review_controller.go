@@ -67,9 +67,10 @@ func (rc *ReviewController) SubmitReview(c *fiber.Ctx) error {
 
 	ctx, cancelFunc := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancelFunc()
-	if err := rc.reviewRepo.SubmitReview(ctx, &review, courseCode, userID); err != nil {
+	result, err := rc.reviewRepo.SubmitReview(ctx, &review, courseCode, userID)
+	if err != nil {
 		return err
 	}
 
-	return c.Status(http.StatusCreated).JSON("Success")
+	return c.Status(http.StatusCreated).JSON(result)
 }

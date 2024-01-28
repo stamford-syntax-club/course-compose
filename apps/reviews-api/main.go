@@ -24,7 +24,12 @@ func main() {
 		log.Fatalf("load env file: %v", err)
 	}
 
-	reviewDB := review_db.New()
+	reviewDB := review_db.NewClient()
+	if err := reviewDB.Prisma.Connect(); err != nil {
+		log.Fatalln("Prisma connect: ", err)
+	}
+	defer reviewDB.Prisma.Disconnect()
+
 	reviewRepo := review_repo_impl.NewReviewRepositoryImpl(reviewDB)
 	reviewController := review_controller.NewReviewController(reviewRepo)
 

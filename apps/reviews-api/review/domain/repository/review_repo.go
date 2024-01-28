@@ -9,5 +9,5 @@ import (
 
 type ReviewRepository interface {
 	GetCourseReviews(context.Context, string, string, *utils.PageInformation) ([]db.ReviewModel, int, error)
-	SubmitReview(context.Context, *db.ReviewModel, string, string) error
+	SubmitReview(context.Context, *db.ReviewModel, string, string) (*db.ReviewModel, error)
 }

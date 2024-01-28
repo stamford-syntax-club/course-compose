@@ -2,8 +2,9 @@ package repository_impl
 
 import (
 	"context"
-	"time"
+	"log"
 
+	"github.com/gofiber/fiber/v2"
 	"github.com/stamford-syntax-club/course-compose/reviews/common/utils"
 	review_db "github.com/stamford-syntax-club/course-compose/reviews/review/data/datasource/db"
 )
@@ -54,24 +55,33 @@ func (rr *reviewRepositoryImpl) GetCourseReviews(ctx context.Context, courseCode
 	return rawReviews, <-reviewsCountCh, nil
 }
 
-func (r *reviewRepositoryImpl) SubmitReview(ctx context.Context, review *review_db.ReviewModel, courseCode, userID string) error {
+func (r *reviewRepositoryImpl) SubmitReview(ctx context.Context, review *review_db.ReviewModel, courseCode, userID string) (*review_db.ReviewModel, error) {
 	courseID, err := getCourseID(ctx, r.reviewDB, courseCode)
 	if err != nil {
-		return err
+		return nil, err
 	}
 
 	if _, err := getUser(ctx, r.reviewDB, userID); err != nil {
-		return err
+		return nil, err
 	}
 
 	if err := hasExistingReview(ctx, r.reviewDB, courseID, userID); err != nil {
-		return err
+		return nil, err
 	}
 
-	review.Status = "PENDING"
-	review.CreatedAt = time.Now()
-	review.CourseID = courseID
-	review.UserID = userID
+	result, err := r.reviewDB.Review.CreateOne(
+		review_db.Review.AcademicYear.Set(review.AcademicYear),
+		review_db.Review.Description.Set(review.Description),
+		review_db.Review.Rating.Set(review.Rating),
+		review_db.Review.Votes.Set(0),
+		review_db.Review.Status.Set("PENDING"),
+		review_db.Review.Course.Link(review_db.Course.ID.Equals(courseID)),
+		review_db.Review.Profile.Link(review_db.Profile.ID.Equals(userID)),
+	).Exec(ctx)
+	if err != nil {
+		log.Println("exec create pending review: ", err)
+		return nil, fiber.ErrInternalServerError
+	}
 
-	return nil
+	return result, nil
 }
