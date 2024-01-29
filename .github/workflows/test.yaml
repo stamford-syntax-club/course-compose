@@ -9,8 +9,6 @@ jobs:
         runs-on: ubuntu-latest
         env:
             DATABASE_URL: ${{ secrets.DATABASE_URL }}
-            PRISMA_PROVIDER: go run github.com/steebchen/prisma-client-go
-            PRISMA_OUTPUT: ../../apps/prisma/db
 
         steps:
             - name: Checkout
@@ -34,9 +32,9 @@ jobs:
               with:
                   go-version: "1.21.5"
 
-            - name: Generate ORM
+            - name: Generate Go ORM
               working-directory: ./apps/reviews-api
-              run: go run github.com/steebchen/prisma-client-go generate --schema=../../packages/prisma/schema.prisma
+              run: pnpm run bootstrap:unix # triggers only in reviews-api
 
             - name: Unit test
               run: pnpm run unit

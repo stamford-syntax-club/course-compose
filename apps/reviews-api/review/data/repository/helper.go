@@ -1,4 +1,4 @@
-package data
+package repository_impl
 
 import (
 	"context"
@@ -9,8 +9,7 @@ import (
 	"strconv"
 
 	"github.com/gofiber/fiber/v2"
-	"github.com/stamford-syntax-club/course-compose/prisma/db"
-	"github.com/stamford-syntax-club/course-compose/reviews/utils"
+	"github.com/stamford-syntax-club/course-compose/reviews/review/data/datasource/db"
 )
 
 const (
@@ -80,6 +79,7 @@ func getReviews(ctx context.Context, client *db.PrismaClient, userID string, cou
 func getMyReview(ctx context.Context, client *db.PrismaClient, userID string, courseID, pageNumber int, myReviewIDChan chan<- *db.ReviewModel) {
 	// only retrieve on the first page
 	if pageNumber > 1 {
+		log.Println("Skipping, it's greater than 1")
 		myReviewIDChan <- nil
 		return
 	}
@@ -102,73 +102,58 @@ func getMyReview(ctx context.Context, client *db.PrismaClient, userID string, co
 	myReviewIDChan <- myReview
 }
 
-func parseReviewJSONResponse(reviews []db.ReviewModel, myReview *db.ReviewModel) []ReviewJSONResponse {
-	myReviewID := 0 // prevent nil pointer dereference in case myReview does not exist
-	if myReview != nil {
-		reviews = append([]db.ReviewModel{*myReview}, reviews...) // add myReview to the beginning of reviews
-		myReviewID = myReview.ID
-	}
-
-	reviewJSONResponses := []ReviewJSONResponse{}
-	for _, review := range reviews {
-		profile, ok := review.Profile()
-		if !ok {
-			log.Printf("failed to get profile for review id %d", review.ID)
-			continue
+// check if user has already written a review for this course
+// returns nil if user has not written a review for this course
+// returns error if user has written a review for this course OR there is some problem with the database
+func hasExistingReview(ctx context.Context, prisma *db.PrismaClient, courseID int, userID string) error {
+	review, err := prisma.Review.FindFirst(
+		db.Review.CourseID.Equals(courseID),
+		db.Review.UserID.Equals(userID),
+	).Exec(ctx)
+	if err != nil {
+		if errors.Is(err, db.ErrNotFound) { // user has not written a review for this course
+			return nil
 		}
-
-		reviewJSONResponses = append(reviewJSONResponses, ReviewJSONResponse{
-			ID:           review.ID,
-			AcademicYear: review.AcademicYear,
-			Description:  review.Description,
-			IsOwner:      review.ID == myReviewID,
-			Rating:       review.Rating,
-			Status:       review.Status,
-			Votes:        review.Votes,
-			Course: CourseJSONResponse{
-				ID:   review.Course().ID,
-				Code: review.Course().Code,
-			},
-			Profile: UserJSONResponse{
-				ID: profile.ID,
-			},
-		})
+		log.Println("exec find existing review query: ", err)
+		return fiber.ErrInternalServerError
 	}
 
-	return reviewJSONResponses
+	if review != nil {
+		return fiber.NewError(http.StatusBadRequest, "You have already written a review for this course")
+	}
+
+	return nil
 }
 
-func GetCourseReviews(ctx context.Context, client *db.PrismaClient, courseCode, userID string, pageSize, pageNumber int) (*utils.Pagination, error) {
-	courseID, err := getCourseID(ctx, client, courseCode)
+func getUser(ctx context.Context, client *db.PrismaClient, userID string) (*db.ProfileModel, error) {
+	user, err := client.Profile.FindFirst(
+		db.Profile.ID.Equals(userID),
+	).Exec(ctx)
 	if err != nil {
-		return nil, err
+		if errors.Is(err, db.ErrNotFound) {
+			return nil, fiber.NewError(http.StatusBadRequest, "User does not exist")
+		}
+		log.Println("exec find user: ", err)
+		return nil, fiber.ErrInternalServerError
 	}
 
-	// force only 2 reviews to be retrived for non-active users
-	if !isActiveUser(ctx, client, userID) {
-		pageSize = 2
-		pageNumber = 1
+	return user, nil
+}
+
+func isActiveUser(ctx context.Context, client *db.PrismaClient, userID string) bool {
+	if userID == "" {
+		return false
 	}
 
-	// run getMyReview concurrently with getReviews
-	myReviewChan := make(chan *db.ReviewModel)
-	defer close(myReviewChan)
-	go getMyReview(ctx, client, userID, courseID, pageNumber, myReviewChan)
-
-	// get total number of reviews concurrently
-	courseCountChan := make(chan int)
-	defer close(courseCountChan)
-	go getReviewsCount(ctx, client, "APPROVED", courseID, courseCountChan)
-
-	rawReviews, err := getReviews(ctx, client, userID, courseID, pageSize, pageNumber)
+	user, err := client.Profile.FindFirst(
+		db.Profile.ID.Equals(userID),
+	).Exec(ctx)
 	if err != nil {
-		return nil, err
+		if !errors.Is(err, db.ErrNotFound) {
+			log.Println("exec find active user query: ", err)
+		}
+		return false
 	}
 
-	myReview := <-myReviewChan
-	totalNumberOfItems := <-courseCountChan
-
-	data := parseReviewJSONResponse(rawReviews, myReview)
-
-	return utils.NewPagination(data, pageSize, pageNumber, totalNumberOfItems), nil
+	return user.IsActive
 }

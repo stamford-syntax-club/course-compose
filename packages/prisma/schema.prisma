@@ -27,11 +27,11 @@ model Review {
   id            Int         @id @default(autoincrement())
   academic_year Int
   description   String
-  rating        Int
+  rating        Float 
   votes         Int
   status        String
   course_id     Int
-  user_id       String?     @db.Uuid
+  user_id       String     @db.Uuid
   created_at    DateTime    @default(now())
   updated_at    DateTime?   @updatedAt
   course        Course      @relation(fields: [course_id], references: [id])

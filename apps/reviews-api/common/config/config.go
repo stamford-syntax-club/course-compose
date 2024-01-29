@@ -46,3 +46,4 @@ func LoadEnvFile(appEnv string) error {
 	log.Println("loaded env file: ", envPath)
 	return nil
 }
+

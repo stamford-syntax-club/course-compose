@@ -1,4 +1,4 @@
-package routers
+package router
 
 import (
 	"errors"
@@ -9,15 +9,14 @@ import (
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/middleware/cors"
 	"github.com/gofiber/fiber/v2/middleware/logger"
-	"github.com/stamford-syntax-club/course-compose/reviews/handlers"
 )
 
 type FiberRouter struct {
-	*fiber.App
-	port string
+	App *fiber.App
+	fiber.Router
 }
 
-func NewFiberRouter(port string, h *handlers.H) *FiberRouter {
+func NewFiberRouter() *FiberRouter {
 	app := fiber.New(fiber.Config{
 		AppName: "Course Compose - Reviews",
 		ErrorHandler: func(c *fiber.Ctx, err error) error {
@@ -46,15 +45,14 @@ func NewFiberRouter(port string, h *handlers.H) *FiberRouter {
 	}))
 
 	api := app.Group("/api")
-	registerRoutes(api, h)
 
 	return &FiberRouter{
-		App:  app,
-		port: port,
+		App:    app,
+		Router: api,
 	}
 }
 
-func (r *FiberRouter) ListenAndServe() error {
+func (r *FiberRouter) ListenAndServe(port string) error {
 	c := make(chan os.Signal, 1)
 	signal.Notify(c, os.Interrupt)
 	go func() {
@@ -63,5 +61,5 @@ func (r *FiberRouter) ListenAndServe() error {
 		r.App.Shutdown()
 	}()
 
-	return r.App.Listen(r.port)
+	return r.App.Listen(port)
 }

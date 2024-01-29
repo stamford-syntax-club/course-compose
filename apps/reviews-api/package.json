@@ -1,12 +1,13 @@
 {
-  "name": "reviews-api",
-  "version": "1.0.0",
-  "private": true,
-  "scripts": {
-    "dev": "go run cmd/main.go -environment=development",
-    "unit": "go clean -testcache && go test -tags=unit -v ./...",
-    "unit-coverage": "go clean -testcache && go test -tags=unit -coverprofile=coverage.out ./... && go tool cover -html=coverage.out -o coverage.html && open coverage.html",
-    "integration": "docker compose -f docker-compose.integration.yaml down -v && docker compose -f docker-compose.integration.yaml up --build --force-recreate --exit-code-from integration-test",
-    "bootstrap": "PRISMA_PROVIDER='go run github.com/steebchen/prisma-client-go' PRISMA_OUTPUT='../../apps/prisma/db' go run github.com/steebchen/prisma-client-go generate --schema=../../packages/prisma/schema.prisma"
-  }
+	"name": "reviews-api",
+	"version": "1.0.0",
+	"private": true,
+	"scripts": {
+		"dev": "go run main.go -environment=development.local",
+		"unit": "go clean -testcache && go test -tags=unit -v ./...",
+		"unit-coverage": "go clean -testcache && go test -tags=unit -coverprofile=coverage.out ./... && go tool cover -html=coverage.out -o coverage.html && open coverage.html",
+		"integration": "docker compose -f docker-compose.integration.yaml down -v && docker compose -f docker-compose.integration.yaml up --build --force-recreate --exit-code-from integration-test",
+		"bootstrap:unix": "PRISMA_PROVIDER='go run github.com/steebchen/prisma-client-go' PRISMA_OUTPUT='../../apps/reviews-api/review/data/datasource/db' go run github.com/steebchen/prisma-client-go generate --schema=../../packages/prisma/schema.prisma",
+		"bootstrap:windows": "@powershell $env:PRISMA_PROVIDER='go run github.com/steebchen/prisma-client-go'; $env:PRISMA_OUTPUT='../../apps/reviews-api/review/data/datasource/db'; go run github.com/steebchen/prisma-client-go generate --schema=../../packages/prisma/schema.prisma"
+	}
 }

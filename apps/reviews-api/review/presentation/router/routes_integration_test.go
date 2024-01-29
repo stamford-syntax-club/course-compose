@@ -1,6 +1,6 @@
 //go:build integration
 
-package routers
+package review_router
 
 import (
 	"bytes"
@@ -13,19 +13,27 @@ import (
 	"time"
 
 	"github.com/gofiber/fiber/v2"
-	"github.com/stamford-syntax-club/course-compose/prisma/db"
-	"github.com/stamford-syntax-club/course-compose/reviews/handlers"
-	"github.com/stamford-syntax-club/course-compose/reviews/utils"
+	"github.com/stamford-syntax-club/course-compose/reviews/common/presentation/router"
+	"github.com/stamford-syntax-club/course-compose/reviews/common/utils"
+	"github.com/stamford-syntax-club/course-compose/reviews/review/data/datasource/db"
+	repository_impl "github.com/stamford-syntax-club/course-compose/reviews/review/data/repository"
+	review_controller "github.com/stamford-syntax-club/course-compose/reviews/review/domain/controller"
 	"github.com/stretchr/testify/assert"
 )
 
 func setupTestRouter() (*fiber.App, *db.PrismaClient) {
 	client := db.NewClient()
 	client.Prisma.Connect()
-	h := handlers.New(client)
-	app := fiber.New()
-	registerRoutes(app, h)
-	return app, client
+
+	reviewRepo := repository_impl.NewReviewRepositoryImpl(client)
+	reviewController := review_controller.NewReviewController(reviewRepo)
+
+	router := router.NewFiberRouter()
+	reviewRouter := New(router, reviewController)
+
+	reviewRouter.RegisterRoutes()
+
+	return router.App, client
 }
 
 func TestPrivateRoutes(t *testing.T) {
@@ -87,7 +95,7 @@ func TestPrivateRoutes(t *testing.T) {
 						Rating:       3,
 					},
 					)
-					req = httptest.NewRequest(http.MethodPost, fmt.Sprintf("/courses/%s/reviews", test.courseCode), bytes.NewBuffer(requestBody))
+					req = httptest.NewRequest(http.MethodPost, fmt.Sprintf("/api/courses/%s/reviews", test.courseCode), bytes.NewBuffer(requestBody))
 				)
 				defer client.Prisma.Disconnect()
 				req.Header.Set("Authorization", "Bearer "+token)
@@ -99,7 +107,12 @@ func TestPrivateRoutes(t *testing.T) {
 
 				assert.NoError(t, err)
 				if test.expectedErrorMsg != "" {
-					assert.Equal(t, test.expectedErrorMsg, string(respBody))
+					var result struct {
+						Message string `json:"message"`
+					}
+					err := json.Unmarshal(respBody, &result)
+					assert.NoError(t, err)
+					assert.Equal(t, test.expectedErrorMsg, result.Message)
 				}
 				assert.Equal(t, test.expectedResponseCode, resp.StatusCode)
 			})

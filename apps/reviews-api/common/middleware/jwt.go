@@ -6,7 +6,7 @@ import (
 
 	jwtMiddleware "github.com/gofiber/contrib/jwt"
 	"github.com/gofiber/fiber/v2"
-	"github.com/stamford-syntax-club/course-compose/reviews/utils"
+	"github.com/stamford-syntax-club/course-compose/reviews/common/utils"
 )
 
 func JWTAuth() func(*fiber.Ctx) error {
