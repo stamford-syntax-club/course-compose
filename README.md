@@ -17,12 +17,19 @@ pnpm install
 
 2. Make sure that [Docker](https://www.docker.com/get-started/) is installed
 
-3. Bootstrap project for development 
+3. Bootstrap project for development
+
+**For Unix Based Sysyems**
 ```bash
-pnpm run bootstrap:unix // for Unix-based systems
-pnpm run bootstrap:windows // for Windows
-// Why? See, the environment variables are not properly kept in the context of the execution of the command on Windows, which means we have to work around that.
+pnpm run bootstrap:unix
 ```
+
+**For Windows**
+```bash
+pnpm run bootstrap:windows
+```
+
+> Why? See, the environment variables are not properly kept in the context of the execution of the command on Windows, which means we have to work around that.
 
 4. Start a local development server
 ```bash
