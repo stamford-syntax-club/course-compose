@@ -34,7 +34,7 @@ jobs:
 
             - name: Generate Go ORM
               working-directory: ./apps/reviews-api
-              run: pnpm run bootstrap # triggers only in reviews-api
+              run: pnpm run bootstrap:unix # triggers only in reviews-api
 
             - name: Unit test
               run: pnpm run unit
