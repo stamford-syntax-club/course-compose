@@ -82,6 +82,25 @@ func TestGetMethod(t *testing.T) {
 			}
 		})
 	}
+
+	t.Run("Query params should be appended to the destination endpoint", func(t *testing.T) {
+		var (
+			url                = "http://localhost:8000/api/integration-append-query-params?userId=5"
+			expectedStatusCode = http.StatusOK
+		)
+
+		res, err := http.Get(url)
+		assert.NoError(t, err)
+		assert.Equal(t, expectedStatusCode, res.StatusCode)
+
+		body, err := io.ReadAll(res.Body)
+		assert.NoError(t, err)
+
+		var responseBody []map[string]interface{}
+		err = json.Unmarshal(body, &responseBody)
+		assert.NoError(t, err)
+		assert.Equal(t, float64(5), responseBody[0]["userId"])
+	})
 }
 
 func TestPostMethod(t *testing.T) {

@@ -56,14 +56,13 @@ func parseResponse(route config.Route, respBody []byte) (interface{}, error) {
 	return resp, nil
 }
 
-func appendQueryParams(c *fiber.Ctx, endpoint *string) {
-	queries := c.Queries()
-	if len(c.Queries()) >= 1 {
+func appendQueryParams(queries map[string]string, endpoint *string) {
+	if len(queries) >= 1 {
 		*endpoint += "?"
 	}
 
 	for key, value := range queries {
-		*endpoint += fmt.Sprintf("%s=%s", key, value)
+		*endpoint += fmt.Sprintf("%s=%s&", key, value)
 	}
 }
 
@@ -77,7 +76,7 @@ func createHandler(route config.Route) fiber.Handler {
 			endpoint = strings.ReplaceAll(endpoint, ":"+params[0], c.Params(params[0]))
 		}
 
-		appendQueryParams(c, &endpoint)
+		appendQueryParams(c.Queries(), &endpoint)
 
 		log.Printf("Forwarding request to service: %s - %s", route.Dest.Service, endpoint)
 		respCode, respBody, err := sendHTTPRequest(c, route.Method, endpoint)

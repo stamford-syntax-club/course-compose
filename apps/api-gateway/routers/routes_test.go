@@ -61,3 +61,43 @@ func TestRegisterRoute(t *testing.T) {
 		assert.Equal(t, 0, len(app.GetRoutes()))
 	})
 }
+
+func TestAppendQueryParams(t *testing.T) {
+	tests := []struct {
+		name             string
+		queries          map[string]string
+		expectedEndpoint string
+	}{
+		{
+			name:             "should do nothign if no params",
+			queries:          map[string]string{},
+			expectedEndpoint: "http://test-endpoint.com",
+		},
+		{
+			name: "should append single param",
+			queries: map[string]string{
+				"userId": "9",
+			},
+			expectedEndpoint: "http://test-endpoint.com?userId=9&",
+		},
+		{
+			name: "should append multiple params",
+			queries: map[string]string{
+				"userId": "9",
+				"hello":  "world",
+				"foo":    "bar",
+			},
+			expectedEndpoint: "http://test-endpoint.com?userId=9&hello=world&foo=bar&",
+		},
+	}
+
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			endpoint := "http://test-endpoint.com"
+
+			appendQueryParams(test.queries, &endpoint)
+
+			assert.Equal(t, test.expectedEndpoint, endpoint)
+		})
+	}
+}
