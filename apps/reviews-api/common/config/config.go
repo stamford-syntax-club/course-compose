@@ -47,7 +47,3 @@ func LoadEnvFile(appEnv string) error {
 	return nil
 }
 
-type KafkaConf struct {
-	Url   string
-	Topic string
-}
