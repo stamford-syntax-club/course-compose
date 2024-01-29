@@ -19,7 +19,9 @@ pnpm install
 
 3. Bootstrap project for development 
 ```bash
-pnpm run bootstrap
+pnpm run bootstrap:unix // for Unix-based systems
+pnpm run bootstrap:windows // for Windows
+// Why? See, the environment variables are not properly kept in the context of the execution of the command on Windows, which means we have to work around that.
 ```
 
 4. Start a local development server
