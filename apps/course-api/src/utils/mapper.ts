@@ -10,7 +10,7 @@ export function calcOverallRating(reviews: { rating: number }[]): number {
 }
 
 export function mapCourseToCourseResponse(course: RawCourse): CourseResponse {
-	const courseRating = calcOverallRating(course.reviews) || 0;
+	const courseRating = calcOverallRating(course.reviews);
 	return {
 		code: course.code,
 		full_name: course.full_name,
