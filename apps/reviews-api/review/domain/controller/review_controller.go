@@ -95,12 +95,12 @@ func (rc *ReviewController) EditReview(c *fiber.Ctx) error {
 
 	ctx, cancelFunc := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancelFunc()
-	_, err := rc.reviewRepo.EditReview(ctx, &review, courseCode, userID)
+	result, err := rc.reviewRepo.EditReview(ctx, &review, courseCode, userID)
 	if err != nil {
 		return err
 	}
 
-	return c.Status(http.StatusOK).JSON("edit review!")
+	return c.Status(http.StatusOK).JSON(result)
 }
 
 func (rc *ReviewController) UpdateReviewStatus(c *fiber.Ctx) error {
