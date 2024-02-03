@@ -2,11 +2,13 @@ package repository_impl
 
 import (
 	"context"
+	"errors"
 	"log"
 
 	"github.com/gofiber/fiber/v2"
 	"github.com/stamford-syntax-club/course-compose/reviews/common/utils"
 	review_db "github.com/stamford-syntax-club/course-compose/reviews/review/data/datasource/db"
+	"github.com/stamford-syntax-club/course-compose/reviews/review/domain/dto"
 )
 
 type reviewRepositoryImpl struct {
@@ -84,4 +86,23 @@ func (r *reviewRepositoryImpl) SubmitReview(ctx context.Context, review *review_
 	}
 
 	return result, nil
+}
+
+func (r *reviewRepositoryImpl) UpdateReviewStatus(ctx context.Context, reviewDecision *dto.ReviewDecisionDTO) (*review_db.ReviewModel, error) {
+	updatedReview, err := r.reviewDB.Review.FindUnique(
+		review_db.Review.ID.Equals(reviewDecision.ID),
+	).Update(
+		review_db.Review.Status.Set(reviewDecision.Status),
+		review_db.Review.RejectedReason.Set(reviewDecision.RejectedReason),
+	).Exec(ctx)
+
+	if err != nil {
+		if errors.Is(err, review_db.ErrNotFound) {
+			return nil, fiber.ErrNotFound
+		}
+		log.Println("exec update review status:", err)
+		return nil, fiber.ErrInternalServerError
+	}
+
+	return updatedReview, nil
 }
