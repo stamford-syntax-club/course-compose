@@ -20,6 +20,7 @@ CREATE TABLE "Review" (
   rating        FLOAT,
   votes         INTEGER,
   status        VARCHAR(255),
+  "rejectedReason" VARCHAR(255),
   course_id     INTEGER,
   user_id       UUID,
   created_at    TIMESTAMP DEFAULT CURRENT_TIMESTAMP,

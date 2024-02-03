@@ -126,8 +126,11 @@ func TestPrivateRoutes(t *testing.T) {
 func TestAdminRoutes(t *testing.T) {
 	app, client := setupTestRouter()
 	defer client.Prisma.Disconnect()
+
+	const adminRoutes = "/api/admin/reviews"
+
 	t.Run("only admin can access admin routes", func(t *testing.T) {
-		req := httptest.NewRequest(http.MethodPut, "/admin/reviews", nil)
+		req := httptest.NewRequest(http.MethodPut, adminRoutes, nil)
 
 		resp, err := app.Test(req, -1)
 		assert.NoError(t, err)
@@ -200,9 +203,8 @@ func TestAdminRoutes(t *testing.T) {
 		for _, test := range tests {
 			t.Run(test.name, func(t *testing.T) {
 				requestBody, _ := json.Marshal(test.requestBody)
-				req := httptest.NewRequest(http.MethodPut, "/admin/reviews", bytes.NewBuffer(requestBody))
+				req := httptest.NewRequest(http.MethodPut, adminRoutes, bytes.NewBuffer(requestBody))
 				req.Header.Set("Content-Type", "application/json")
-				// TODO: UpdatReviewStatus is misssing basic auth on the header
 				auth := base64.StdEncoding.EncodeToString([]byte(os.Getenv("ADMIN_USERNAME") + ":" + os.Getenv("ADMIN_PASSWORD")))
 				req.Header.Set("Authorization", "Basic "+auth)
 
