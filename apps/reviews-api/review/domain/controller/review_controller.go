@@ -78,11 +78,29 @@ func (rc *ReviewController) SubmitReview(c *fiber.Ctx) error {
 
 func (rc *ReviewController) EditReview(c *fiber.Ctx) error {
 	review := db.ReviewModel{}
-	if err := c.BodyParser(&review); err != nil || review.Description == "" || review.AcademicYear == 0 {
+	// require review id for validating ownership
+	if err := c.BodyParser(&review); err != nil || review.ID == 0 || review.Description == "" || review.AcademicYear == 0 {
 		return fiber.NewError(http.StatusBadRequest, "Invalid request body")
 	}
 
-    return c.Status(http.StatusOK).JSON("edit review!")
+	courseCode := c.Params("courseCode")
+	if courseCode == "" {
+		return fiber.NewError(http.StatusBadRequest, "Invalid course code")
+	}
+
+	userID := utils.GetUserID(c)
+	if userID == "" {
+		return fiber.NewError(http.StatusBadRequest, "Invalid user ID")
+	}
+
+	ctx, cancelFunc := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancelFunc()
+	_, err := rc.reviewRepo.EditReview(ctx, &review, courseCode, userID)
+	if err != nil {
+		return err
+	}
+
+	return c.Status(http.StatusOK).JSON("edit review!")
 }
 
 func (rc *ReviewController) UpdateReviewStatus(c *fiber.Ctx) error {
