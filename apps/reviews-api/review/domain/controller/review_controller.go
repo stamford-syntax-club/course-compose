@@ -76,6 +76,15 @@ func (rc *ReviewController) SubmitReview(c *fiber.Ctx) error {
 	return c.Status(http.StatusCreated).JSON(result)
 }
 
+func (rc *ReviewController) EditReview(c *fiber.Ctx) error {
+	review := db.ReviewModel{}
+	if err := c.BodyParser(&review); err != nil || review.Description == "" || review.AcademicYear == 0 {
+		return fiber.NewError(http.StatusBadRequest, "Invalid request body")
+	}
+
+    return c.Status(http.StatusOK).JSON("edit review!")
+}
+
 func (rc *ReviewController) UpdateReviewStatus(c *fiber.Ctx) error {
 	reviewDecision := &dto.ReviewDecisionDTO{}
 	if err := c.BodyParser(reviewDecision); err != nil || reviewDecision.ID == 0 || reviewDecision.Status == "" {
