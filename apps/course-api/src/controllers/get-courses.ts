@@ -11,6 +11,9 @@ const getCourseByCode = async (code: string) => {
 			reviews: {
 				select: {
 					rating: true
+				},
+				where: {
+					status: "APPROVED"
 				}
 			}
 		}
@@ -50,6 +53,9 @@ const getAllCourses = async (search: string, pageSize: number, pageNumber: numbe
 				reviews: {
 					select: {
 						rating: true
+					},
+					where: {
+						status: "APPROVED"
 					}
 				}
 			}

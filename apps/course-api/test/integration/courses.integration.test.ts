@@ -26,6 +26,14 @@ beforeAll(async () => {
 			}
 		]
 	});
+
+    await prismaClient.profile.createMany({
+        data: [
+			{ id: "6c7b1dd2-aa9d-4f5e-8a98-2c7c2895a95e", isActive: true },
+			{ id: "2d1f3c4e-5a6b-7c8d-9e0f-1a2b3c4d5e6f", isActive: true },
+			{ id: "8a7b3c2e-3e5f-4f1a-a8b7-3c2e1a4f5b6d", isActive: true },
+        ]
+    })
 	await prismaClient.review.createMany({
 		data: [
 			{
@@ -34,7 +42,8 @@ beforeAll(async () => {
 				rating: 3,
 				votes: 2,
 				status: "APPROVED",
-				course_id: 1
+				course_id: 1,
+				user_id: "2d1f3c4e-5a6b-7c8d-9e0f-1a2b3c4d5e6f"
 			},
 			{
 				academic_year: 2021,
@@ -42,7 +51,17 @@ beforeAll(async () => {
 				rating: 1.5,
 				votes: 2,
 				status: "APPROVED",
-				course_id: 1
+				course_id: 1,
+				user_id: "6c7b1dd2-aa9d-4f5e-8a98-2c7c2895a95e"
+			},
+			{
+				academic_year: 2021,
+				description: "some pending review which should be excluded from aggregation",
+				rating: 1.5,
+				votes: 2,
+				status: "PENDING",
+				course_id: 1,
+				user_id: "8a7b3c2e-3e5f-4f1a-a8b7-3c2e1a4f5b6d"
 			}
 		]
 	});
