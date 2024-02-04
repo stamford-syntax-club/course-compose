@@ -3,6 +3,7 @@ package review_controller
 import (
 	"context"
 	"net/http"
+	"strings"
 	"time"
 
 	"github.com/gofiber/fiber/v2"
@@ -73,4 +74,30 @@ func (rc *ReviewController) SubmitReview(c *fiber.Ctx) error {
 	}
 
 	return c.Status(http.StatusCreated).JSON(result)
+}
+
+func (rc *ReviewController) UpdateReviewStatus(c *fiber.Ctx) error {
+	reviewDecision := &dto.ReviewDecisionDTO{}
+	if err := c.BodyParser(reviewDecision); err != nil || reviewDecision.ID == 0 || reviewDecision.Status == "" {
+		return fiber.NewError(http.StatusBadRequest, "Invalid request body")
+	}
+	reviewDecision.Status = strings.ToUpper(reviewDecision.Status)
+
+	ctx, cancelFunc := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancelFunc()
+
+	if reviewDecision.Status != "APPROVED" && reviewDecision.Status != "REJECTED" {
+		return fiber.NewError(http.StatusBadRequest, "Invalid review status")
+	}
+
+	if reviewDecision.Status == "REJECTED" && reviewDecision.RejectedReason == "" {
+		return fiber.NewError(http.StatusBadRequest, "Rejected reason is required")
+	}
+
+	result, err := rc.reviewRepo.UpdateReviewStatus(ctx, reviewDecision)
+	if err != nil {
+		return err
+	}
+
+	return c.Status(http.StatusOK).JSON(result)
 }

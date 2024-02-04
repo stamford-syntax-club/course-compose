@@ -16,6 +16,10 @@ func registerRoutes(app *fiber.App, routes []config.Route) *fiber.App {
 			app.Get(route.Path, handler)
 		case http.MethodPost:
 			app.Post(route.Path, handler)
+		case http.MethodPut:
+			app.Put(route.Path, handler)
+		case http.MethodDelete:
+			app.Delete(route.Path, handler)
 		default:
 			log.Printf("Unsupported HTTP method: %s for path: %s\n", route.Method, route.Path)
 		}

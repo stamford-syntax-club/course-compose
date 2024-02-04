@@ -30,6 +30,7 @@ model Review {
   rating        Float 
   votes         Int
   status        String
+  rejectedReason String @default("") 
   course_id     Int
   user_id       String     @db.Uuid
   created_at    DateTime    @default(now())

@@ -19,6 +19,7 @@ type ReviewRouter struct {
 func (r *ReviewRouter) RegisterRoutes() {
 	r.commonRouter.Get("/courses/:courseCode/reviews", middleware.JWTAuth(), r.rc.GetReviews)
 	r.commonRouter.Post("/courses/:courseCode/reviews", middleware.JWTAuth(), r.rc.SubmitReview)
+	r.commonRouter.Put("/admin/reviews", middleware.AdminAuth(), r.rc.UpdateReviewStatus)
 }
 
 func New(router *router.FiberRouter, rc *review_controller.ReviewController) *ReviewRouter {
