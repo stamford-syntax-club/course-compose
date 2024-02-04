@@ -56,6 +56,16 @@ func parseResponse(route config.Route, respBody []byte) (interface{}, error) {
 	return resp, nil
 }
 
+func appendQueryParams(queries map[string]string, endpoint *string) {
+	if len(queries) >= 1 {
+		*endpoint += "?"
+	}
+
+	for key, value := range queries {
+		*endpoint += fmt.Sprintf("%s=%s&", key, value)
+	}
+}
+
 func createHandler(route config.Route) fiber.Handler {
 	return func(c *fiber.Ctx) error {
 		endpoint := route.Dest.Endpoint
@@ -65,6 +75,8 @@ func createHandler(route config.Route) fiber.Handler {
 			// only support one parameter for now
 			endpoint = strings.ReplaceAll(endpoint, ":"+params[0], c.Params(params[0]))
 		}
+
+		appendQueryParams(c.Queries(), &endpoint)
 
 		log.Printf("Forwarding request to service: %s - %s", route.Dest.Service, endpoint)
 		respCode, respBody, err := sendHTTPRequest(c, route.Method, endpoint)

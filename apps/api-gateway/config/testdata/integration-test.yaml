@@ -24,6 +24,13 @@ routes:
       endpoint: https://jsonplaceholder.typicode.com/todos
       is_array: true 
 
+  - path: /api/integration-append-query-params
+    method: GET
+    destination:
+      service: get_query_params 
+      endpoint: https://jsonplaceholder.typicode.com/posts
+      is_array: true 
+
   - path: /api/integration-header
     method: POST
     destination:
