@@ -9,7 +9,10 @@ const app = express();
 
 app.use(cors());
 app.use(morgan("combined"));
-app.use(cacheEndpoint);
+
+if (process.env.APP_ENV === "beta" || process.env.APP_ENV === "prod") {
+	app.use(cacheEndpoint);
+}
 
 app.get("/", (req: Request, res: Response) => {
 	res.send("Welcome to Express & TypeScript Server");
