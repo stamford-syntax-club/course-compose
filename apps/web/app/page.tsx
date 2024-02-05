@@ -81,7 +81,7 @@ export default function HomePage(): JSX.Element {
 				inner: "h-full"
 			}}
 		>
-			<Grid.Col span={{ base: 12, xl: 10 }}>
+			<Grid.Col span={{ base: 12, xl: 12 }}>
 				<Stack className="h-full" gap="md">
 					{/* Searchbar Container */}
 					<form
@@ -167,7 +167,7 @@ export default function HomePage(): JSX.Element {
 					{/* Courses List Body */}
 					<Paper bg="dark.8" p="sm" withBorder className="h-full">
 						<div className="relative flex size-full flex-col">
-							<div className="grid grid-cols-12 grid-rows-3 gap-x-2 gap-y-2">
+							<div className="grid grid-cols-12 grid-rows-3 gap-4">
 								{filteredCourses.map((course) => {
 									return (
 										<CourseCard
@@ -192,11 +192,11 @@ export default function HomePage(): JSX.Element {
 			</Grid.Col>
 
 			{/* Review Feed */}
-			<Grid.Col visibleFrom="xl" span={2}>
+			{/* <Grid.Col visibleFrom="xl" span={2}>
 				<Paper bg="dark.8" p="sm" withBorder className="h-full">
 					Lol
 				</Paper>
-			</Grid.Col>
+			</Grid.Col> */}
 		</Grid>
 	);
 }
