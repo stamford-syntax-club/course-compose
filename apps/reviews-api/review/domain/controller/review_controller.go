@@ -50,6 +50,30 @@ func (rc *ReviewController) GetReviews(c *fiber.Ctx) error {
 	return c.Status(http.StatusOK).JSON(result)
 }
 
+func (rc *ReviewController) GetAllMyReviews(c *fiber.Ctx) error {
+	ctx, cancelFunc := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancelFunc()
+
+	userID := utils.GetUserID(c)
+
+	// TODO: great new joiner task to implement pagination
+	pageInformation := &utils.PageInformation{
+		Size:   9999,
+		Number: 1,
+	}
+
+	rawReviews, err := rc.reviewRepo.GetAllMyReviews(ctx, userID)
+	if err != nil {
+		return err
+	}
+
+	reviews := dto.MapReviewToReviewDTO(rawReviews, userID)
+
+	result := utils.NewPagination(reviews, len(reviews), pageInformation)
+
+	return c.Status(http.StatusOK).JSON(result)
+}
+
 func (rc *ReviewController) SubmitReview(c *fiber.Ctx) error {
 	review := db.ReviewModel{}
 	if err := c.BodyParser(&review); err != nil || review.Description == "" || review.AcademicYear == 0 {

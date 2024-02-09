@@ -13,4 +13,5 @@ type ReviewRepository interface {
 	SubmitReview(context.Context, *db.ReviewModel, string, string) (*db.ReviewModel, error)
 	EditReview(context.Context, *db.ReviewModel, string, string) (*db.ReviewModel, error)
 	UpdateReviewStatus(context.Context, *dto.ReviewDecisionDTO) (*db.ReviewModel, error)
+	GetAllMyReviews(context.Context, string) ([]db.ReviewModel, error)
 }
