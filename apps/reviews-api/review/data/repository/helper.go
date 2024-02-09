@@ -131,7 +131,7 @@ func isReviewOwner(ctx context.Context, prisma *db.PrismaClient, submittedID, co
 
 	result := <-myReviewCh
 	if result == nil || result.ID != submittedID {
-		return fiber.NewError(http.StatusBadRequest, "user is not the owner of this review")
+		return fiber.NewError(http.StatusBadRequest, "User is not the owner of this review")
 	}
 
 	return nil
