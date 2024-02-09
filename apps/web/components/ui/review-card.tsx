@@ -1,4 +1,5 @@
-import { Card, Flex, Avatar, Box, Text, Rating, Badge, Button } from "@mantine/core";
+import { Avatar, Badge, Box, Button, Card, Flex, Rating, Text } from "@mantine/core";
+import {  IconThumbUp, IconThumbDown} from "@tabler/icons-react";
 
 const UserReview = () => {
 	return (
@@ -12,27 +13,12 @@ const UserReview = () => {
 					<Box>
 						<Text>{"Annoymous"}</Text>
 					</Box>
-					<Box className="flex max-w-xs flex-row flex-wrap justify-center">
-						{/* These will be small icons */}
-						<Badge color="blue" m="2">
-							Icons
-						</Badge>
-						<Badge color="red" m="2">
-							Icons
-						</Badge>
-						<Badge color="orange" m="2">
-							Icons
-						</Badge>
-						<Badge color="green" m="2">
-							Icons
-						</Badge>
-					</Box>
 				</Flex>
 
 				{/* review and ratings */}
 				<Flex direction="column" justify="flex-start" ml="3" gap="4" w="100%">
 					<Rating size="md" value={4} fractions={2} defaultValue={0} readOnly />
-					<Text size="sm">Academic Date</Text>
+					<Text size="sm">Academic Year</Text>
 					<Box>
 						<Text mt="md">
 							Lorem ipsum dolor sit amet consectetur adipisicing elit. Quo numquam amet sit! Totam id
@@ -43,14 +29,15 @@ const UserReview = () => {
 				</Flex>
 
 				<Flex direction="column" gap="lg" align="center">
+					{/* only display pending if "isOwner" is true */}
 					<Badge color="yellow">Pending</Badge>
 					<Box className="flex flex-col">
 						<Button radius="50" color="green" variant="light">
-							Helpful
+							<IconThumbUp />
 						</Button>
 						<Text className="self-center">{"5"}</Text>
 						<Button radius="50" color="red" variant="light">
-							UnHelpful
+							<IconThumbDown/>
 						</Button>
 					</Box>
 				</Flex>

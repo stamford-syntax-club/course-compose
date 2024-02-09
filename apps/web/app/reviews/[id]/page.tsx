@@ -1,22 +1,22 @@
 import {
+	Blockquote,
+	Box,
+	Button,
 	Card,
 	Container,
-	Title,
-	Text,
 	Flex,
-	Image,
-	Box,
-	Stack,
 	Group,
+	Image,
+	Paper,
 	Rating,
 	ScrollArea,
-	Blockquote,
-	Paper,
 	Select,
+	Stack,
+	Text,
 	Textarea,
-	Button
+	Title
 } from "@mantine/core";
-import UserReview from "../components/ui/review-card";
+import UserReview from "@components/ui/review-card";
 
 const CourseReview = () => {
 	const academicYears = [
@@ -26,40 +26,32 @@ const CourseReview = () => {
 	];
 
 	return (
-		<Container fluid>
+		<Container>
 			{/* headings */}
-			<Flex direction="row" gap="md" justify="flex-start" mb="lg">
-				<Card shadow="sm" padding="md" radius="md" w="100%">
-					<Flex direction="row" gap="5">
-						<Box component="a" href="/">
-							<Image
-								h="auto"
-								w={300}
-								src="/assets/images/logos/stamford-logo-clearbg-white.png"
-								alt="Stamford Internation University logo"
-							/>
-						</Box>
-						<Box component="a" href="/">
-							<Image
-								h={90}
-								w={90}
-								src="/assets/images/logos/codelogo.png"
-								alt="Stamford Internation University logo"
-								className="rounded-full"
-							/>
-						</Box>
-					</Flex>
-					<Title>Programming 1</Title>
-					<Text>Information Technology</Text>
-					<Text>ITE221</Text>
-				</Card>
-
-				<Card shadow="sm" padding="md" radius="md" w="100%">
-					<Title>Related Courses</Title>
-					<Text>ITE222 - Programming 2</Text>
-					<Text>ITE343 - Mobile Application Development</Text>
-				</Card>
-			</Flex>
+			<Card shadow="sm" padding="md" radius="md" w="100%" mb="sm">
+				<Flex direction="row" gap="5">
+					<Box component="a" href="/">
+						<Image
+							h="auto"
+							w={300}
+							src="/assets/images/logos/stamford-logo-clearbg-white.png"
+							alt="Stamford Internation University logo"
+						/>
+					</Box>
+					<Box component="a" href="/">
+						<Image
+							h={90}
+							w={90}
+							src="/assets/images/logos/codelogo.png"
+							alt="Stamford Internation University logo"
+							className="rounded-full"
+						/>
+					</Box>
+				</Flex>
+				<Title>Programming 1</Title>
+				<Text>Information Technology</Text>
+				<Text>ITE221</Text>
+			</Card>
 			{/* reviews and ratings */}
 			<Box className="rounded-lg border-2 border-solid border-gray-500 p-2">
 				<Flex justify="space-between" m="lg" mb="lg">
