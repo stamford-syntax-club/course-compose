@@ -145,6 +145,96 @@ func TestGetCourseReview(t *testing.T) {
 	})
 }
 
+func TestEditReview(t *testing.T) {
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	client := setupTestDB(t)
+	t.Cleanup(
+		func() {
+			cancel()
+			if err := client.Prisma.Disconnect(); err != nil {
+				t.Fatalf("Prisma Disconnect: %v", err)
+			}
+		})
+
+	repo := NewReviewRepositoryImpl(client)
+
+	const (
+		validCourseCode   = "MATH201"
+		invalidCourseCode = "CHINATHAI1234"
+		ownerID           = "2d1f3c4e-5a6b-7c8d-9e0f-1a2b3c4d5e6f"
+		nonOwnerID        = "6c7b1dd2-aa9d-4f5e-8a98-2c7c2895a95e"
+	)
+
+	/*
+		        Context: this is the review we are editing
+				{
+		            id: 2
+					academicYear: 2022,
+					description:  "The material was challenging but interesting.",
+					rating:       4,
+					votes:        8,
+					status:       "APPROVED",
+					courseId:     2,
+					userId:       "2d1f3c4e-5a6b-7c8d-9e0f-1a2b3c4d5e6f",
+				},
+	*/
+	newReview := &db.ReviewModel{
+		InnerReview: db.InnerReview{
+			ID:           2,
+			AcademicYear: 2023,
+			Description:  "Some edited data",
+			Rating:       2,
+		},
+	}
+
+	t.Run("update review as given in the model and set status back to pending for re-evaluation", func(t *testing.T) {
+		editedReview, err := repo.EditReview(ctx, newReview, validCourseCode, ownerID)
+
+		assert.NoError(t, err)
+		assert.Equal(t, newReview.AcademicYear, editedReview.AcademicYear)
+		assert.Equal(t, newReview.Description, editedReview.Description)
+		assert.Equal(t, newReview.Rating, editedReview.Rating)
+		assert.Equal(t, "PENDING", editedReview.Status)
+	})
+
+	errTest := []struct {
+		name       string
+		courseCode string
+		userId     string
+		errMsg     string
+	}{
+		{
+			name:       "return err if user is not owner of the review",
+			courseCode: validCourseCode,
+			userId:     nonOwnerID,
+			errMsg:     "User is not the owner of this review",
+		},
+		{
+			name:       "return err if course does not exist",
+			courseCode: invalidCourseCode,
+			userId:     ownerID,
+			errMsg:     "Course does not exist",
+		},
+		{
+			name:       "return err if user does not exist",
+			courseCode: validCourseCode,
+			userId:     "9c82c3b5-5b87-4c9b-832d-60d0966d4f7f",
+			errMsg:     "User does not exist",
+		},
+	}
+
+	for _, et := range errTest {
+		t.Run(et.name, func(t *testing.T) {
+			editedReview, err := repo.EditReview(ctx, newReview, et.courseCode, et.userId)
+
+			assert.Error(t, err)
+			assert.Equal(t, et.errMsg, err.Error())
+			assert.Nil(t, editedReview)
+		})
+
+	}
+}
+
 func TestSubmitReview(t *testing.T) {
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	client := setupTestDB(t)

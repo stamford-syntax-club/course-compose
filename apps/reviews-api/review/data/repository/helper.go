@@ -125,6 +125,21 @@ func hasExistingReview(ctx context.Context, prisma *db.PrismaClient, courseID in
 	return nil
 }
 
+func isReviewOwner(ctx context.Context, prisma *db.PrismaClient, submittedID, courseID int, userID string) error {
+	myReviewCh := make(chan *db.ReviewModel)
+
+	// get review's written user from that course
+	go getMyReview(ctx, prisma, userID, courseID, 1, myReviewCh)
+
+	result := <-myReviewCh
+	// check if user's review and the review user wants to edit has the same ID
+	if result == nil || result.ID != submittedID {
+		return fiber.NewError(http.StatusBadRequest, "User is not the owner of this review")
+	}
+
+	return nil
+}
+
 func getUser(ctx context.Context, client *db.PrismaClient, userID string) (*db.ProfileModel, error) {
 	user, err := client.Profile.FindFirst(
 		db.Profile.ID.Equals(userID),

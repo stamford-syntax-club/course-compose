@@ -88,6 +88,36 @@ func (r *reviewRepositoryImpl) SubmitReview(ctx context.Context, review *review_
 	return result, nil
 }
 
+func (r *reviewRepositoryImpl) EditReview(ctx context.Context, review *review_db.ReviewModel, courseCode, userID string) (*review_db.ReviewModel, error) {
+	courseID, err := getCourseID(ctx, r.reviewDB, courseCode)
+	if err != nil {
+		return nil, err
+	}
+
+	if _, err := getUser(ctx, r.reviewDB, userID); err != nil {
+		return nil, err
+	}
+
+	if err := isReviewOwner(ctx, r.reviewDB, review.ID, courseID, userID); err != nil {
+		return nil, err
+	}
+
+	result, err := r.reviewDB.Review.FindUnique(
+		review_db.Review.ID.Equals(review.ID),
+	).Update(
+		review_db.Review.AcademicYear.SetIfPresent(&review.AcademicYear),
+		review_db.Review.Description.SetIfPresent(&review.Description),
+		review_db.Review.Rating.SetIfPresent(&review.Rating),
+		review_db.Review.Status.Set("PENDING"), // edited review must be evaluated again
+	).Exec(ctx)
+	if err != nil {
+		log.Println("exec updating review: ", err)
+		return nil, fiber.ErrInternalServerError
+	}
+
+	return result, nil
+}
+
 func (r *reviewRepositoryImpl) UpdateReviewStatus(ctx context.Context, reviewDecision *dto.ReviewDecisionDTO) (*review_db.ReviewModel, error) {
 	updatedReview, err := r.reviewDB.Review.FindUnique(
 		review_db.Review.ID.Equals(reviewDecision.ID),
