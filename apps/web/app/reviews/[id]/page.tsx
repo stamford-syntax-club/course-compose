@@ -1,3 +1,5 @@
+"use client";
+
 import {
 	Blockquote,
 	Box,
@@ -17,6 +19,9 @@ import {
 	Title
 } from "@mantine/core";
 import UserReview from "@components/ui/review-card";
+import "@mantine/tiptap/styles.css";
+import { MarkdownEditor } from "@components/ui/markdown-editor";
+import { IconAlertTriangleFilled } from "@tabler/icons-react";
 
 const CourseReview = () => {
 	const academicYears = [
@@ -34,7 +39,7 @@ const CourseReview = () => {
 						<Image
 							h="auto"
 							w={300}
-							src="/assets/images/logos/stamford-logo-clearbg-white.png"
+							src="/assets/logos/stamford-logo-clearbg-white.png"
 							alt="Stamford Internation University logo"
 						/>
 					</Box>
@@ -42,9 +47,9 @@ const CourseReview = () => {
 						<Image
 							h={90}
 							w={90}
-							src="/assets/images/logos/codelogo.png"
+							src="/assets/logos/codelogo.png"
 							alt="Stamford Internation University logo"
-							className="rounded-full"
+							radius={50}
 						/>
 					</Box>
 				</Flex>
@@ -66,45 +71,23 @@ const CourseReview = () => {
 				{/* instead of scrollarea we can  have page numbers */}
 				<ScrollArea h={500} type="always">
 					<Stack gap="sm">
-						<UserReview
-						// userImage="img path here"
-						// userName="username here"
-						// rating=P{ratings here}
-						// date="date format here"
-						// description="review text here"
-						/>
-						<UserReview
-						// userImage="img path here"
-						// userName="username here"
-						// rating=P{ratings here}
-						// date="date format here"
-						// description="review text here"
-						/>
-						<UserReview
-						// userImage="img path here"
-						// userName="username here"
-						// rating=P{ratings here}
-						// date="date format here"
-						// description="review text here"
-						/>
-						<UserReview
-						// userImage="img path here"
-						// userName="username here"
-						// rating=P{ratings here}
-						// date="date format here"
-						// description="review text here"
-						/>
+						{/* review datas */}
+						<UserReview />
+						<UserReview />
+						<UserReview />
+						<UserReview />
 					</Stack>
 				</ScrollArea>
 			</Box>
 
 			{/* write reviews */}
 			<Box className="mt-5 w-full rounded-lg border-2 border-solid border-gray-500 p-2">
-				<Flex justify="center">
-					<Blockquote color="red" cite="– Forrest Gump" icon={"Icon"} mt="xl" w="100%" p="sm">
+				<Blockquote color="yellow" mt="xl" w="100%" p="sm">
+					<Flex justify="center" gap="4" align="center">
+						<IconAlertTriangleFilled size={20} />
 						Life is like an npm install – you never know what you are going to get.
-					</Blockquote>
-				</Flex>
+					</Flex>
+				</Blockquote>
 
 				<Box>
 					<Box className="flex w-full justify-between p-4">
@@ -114,15 +97,9 @@ const CourseReview = () => {
 					</Box>
 					<Group>
 						<Paper p="md" shadow="xs" w="100%" h="100%">
-							<Textarea
-								placeholder="Write your review here..."
-								minRows={15}
-								maxRows={20}
-								h="100%"
-								mt="md"
-								autosize
-								className="h-full min-h-80 w-full"
-							/>
+							{/* markdown  */}
+							<MarkdownEditor />
+
 							<Flex gap="sm" justify="end">
 								<Button mt="md">Submit</Button>
 								<Button mt="md" variant="light">
