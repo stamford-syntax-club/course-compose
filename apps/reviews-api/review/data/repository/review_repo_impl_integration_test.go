@@ -143,6 +143,28 @@ func TestGetCourseReview(t *testing.T) {
 		assert.Equal(t, 4, count)
 		assert.NotEqual(t, "Yikes!", result[0].Description)
 	})
+
+	t.Run("Get all my reviews", func(t *testing.T) {
+		t.Run("Should return all reviews for specified user", func(t *testing.T) {
+			userID := "d5a59cb2-1f22-4e23-8ef0-7108e54f842b"
+			myReviews, err := repo.GetAllMyReviews(ctx, userID)
+
+			assert.NoError(t, err)
+			assert.Equal(t, 3, len(myReviews))
+			assert.Equal(t, userID, myReviews[0].UserID)
+			assert.Equal(t, userID, myReviews[1].UserID)
+			assert.Equal(t, userID, myReviews[2].UserID)
+		})
+
+		t.Run("Return empty array if token is not provided", func(t *testing.T) {
+			// 00000000-0000-0000-0000-000000000000 is used if userID cannot be extracted from JWT
+			myReviews, err := repo.GetAllMyReviews(ctx, "00000000-0000-0000-0000-000000000000")
+
+			assert.NoError(t, err)
+			assert.Empty(t, myReviews)
+		})
+	})
+
 }
 
 func TestEditReview(t *testing.T) {
@@ -414,6 +436,24 @@ func seedReviewData(client *db.PrismaClient) {
 			status:       "APPROVED",
 			courseId:     3,
 			userId:       "3f9e87a9-6d27-4a09-8a0a-20e58d609315",
+		},
+		{
+			academicYear: 2022,
+			description:  "So Good!",
+			rating:       5,
+			votes:        0,
+			status:       "PENDING",
+			courseId:     5,
+			userId:       "d5a59cb2-1f22-4e23-8ef0-7108e54f842b",
+		},
+		{
+			academicYear: 2022,
+			description:  "WOWWW!",
+			rating:       5,
+			votes:        0,
+			status:       "REJECTED",
+			courseId:     1,
+			userId:       "d5a59cb2-1f22-4e23-8ef0-7108e54f842b",
 		},
 	}
 

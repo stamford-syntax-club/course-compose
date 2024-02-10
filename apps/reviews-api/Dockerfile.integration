@@ -5,5 +5,5 @@ WORKDIR /review-app-integration
 COPY ./packages/prisma/schema.prisma .
 COPY ./apps/reviews-api .
 
-CMD sh -c "go run github.com/steebchen/prisma-client-go generate & go test -v -tags=integration ./..."
+CMD sh -c "go run github.com/steebchen/prisma-client-go generate && go test -v -tags=integration ./..."
 

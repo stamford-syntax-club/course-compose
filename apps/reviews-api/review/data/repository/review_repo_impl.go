@@ -145,7 +145,6 @@ func (r *reviewRepositoryImpl) GetAllMyReviews(ctx context.Context, userID strin
 		db.Review.Course.Fetch(),
 		db.Review.Profile.Fetch(),
 	).OrderBy(db.Review.Status.Order(db.SortOrderAsc)).Exec(ctx)
-
 	if err != nil {
 		if !errors.Is(err, review_db.ErrNotFound) {
 			log.Println("exec find my reviews query: ", err)
