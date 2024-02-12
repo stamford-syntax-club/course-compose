@@ -8,6 +8,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
+	"log"
 	"net/http"
 	"net/http/httptest"
 	"os"
@@ -52,10 +53,10 @@ func TestPrivateRoutes(t *testing.T) {
 		}{
 			{
 				name:                 "student email should accept",
-				userID:               "8a7b3c2e-3e5f-4f1a-a8b7-3c2e1a4f5b6d",
+				userID:               "3f9e87a9-6d27-4a09-8a0a-20e58d609315",
 				email:                "test@students.stamford.edu",
 				tokenExp:             time.Hour * 1,
-				courseCode:           "MATH201",
+				courseCode:           "ITE221",
 				expectedResponseCode: http.StatusCreated,
 			},
 			{
@@ -212,6 +213,7 @@ func TestAdminRoutes(t *testing.T) {
 				respBody, _ := io.ReadAll(resp.Body)
 				defer resp.Body.Close()
 
+                log.Println(string(respBody))
 				assert.NoError(t, err)
 				assert.Equal(t, test.expectedResponseCode, resp.StatusCode)
 				if test.expectedResponseCode == http.StatusOK {
