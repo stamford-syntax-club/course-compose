@@ -18,8 +18,8 @@ import {
 	Text,
 	Title
 } from "@mantine/core";
-import UserReview from "@components/ui/review-card";
 import "@mantine/tiptap/styles.css";
+import { MyReviewCard, ReviewCard } from "@components/ui/review-card";
 import { MarkdownEditor } from "@components/ui/markdown-editor";
 import { IconAlertTriangleFilled } from "@tabler/icons-react";
 import { useEffect, useState } from "react";
@@ -45,7 +45,7 @@ export default function CourseReview({ params }: { params: { courseCode: string 
 				`http://localhost:8000/api/courses/${params.courseCode}/reviews?pageNumber=${pageNumber}`,
 				{
 					headers: {
-						Authorization: `Bearer ${"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6ImtoaW5nQHN0dWRlbnRzLnN0YW1mb3JkLmVkdSIsImV4cCI6MTcwNzcyNjg2MCwic3ViIjoiOGE3YjNjMmUtM2U1Zi00ZjFhLWE4YjctM2MyZTFhNGY1YjZkIn0.zwHDARPCQgIsrOkb8Tg5GD5shoxX0pg4rnmGw1GRA18"}`
+						Authorization: `Bearer ${"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6ImtoaW5nQHN0dWRlbnRzLnN0YW1mb3JkLmVkdSIsImV4cCI6MTcwNzczMDgwOSwic3ViIjoiOGE3YjNjMmUtM2U1Zi00ZjFhLWE4YjctM2MyZTFhNGY1YjZkIn0.0y1RVHQeOlXeKYoBZVXnWtSD8tyryo24CEslhprM6X8"}`
 					}
 				}
 			);
@@ -93,17 +93,10 @@ export default function CourseReview({ params }: { params: { courseCode: string 
 				{/* instead of scrollarea we can  have page numbers */}
 				<Stack gap="sm">
 					{/* review datas */}
-					{reviewsData?.data.map((review) => (
-						<UserReview
-							academicYear={review.academicYear}
-							description={review.description}
-							isOwner={review.isOwner ?? false}
-							rating={review.rating}
-							status={review.status}
-							votes={review.votes}
-							createdAt={review.created_at}
-						/>
-					))}
+					{reviewsData?.data &&
+						reviewsData?.data.map((review) =>
+							review?.isOwner ? <MyReviewCard review={review} /> : <ReviewCard review={review} />
+						)}
 					<div className="mt-auto flex items-center justify-center">
 						<Pagination
 							withEdges
@@ -131,9 +124,7 @@ export default function CourseReview({ params }: { params: { courseCode: string 
 
 					<Group>
 						<Paper p="md" shadow="xs" w="100%" h="100%">
-							{/* markdown  */}
 							<MarkdownEditor />
-
 							<Flex gap="sm" justify="end">
 								<Button mt="md">Submit</Button>
 								<Button mt="md" variant="light">

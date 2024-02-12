@@ -71,7 +71,7 @@ export default function HomePage(): JSX.Element {
 	const filteredCourses = currentSearch
 		? COURSE_LIST.filter((course) => {
 				return course.courseName.toLowerCase().includes(currentSearch.toLowerCase());
-			})
+		  })
 		: COURSE_LIST;
 
 	return (
