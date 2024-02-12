@@ -1,5 +1,6 @@
-import { Avatar, Badge, Box, Button, Card, Flex, Menu, Rating, Text } from "@mantine/core";
+import { Avatar, Badge, Box, Button, Card, Flex, Menu, Rating, Text, TypographyStylesProvider } from "@mantine/core";
 import { IconEdit, IconMenu2, IconThumbDown, IconThumbUp, IconX } from "@tabler/icons-react";
+import ReactMarkdown from "react-markdown";
 import { Review } from "types/reviews";
 
 interface ReviewCardProps {
@@ -34,10 +35,12 @@ export function ReviewCard({ review }: ReviewCardProps) {
 				{/* review and ratings */}
 				<Flex direction="column" justify="flex-start" ml="3" gap="4" w="100%">
 					<Rating size="md" value={review.rating} fractions={2} defaultValue={0} readOnly />
-					<Text size="sm">Academic Year: {review.academicYear}</Text>
-					<Box>
-						<Text mt="md">{review.description}</Text>
-					</Box>
+					<Text fw={800} size="sm">
+						Academic Year: {review.academicYear}
+					</Text>
+					<TypographyStylesProvider mt="md">
+						<ReactMarkdown>{review.description}</ReactMarkdown>
+					</TypographyStylesProvider>
 				</Flex>
 
 				<Flex direction="column" gap="lg" align="center">
@@ -55,6 +58,7 @@ export function ReviewCard({ review }: ReviewCardProps) {
 		</Card>
 	);
 }
+
 export function MyReviewCard({ review }: ReviewCardProps) {
 	return (
 		<Card bg="gray.9" padding="md" radius="md" withBorder>
@@ -72,10 +76,12 @@ export function MyReviewCard({ review }: ReviewCardProps) {
 				{/* review and ratings */}
 				<Flex direction="column" justify="flex-start" ml="3" gap="4" w="100%">
 					<Rating size="md" value={review.rating} fractions={2} defaultValue={0} readOnly />
-					<Text size="sm">Academic Year: {review.academicYear}</Text>
-					<Box>
-						<Text mt="md">{review.description}</Text>
-					</Box>
+					<Text fw={800} size="md">
+						Academic Year: {review.academicYear}
+					</Text>
+					<TypographyStylesProvider mt="sm">
+						<ReactMarkdown>{review.description}</ReactMarkdown>
+					</TypographyStylesProvider>
 				</Flex>
 
 				<Flex direction="column" gap="4">
