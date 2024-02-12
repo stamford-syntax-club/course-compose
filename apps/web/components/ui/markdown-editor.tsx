@@ -1,32 +1,10 @@
 import "@mantine/tiptap/styles.css";
-import { RichTextEditor, Link } from "@mantine/tiptap";
-import { useEditor } from "@tiptap/react";
-import Highlight from "@tiptap/extension-highlight";
-import StarterKit from "@tiptap/starter-kit";
-import Underline from "@tiptap/extension-underline";
-import TextAlign from "@tiptap/extension-text-align";
-import Superscript from "@tiptap/extension-superscript";
-import { Textarea, Text } from "@mantine/core";
+import { RichTextEditor } from "@mantine/tiptap";
+import { Editor } from "@tiptap/react";
 
-const content = (
-	<Text />
-);
-
-export function MarkdownEditor() {
-	const editor = useEditor({
-		extensions: [
-			StarterKit,
-			Underline,
-			Link,
-			Superscript,
-			Highlight,
-			TextAlign.configure({ types: ["heading", "paragraph"] })
-		],
-		content
-	});
-
+export function MarkdownEditor({ editor }: { editor: Editor | null }) {
 	return (
-		<RichTextEditor editor={editor} className="min-h-80">
+		<RichTextEditor editor={editor}>
 			<RichTextEditor.Toolbar sticky stickyOffset={60}>
 				<RichTextEditor.ControlsGroup>
 					<RichTextEditor.Bold />
@@ -34,22 +12,21 @@ export function MarkdownEditor() {
 					<RichTextEditor.Underline />
 					<RichTextEditor.Strikethrough />
 					<RichTextEditor.ClearFormatting />
-					<RichTextEditor.Highlight />
 					<RichTextEditor.Code />
+				</RichTextEditor.ControlsGroup>
+
+				<RichTextEditor.ControlsGroup>
+					<RichTextEditor.H1 />
+					<RichTextEditor.H2 />
+					<RichTextEditor.H3 />
+					<RichTextEditor.H4 />
+					<RichTextEditor.H5 />
 				</RichTextEditor.ControlsGroup>
 
 				<RichTextEditor.ControlsGroup>
 					<RichTextEditor.Hr />
 					<RichTextEditor.BulletList />
 					<RichTextEditor.OrderedList />
-					<RichTextEditor.Superscript />
-				</RichTextEditor.ControlsGroup>
-
-				<RichTextEditor.ControlsGroup>
-					<RichTextEditor.AlignLeft />
-					<RichTextEditor.AlignCenter />
-					<RichTextEditor.AlignJustify />
-					<RichTextEditor.AlignRight />
 				</RichTextEditor.ControlsGroup>
 
 				<RichTextEditor.ControlsGroup>

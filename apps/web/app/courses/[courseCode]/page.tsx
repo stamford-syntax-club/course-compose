@@ -25,16 +25,11 @@ import { IconAlertTriangleFilled } from "@tabler/icons-react";
 import { useEffect, useState } from "react";
 import { PaginatedResponse } from "types/pagination";
 import { Review } from "types/reviews";
+import { useEditor } from "@tiptap/react";
+import StarterKit from "@tiptap/starter-kit";
+import { Markdown } from "tiptap-markdown";
 
 export default function CourseReview({ params }: { params: { courseCode: string } }) {
-	const academicYearOptions = [
-		{ value: "2020", label: "2020" },
-		{ value: "2021", label: "2021" },
-		{ value: "2022", label: "2022" },
-		{ value: "2023", label: "2023" },
-		{ value: "2024", label: "2024" }
-	];
-
 	const [reviewsData, setReviewsData] = useState<PaginatedResponse<Review>>();
 	const [pageNumber, setPageNumber] = useState(1);
 
@@ -42,12 +37,12 @@ export default function CourseReview({ params }: { params: { courseCode: string 
 		async function fetchCourseReviews() {
 			const data = await fetch(
 				//				`http://localhost:8000/api/courses/${params.courseCode}/reviews?pageNumber=${pageNumber}&pageSize=10`,
-				`http://localhost:8000/api/courses/${params.courseCode}/reviews?pageNumber=${pageNumber}`,
-				{
-					headers: {
-						Authorization: `Bearer ${"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6ImtoaW5nQHN0dWRlbnRzLnN0YW1mb3JkLmVkdSIsImV4cCI6MTcwNzczMDgwOSwic3ViIjoiOGE3YjNjMmUtM2U1Zi00ZjFhLWE4YjctM2MyZTFhNGY1YjZkIn0.0y1RVHQeOlXeKYoBZVXnWtSD8tyryo24CEslhprM6X8"}`
-					}
-				}
+				`http://localhost:8000/api/courses/${params.courseCode}/reviews?pageNumber=${pageNumber}`
+				//				{
+				//					headers: {
+				//						Authorization: `Bearer ${""}`
+				//					}
+				//				}
 			);
 			const reviews = await data.json();
 
@@ -56,6 +51,19 @@ export default function CourseReview({ params }: { params: { courseCode: string 
 
 		fetchCourseReviews();
 	}, [pageNumber]);
+
+	const markdownEditor = useEditor({
+		extensions: [StarterKit, Markdown],
+		content: "## Hello"
+	});
+
+	const academicYearOptions = [
+		{ value: "2020", label: "2020" },
+		{ value: "2021", label: "2021" },
+		{ value: "2022", label: "2022" },
+		{ value: "2023", label: "2023" },
+		{ value: "2024", label: "2024" }
+	];
 
 	return (
 		<Container>
@@ -90,7 +98,6 @@ export default function CourseReview({ params }: { params: { courseCode: string 
 					<Title order={2}>What people are saying about {params.courseCode}</Title>
 				</Flex>
 
-				{/* instead of scrollarea we can  have page numbers */}
 				<Stack gap="sm">
 					{/* review datas */}
 					{reviewsData?.data &&
@@ -124,9 +131,16 @@ export default function CourseReview({ params }: { params: { courseCode: string 
 
 					<Group>
 						<Paper p="md" shadow="xs" w="100%" h="100%">
-							<MarkdownEditor />
+							<MarkdownEditor editor={markdownEditor} />
 							<Flex gap="sm" justify="end">
-								<Button mt="md">Submit</Button>
+								<Button
+									mt="md"
+									onClick={(e) => {
+										console.log(markdownEditor?.storage.markdown.getMarkdown());
+									}}
+								>
+									Submit
+								</Button>
 								<Button mt="md" variant="light">
 									Cancel
 								</Button>
