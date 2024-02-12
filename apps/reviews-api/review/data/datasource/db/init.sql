@@ -33,7 +33,8 @@ INSERT INTO "Course" (code, full_name, prerequisites) VALUES
   ('CSCI101', 'Introduction to Computer Science', '{}'),
   ('MATH201', 'Calculus I', '{}'),
   ('PHYS101', 'Physics for Engineers', '{"MATH201"}'),
-  ('NOREVIEW101', 'Course without reviews', '{}');
+  ('NOREVIEW101', 'Course without reviews', '{}'),
+  ('ITE221', 'Programming 1', '{"ITE103"}');
 
 -- Inserting data into the Profile table
 INSERT INTO "Profile" (id, "isActive", username) VALUES

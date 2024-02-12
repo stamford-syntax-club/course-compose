@@ -7,6 +7,7 @@ import (
 
 	"github.com/gofiber/fiber/v2"
 	"github.com/stamford-syntax-club/course-compose/reviews/common/utils"
+	"github.com/stamford-syntax-club/course-compose/reviews/review/data/datasource/db"
 	review_db "github.com/stamford-syntax-club/course-compose/reviews/review/data/datasource/db"
 	"github.com/stamford-syntax-club/course-compose/reviews/review/domain/dto"
 )
@@ -135,4 +136,22 @@ func (r *reviewRepositoryImpl) UpdateReviewStatus(ctx context.Context, reviewDec
 	}
 
 	return updatedReview, nil
+}
+
+func (r *reviewRepositoryImpl) GetAllMyReviews(ctx context.Context, userID string) ([]db.ReviewModel, error) {
+	myReviews, err := r.reviewDB.Review.FindMany(
+		db.Review.UserID.Equals(userID),
+	).With(
+		db.Review.Course.Fetch(),
+		db.Review.Profile.Fetch(),
+	).OrderBy(db.Review.Status.Order(db.SortOrderAsc)).Exec(ctx)
+	if err != nil {
+		if !errors.Is(err, review_db.ErrNotFound) {
+			log.Println("exec find my reviews query: ", err)
+		}
+
+		return nil, fiber.ErrInternalServerError
+	}
+
+	return myReviews, nil
 }
