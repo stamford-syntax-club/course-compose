@@ -48,7 +48,7 @@ export function UserReview({ academicYear, description, isOwner, rating, status,
 
 				<Flex direction="column" gap="lg" align="center">
 					{/* only display pending if "isOwner" is true */}
-					{isOwner ?? <Badge color={getStatusColor(status)}>{isOwner}</Badge>}
+					{isOwner ? <Badge color={getStatusColor(status)}>{status}</Badge> : null}
 
 					<Box className="flex flex-col">
 						<Button radius="50" color="green" variant="light">

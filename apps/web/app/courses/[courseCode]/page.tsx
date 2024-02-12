@@ -10,6 +10,7 @@ import {
 	Flex,
 	Group,
 	Image,
+	Pagination,
 	Paper,
 	Rating,
 	Select,
@@ -22,45 +23,39 @@ import "@mantine/tiptap/styles.css";
 import { MarkdownEditor } from "@components/ui/markdown-editor";
 import { IconAlertTriangleFilled } from "@tabler/icons-react";
 import { useEffect, useState } from "react";
-
-interface ReviewResponse {
-	pageInformation: { number: number; size: number };
-	totalNumberOfItems: number;
-	totalPages: number;
-	data: {
-		id: number;
-		academicYear: number;
-		description: string;
-		isOwner: boolean;
-		rating: number;
-		status: string;
-		votes: number;
-		course: { id: number; code: string };
-		profile: { id: string };
-		created_at: Date;
-	}[];
-}
+import { PaginatedResponse } from "types/pagination";
+import { Review } from "types/reviews";
 
 export default function CourseReview({ params }: { params: { courseCode: string } }) {
 	const academicYearOptions = [
 		{ value: "2020", label: "2020" },
 		{ value: "2021", label: "2021" },
-		{ value: "2022", label: "2022" }
-		//academic years here
+		{ value: "2022", label: "2022" },
+		{ value: "2023", label: "2023" },
+		{ value: "2024", label: "2024" }
 	];
 
-	const [reviewsData, setReviewsData] = useState<ReviewResponse>();
+	const [reviewsData, setReviewsData] = useState<PaginatedResponse<Review>>();
+	const [pageNumber, setPageNumber] = useState(1);
 
 	useEffect(() => {
 		async function fetchCourseReviews() {
-			const data = await fetch(`http://localhost:8000/api/courses/${params.courseCode}/reviews`);
+			const data = await fetch(
+				//				`http://localhost:8000/api/courses/${params.courseCode}/reviews?pageNumber=${pageNumber}&pageSize=10`,
+				`http://localhost:8000/api/courses/${params.courseCode}/reviews?pageNumber=${pageNumber}`,
+				{
+					headers: {
+						Authorization: `Bearer ${"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6ImtoaW5nQHN0dWRlbnRzLnN0YW1mb3JkLmVkdSIsImV4cCI6MTcwNzcyNjg2MCwic3ViIjoiOGE3YjNjMmUtM2U1Zi00ZjFhLWE4YjctM2MyZTFhNGY1YjZkIn0.zwHDARPCQgIsrOkb8Tg5GD5shoxX0pg4rnmGw1GRA18"}`
+					}
+				}
+			);
 			const reviews = await data.json();
 
 			setReviewsData(reviews);
 		}
 
 		fetchCourseReviews();
-	}, []);
+	}, [pageNumber]);
 
 	return (
 		<Container>
@@ -92,12 +87,7 @@ export default function CourseReview({ params }: { params: { courseCode: string 
 			{/* reviews and ratings */}
 			<Box className="rounded-lg border-2 border-solid border-gray-500 p-2">
 				<Flex justify="space-between" m="lg" mb="lg">
-					<Title>Reviews</Title>
-					<Group>
-						<Rating value={3.5} fractions={2} size="xl" readOnly />
-						<Title>Rating: 4.5</Title>
-						<Title>Reviews: 100</Title>
-					</Group>
+					<Title order={2}>What people are saying about {params.courseCode}</Title>
 				</Flex>
 
 				{/* instead of scrollarea we can  have page numbers */}
@@ -114,9 +104,17 @@ export default function CourseReview({ params }: { params: { courseCode: string 
 							createdAt={review.created_at}
 						/>
 					))}
+					<div className="mt-auto flex items-center justify-center">
+						<Pagination
+							withEdges
+							total={reviewsData?.totalPages ? reviewsData.totalPages : 1}
+							onChange={setPageNumber}
+						/>
+					</div>
 				</Stack>
 
 				<Divider mt="md" />
+
 				{/* write reviews */}
 				<Box>
 					<Box className="flex w-full justify-between p-4">
