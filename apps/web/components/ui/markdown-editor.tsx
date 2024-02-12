@@ -9,7 +9,6 @@ export function MarkdownEditor({ editor }: { editor: Editor | null }) {
 				<RichTextEditor.ControlsGroup>
 					<RichTextEditor.Bold />
 					<RichTextEditor.Italic />
-					<RichTextEditor.Underline />
 					<RichTextEditor.Strikethrough />
 					<RichTextEditor.ClearFormatting />
 					<RichTextEditor.Code />

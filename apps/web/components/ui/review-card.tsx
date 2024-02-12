@@ -1,5 +1,5 @@
-import { Avatar, Badge, Box, Button, Card, Flex, Menu, Rating, Text, TypographyStylesProvider } from "@mantine/core";
-import { IconEdit, IconMenu2, IconThumbDown, IconThumbUp, IconX } from "@tabler/icons-react";
+import { Avatar, Badge, Box,  Card, Flex, Menu, Rating, Text, TypographyStylesProvider } from "@mantine/core";
+import { IconEdit, IconDots, IconX } from "@tabler/icons-react";
 import ReactMarkdown from "react-markdown";
 import { Review } from "types/reviews";
 
@@ -20,7 +20,7 @@ const getStatusColor = (status: string): string => {
 
 export function ReviewCard({ review }: ReviewCardProps) {
 	return (
-		<Card padding="md" radius="md">
+		<Card padding="md" radius="md" shadow="sm">
 			<Flex direction="row" gap="lg" justify="center">
 				{/* user profile and badges */}
 				<Flex direction="column" align="center" gap="4" justify="center" className="max-w-sm text-center">
@@ -43,17 +43,7 @@ export function ReviewCard({ review }: ReviewCardProps) {
 					</TypographyStylesProvider>
 				</Flex>
 
-				<Flex direction="column" gap="lg" align="center">
-					<Box className="flex flex-col">
-						<Button color="green" variant="light">
-							<IconThumbUp />
-						</Button>
-						<Text className="self-center">{review.votes}</Text>
-						<Button color="red" variant="light">
-							<IconThumbDown />
-						</Button>
-					</Box>
-				</Flex>
+				{/* TODO: like and dislike button */}
 			</Flex>
 		</Card>
 	);
@@ -89,7 +79,7 @@ export function MyReviewCard({ review }: ReviewCardProps) {
 						<Badge color={getStatusColor(review.status)}>{review.status}</Badge>
 						<Menu>
 							<Menu.Target>
-								<IconMenu2 />
+								<IconDots />
 							</Menu.Target>
 
 							<Menu.Dropdown>
@@ -99,13 +89,6 @@ export function MyReviewCard({ review }: ReviewCardProps) {
 								</Menu.Item>
 							</Menu.Dropdown>
 						</Menu>
-					</Flex>
-
-					<Flex justify="center">
-						<Button color={review.votes > 0 ? "green" : "red"} variant="light">
-							{review.votes > 0 ? <IconThumbUp /> : <IconThumbDown />}
-						</Button>
-						<Text className="self-center">{review.votes}</Text>
 					</Flex>
 				</Flex>
 			</Flex>

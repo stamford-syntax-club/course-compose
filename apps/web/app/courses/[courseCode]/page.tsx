@@ -4,30 +4,66 @@ import {
 	Blockquote,
 	Box,
 	Button,
-	Card,
+	Center,
 	Container,
 	Divider,
 	Flex,
-	Group,
-	Image,
+	Grid,
 	Pagination,
 	Paper,
+	Image,
 	Rating,
 	Select,
 	Stack,
-	Text,
-	Title
+	Title,
+	Text
 } from "@mantine/core";
 import "@mantine/tiptap/styles.css";
 import { MyReviewCard, ReviewCard } from "@components/ui/review-card";
 import { MarkdownEditor } from "@components/ui/markdown-editor";
-import { IconAlertTriangleFilled } from "@tabler/icons-react";
+import { IconAlertCircle, IconAlertTriangle } from "@tabler/icons-react";
 import { useEffect, useState } from "react";
 import { PaginatedResponse } from "types/pagination";
 import { Review } from "types/reviews";
 import { useEditor } from "@tiptap/react";
 import StarterKit from "@tiptap/starter-kit";
 import { Markdown } from "tiptap-markdown";
+import LinkButton from "@components/ui/back-button";
+
+const academicYearOptions = [
+	{ value: "2020", label: "2020" },
+	{ value: "2021", label: "2021" },
+	{ value: "2022", label: "2022" },
+	{ value: "2023", label: "2023" },
+	{ value: "2024", label: "2024" }
+];
+
+const reviewGuidelines = [
+	{
+		text: "Your review will be displayed anonymously to the public after approved",
+		color: "blue",
+		displayIcon: <IconAlertCircle size={25} />
+	},
+	{
+		text: "Kindly refrain from mentioning names and write your reviews with respect. Constructive criticism is encouraged",
+		color: "yellow",
+		displayIcon: <IconAlertTriangle size={25} />
+	}
+];
+
+const markDownTemplate = `
+#### Tell us how did you feel about the course
+
+Answer:  
+
+#### Were there a lot of assignments?
+
+Answer: 
+
+#### Do you have any suggestions for other students?
+
+Answer: 
+`;
 
 export default function CourseReview({ params }: { params: { courseCode: string } }) {
 	const [reviewsData, setReviewsData] = useState<PaginatedResponse<Review>>();
@@ -37,12 +73,12 @@ export default function CourseReview({ params }: { params: { courseCode: string 
 		async function fetchCourseReviews() {
 			const data = await fetch(
 				//				`http://localhost:8000/api/courses/${params.courseCode}/reviews?pageNumber=${pageNumber}&pageSize=10`,
-				`http://localhost:8000/api/courses/${params.courseCode}/reviews?pageNumber=${pageNumber}`
-				//				{
-				//					headers: {
-				//						Authorization: `Bearer ${""}`
-				//					}
-				//				}
+				`http://localhost:8000/api/courses/${params.courseCode}/reviews?pageNumber=${pageNumber}`,
+				{
+					headers: {
+						Authorization: `Bearer ${"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6ImtoaW5nQHN0dWRlbnRzLnN0YW1mb3JkLmVkdSIsImV4cCI6MTcwNzc1MzEyMCwic3ViIjoiOGE3YjNjMmUtM2U1Zi00ZjFhLWE4YjctM2MyZTFhNGY1YjZkIn0.tbjXsCJVVl-QtIHh5-QNy_6TNSx6RrPCOoz758c0ULk"}`
+					}
+				}
 			);
 			const reviews = await data.json();
 
@@ -54,22 +90,15 @@ export default function CourseReview({ params }: { params: { courseCode: string 
 
 	const markdownEditor = useEditor({
 		extensions: [StarterKit, Markdown],
-		content: "## Hello"
+		content: markDownTemplate
 	});
-
-	const academicYearOptions = [
-		{ value: "2020", label: "2020" },
-		{ value: "2021", label: "2021" },
-		{ value: "2022", label: "2022" },
-		{ value: "2023", label: "2023" },
-		{ value: "2024", label: "2024" }
-	];
 
 	return (
 		<Container>
 			{/* headings */}
-			<Card shadow="sm" padding="md" radius="md" w="100%" mb="sm">
-				<Flex direction="row" gap="5">
+			<LinkButton where="/" />
+			<Flex direction="column" gap="sm">
+				<Flex direction="row" gap="md" mt="md">
 					<Box component="a" href="/">
 						<Image
 							h="auto"
@@ -88,67 +117,73 @@ export default function CourseReview({ params }: { params: { courseCode: string 
 						/>
 					</Box>
 				</Flex>
-				<Title>Programming 1</Title>
-				<Text>Information Technology</Text>
-				<Text>ITE221</Text>
-			</Card>
-			{/* reviews and ratings */}
-			<Box className="rounded-lg border-2 border-solid border-gray-500 p-2">
-				<Flex justify="space-between" m="lg" mb="lg">
-					<Title order={2}>What people are saying about {params.courseCode}</Title>
-				</Flex>
+				<Title order={1}>ITE221 - Programming 1</Title>
+				{/* TODO: add prerequisites */}
+			</Flex>
 
-				<Stack gap="sm">
-					{/* review datas */}
-					{reviewsData?.data &&
-						reviewsData?.data.map((review) =>
-							review?.isOwner ? <MyReviewCard review={review} /> : <ReviewCard review={review} />
-						)}
-					<div className="mt-auto flex items-center justify-center">
-						<Pagination
-							withEdges
-							total={reviewsData?.totalPages ? reviewsData.totalPages : 1}
-							onChange={setPageNumber}
-						/>
-					</div>
-				</Stack>
+			<Divider size={5} mt="md" />
 
-				<Divider mt="md" />
+			{/* show reviews section*/}
+			<Title my="sm" order={2}>
+				What people are saying about {params.courseCode}
+			</Title>
 
-				{/* write reviews */}
-				<Box>
-					<Box className="flex w-full justify-between p-4">
+			<Stack gap="sm">
+				{reviewsData?.data &&
+					reviewsData?.data.map((review) =>
+						review?.isOwner ? <MyReviewCard review={review} /> : <ReviewCard review={review} />
+					)}
+				<Center>
+					<Pagination total={reviewsData?.totalPages ? reviewsData.totalPages : 1} onChange={setPageNumber} />
+				</Center>
+			</Stack>
+
+			<Divider mt="md" />
+
+			{/* write a review section*/}
+			<Grid my="sm">
+				<Grid.Col span={4}>
+					<Flex justify="flex-start">
 						<Title order={2}>Write a Review</Title>
+					</Flex>
+				</Grid.Col>
+				<Grid.Col span={4}>
+					<Flex justify="center">
 						<Rating size="lg" defaultValue={0} fractions={2} />
-						<Select data={academicYearOptions} placeholder="Select academic year" />
-					</Box>
-					<Blockquote color="yellow" w="100%" p="sm">
-						<Flex justify="center" gap="4" align="center">
-							<IconAlertTriangleFilled size={20} />
-							Life is like an npm install – you never know what you are going to get.
-						</Flex>
-					</Blockquote>
+					</Flex>
+				</Grid.Col>
+				<Grid.Col span={4}>
+					<Flex justify="flex-end">
+						<Select data={academicYearOptions} placeholder="Academic year" />
+					</Flex>
+				</Grid.Col>
+			</Grid>
 
-					<Group>
-						<Paper p="md" shadow="xs" w="100%" h="100%">
-							<MarkdownEditor editor={markdownEditor} />
-							<Flex gap="sm" justify="end">
-								<Button
-									mt="md"
-									onClick={(e) => {
-										console.log(markdownEditor?.storage.markdown.getMarkdown());
-									}}
-								>
-									Submit
-								</Button>
-								<Button mt="md" variant="light">
-									Cancel
-								</Button>
-							</Flex>
-						</Paper>
-					</Group>
-				</Box>
-			</Box>
+			{reviewGuidelines.map((guide) => (
+				<Blockquote color={guide.color} w="100%" p="sm" mb="xs">
+					<Flex justify="flex-start" gap="sm">
+						{guide.displayIcon}
+						<Text>{guide.text}</Text>
+					</Flex>
+				</Blockquote>
+			))}
+
+			<Paper shadow="md" w="100%" h="100%">
+				<MarkdownEditor editor={markdownEditor} />
+				<Flex gap="sm" justify="end">
+					<Button
+						mt="md"
+						onClick={(e) => {
+							console.log(markdownEditor?.storage.markdown.getMarkdown());
+						}}
+					>
+						Submit
+					</Button>
+					<Button mt="md" variant="light">
+						Cancel
+					</Button>
+				</Flex>
+			</Paper>
 		</Container>
 	);
 }
