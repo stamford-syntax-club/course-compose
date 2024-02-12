@@ -6,29 +6,61 @@ import {
 	Button,
 	Card,
 	Container,
+	Divider,
 	Flex,
 	Group,
 	Image,
 	Paper,
 	Rating,
-	ScrollArea,
 	Select,
 	Stack,
 	Text,
-	Textarea,
 	Title
 } from "@mantine/core";
 import UserReview from "@components/ui/review-card";
 import "@mantine/tiptap/styles.css";
 import { MarkdownEditor } from "@components/ui/markdown-editor";
 import { IconAlertTriangleFilled } from "@tabler/icons-react";
+import { useEffect, useState } from "react";
 
-const CourseReview = () => {
-	const academicYears = [
-		{ value: "2020-2021", label: "2020-2021" },
-		{ value: "2021-2022", label: "2021-2022" }
+interface ReviewResponse {
+	pageInformation: { number: number; size: number };
+	totalNumberOfItems: number;
+	totalPages: number;
+	data: {
+		id: number;
+		academicYear: number;
+		description: string;
+		isOwner: boolean;
+		rating: number;
+		status: string;
+		votes: number;
+		course: { id: number; code: string };
+		profile: { id: string };
+		created_at: Date;
+	}[];
+}
+
+export default function CourseReview({ params }: { params: { courseCode: string } }) {
+	const academicYearOptions = [
+		{ value: "2020", label: "2020" },
+		{ value: "2021", label: "2021" },
+		{ value: "2022", label: "2022" }
 		//academic years here
 	];
+
+	const [reviewsData, setReviewsData] = useState<ReviewResponse>();
+
+	useEffect(() => {
+		async function fetchCourseReviews() {
+			const data = await fetch(`http://localhost:8000/api/courses/${params.courseCode}/reviews`);
+			const reviews = await data.json();
+
+			setReviewsData(reviews);
+		}
+
+		fetchCourseReviews();
+	}, []);
 
 	return (
 		<Container>
@@ -69,32 +101,36 @@ const CourseReview = () => {
 				</Flex>
 
 				{/* instead of scrollarea we can  have page numbers */}
-				<ScrollArea h={500} type="always">
-					<Stack gap="sm">
-						{/* review datas */}
-						<UserReview />
-						<UserReview />
-						<UserReview />
-						<UserReview />
-					</Stack>
-				</ScrollArea>
-			</Box>
+				<Stack gap="sm">
+					{/* review datas */}
+					{reviewsData?.data.map((review) => (
+						<UserReview
+							academicYear={review.academicYear}
+							description={review.description}
+							isOwner={review.isOwner ?? false}
+							rating={review.rating}
+							status={review.status}
+							votes={review.votes}
+							createdAt={review.created_at}
+						/>
+					))}
+				</Stack>
 
-			{/* write reviews */}
-			<Box className="mt-5 w-full rounded-lg border-2 border-solid border-gray-500 p-2">
-				<Blockquote color="yellow" mt="xl" w="100%" p="sm">
-					<Flex justify="center" gap="4" align="center">
-						<IconAlertTriangleFilled size={20} />
-						Life is like an npm install – you never know what you are going to get.
-					</Flex>
-				</Blockquote>
-
+				<Divider mt="md" />
+				{/* write reviews */}
 				<Box>
 					<Box className="flex w-full justify-between p-4">
 						<Title order={2}>Write a Review</Title>
 						<Rating size="lg" defaultValue={0} fractions={2} />
-						<Select data={academicYears} placeholder="Select academic year" />
+						<Select data={academicYearOptions} placeholder="Select academic year" />
 					</Box>
+					<Blockquote color="yellow" w="100%" p="sm">
+						<Flex justify="center" gap="4" align="center">
+							<IconAlertTriangleFilled size={20} />
+							Life is like an npm install – you never know what you are going to get.
+						</Flex>
+					</Blockquote>
+
 					<Group>
 						<Paper p="md" shadow="xs" w="100%" h="100%">
 							{/* markdown  */}
@@ -112,5 +148,4 @@ const CourseReview = () => {
 			</Box>
 		</Container>
 	);
-};
-export default CourseReview;
+}

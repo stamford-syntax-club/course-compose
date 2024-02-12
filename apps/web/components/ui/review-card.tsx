@@ -1,7 +1,29 @@
 import { Avatar, Badge, Box, Button, Card, Flex, Rating, Text } from "@mantine/core";
-import {  IconThumbUp, IconThumbDown} from "@tabler/icons-react";
+import { IconThumbDown, IconThumbUp } from "@tabler/icons-react";
 
-const UserReview = () => {
+interface ReviewCardProps {
+	academicYear: number;
+	description: string;
+	isOwner: boolean;
+	rating: number;
+	status: string;
+	votes: number;
+	createdAt: Date;
+}
+
+const getStatusColor = (status: string): string => {
+	switch (status) {
+		case "PENDING":
+			return "yellow";
+		case "REJECTED":
+			return "red";
+		default:
+			return "green";
+	}
+};
+
+export function UserReview({ academicYear, description, isOwner, rating, status, votes, createdAt }: ReviewCardProps) {
+	console.log(description, isOwner);
 	return (
 		<Card padding="md" radius="md">
 			<Flex direction="row" gap="lg" justify="center">
@@ -11,39 +33,36 @@ const UserReview = () => {
 						<Avatar size="70" src={null} alt="no image here" />
 					</Box>
 					<Box>
-						<Text>{"Annoymous"}</Text>
+						<Text>Anonymous</Text>
 					</Box>
 				</Flex>
 
 				{/* review and ratings */}
 				<Flex direction="column" justify="flex-start" ml="3" gap="4" w="100%">
-					<Rating size="md" value={4} fractions={2} defaultValue={0} readOnly />
-					<Text size="sm">Academic Year</Text>
+					<Rating size="md" value={rating} fractions={2} defaultValue={0} readOnly />
+					<Text size="sm">Academic Year: {academicYear}</Text>
 					<Box>
-						<Text mt="md">
-							Lorem ipsum dolor sit amet consectetur adipisicing elit. Quo numquam amet sit! Totam id
-							deleniti expedita quidem vitae soluta hic, natus distinctio rerum consequatur necessitatibus
-							molestiae fugiat, nulla quam temporibus.
-						</Text>
+						<Text mt="md">{description}</Text>
 					</Box>
 				</Flex>
 
 				<Flex direction="column" gap="lg" align="center">
 					{/* only display pending if "isOwner" is true */}
-					<Badge color="yellow">Pending</Badge>
+					{isOwner ?? <Badge color={getStatusColor(status)}>{isOwner}</Badge>}
+
 					<Box className="flex flex-col">
 						<Button radius="50" color="green" variant="light">
 							<IconThumbUp />
 						</Button>
-						<Text className="self-center">{"5"}</Text>
+						<Text className="self-center">{votes}</Text>
 						<Button radius="50" color="red" variant="light">
-							<IconThumbDown/>
+							<IconThumbDown />
 						</Button>
 					</Box>
 				</Flex>
 			</Flex>
 		</Card>
 	);
-};
+}
 
 export default UserReview;
