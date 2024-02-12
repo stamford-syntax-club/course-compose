@@ -1,4 +1,4 @@
-import { Avatar, Badge, Box,  Card, Flex, Menu, Rating, Text, TypographyStylesProvider } from "@mantine/core";
+import { Avatar, Badge, Box, Card, Flex, Menu, Rating, Text, TypographyStylesProvider } from "@mantine/core";
 import { IconEdit, IconDots, IconX } from "@tabler/icons-react";
 import ReactMarkdown from "react-markdown";
 import { Review } from "types/reviews";
@@ -24,12 +24,8 @@ export function ReviewCard({ review }: ReviewCardProps) {
 			<Flex direction="row" gap="lg" justify="center">
 				{/* user profile and badges */}
 				<Flex direction="column" align="center" gap="4" justify="center" className="max-w-sm text-center">
-					<Box component="a" href="/">
-						<Avatar size="70" src={null} alt="no image here" />
-					</Box>
-					<Box>
-						<Text>Anonymous</Text>
-					</Box>
+					<Avatar size="70" src={null} alt="anonymous profile" />
+					<Text>Anonymous</Text>
 				</Flex>
 
 				{/* review and ratings */}
@@ -55,12 +51,8 @@ export function MyReviewCard({ review }: ReviewCardProps) {
 			<Flex direction="row" gap="md" justify="center">
 				{/* user profile and badges */}
 				<Flex direction="column" align="center" gap="4" justify="center" className="max-w-sm text-center">
-					<Box component="a" href="/">
-						<Avatar size="70" src={null} alt="no image here" />
-					</Box>
-					<Box>
-						<Text>You</Text>
-					</Box>
+					<Avatar size="70" src={null} alt="anonymous profile" />
+					<Text>You</Text>
 				</Flex>
 
 				{/* review and ratings */}
@@ -74,22 +66,20 @@ export function MyReviewCard({ review }: ReviewCardProps) {
 					</TypographyStylesProvider>
 				</Flex>
 
-				<Flex direction="column" gap="4">
-					<Flex direction="row" gap="4">
-						<Badge color={getStatusColor(review.status)}>{review.status}</Badge>
-						<Menu>
-							<Menu.Target>
-								<IconDots />
-							</Menu.Target>
+				<Flex direction="row" gap="md">
+					<Badge color={getStatusColor(review.status)}>{review.status}</Badge>
+					<Menu>
+						<Menu.Target>
+							<IconDots />
+						</Menu.Target>
 
-							<Menu.Dropdown>
-								<Menu.Item leftSection={<IconEdit />}>Edit Review</Menu.Item>
-								<Menu.Item leftSection={<IconX />} className="text-red-500">
-									Delete Review
-								</Menu.Item>
-							</Menu.Dropdown>
-						</Menu>
-					</Flex>
+						<Menu.Dropdown>
+							<Menu.Item leftSection={<IconEdit />}>Edit Review</Menu.Item>
+							<Menu.Item leftSection={<IconX />} className="text-red-500">
+								Delete Review
+							</Menu.Item>
+						</Menu.Dropdown>
+					</Menu>
 				</Flex>
 			</Flex>
 		</Card>
