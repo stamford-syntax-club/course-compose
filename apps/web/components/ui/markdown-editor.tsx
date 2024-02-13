@@ -33,8 +33,7 @@ export function MarkdownEditor({ editor }: { editor: Editor | null }) {
 					<RichTextEditor.Redo />
 				</RichTextEditor.ControlsGroup>
 			</RichTextEditor.Toolbar>
-
-			<RichTextEditor.Content />
+			<RichTextEditor.Content className="min-h-40 overflow-hidden" />
 		</RichTextEditor>
 	);
 }

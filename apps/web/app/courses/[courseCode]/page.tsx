@@ -2,16 +2,13 @@
 
 import {
 	Blockquote,
-	Box,
 	Button,
 	Center,
 	Container,
 	Divider,
 	Flex,
-	Grid,
 	Pagination,
 	Paper,
-	Image,
 	Rating,
 	Select,
 	Stack,
@@ -24,11 +21,14 @@ import { MarkdownEditor } from "@components/ui/markdown-editor";
 import { IconAlertCircle, IconAlertTriangle } from "@tabler/icons-react";
 import { useEffect, useState } from "react";
 import { PaginatedResponse } from "types/pagination";
+import { Course } from "types/course";
 import { Review } from "types/reviews";
 import { useEditor } from "@tiptap/react";
 import StarterKit from "@tiptap/starter-kit";
 import { Markdown } from "tiptap-markdown";
 import LinkButton from "@components/ui/back-button";
+import Link from "next/link";
+import Placeholder from "@tiptap/extension-placeholder";
 
 const academicYearOptions = [
 	{ value: "2020", label: "2020" },
@@ -51,87 +51,95 @@ const reviewGuidelines = [
 	}
 ];
 
-const markDownTemplate = `
-#### Tell us how did you feel about the course
-
-Answer:  
-
-#### Were there a lot of assignments?
-
-Answer: 
-
-#### Do you have any suggestions for other students?
-
-Answer: 
-`;
+const TOKEN =
+	"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6ImtoaW5nQHN0dWRlbnRzLnN0YW1mb3JkLmVkdSIsImV4cCI6MTcwNzgwMzMwNywic3ViIjoiOGE3YjNjMmUtM2U1Zi00ZjFhLWE4YjctM2MyZTFhNGY1YjZkIn0.qBsyCMq6M9-0VOTD2LuWmeKwDZZQbnqQBDP6hdhBIG0";
 
 export default function CourseReview({ params }: { params: { courseCode: string } }) {
+	const [courseData, setCourseData] = useState<Course>();
 	const [reviewsData, setReviewsData] = useState<PaginatedResponse<Review>>();
 	const [pageNumber, setPageNumber] = useState(1);
+	const markdownEditor = useEditor({
+		extensions: [
+			StarterKit,
+			Markdown,
+			Placeholder.configure({
+				placeholder:
+					"Tell us how did you feel about the course. Do you have any suggestions for other students?"
+			})
+		]
+	});
+
+	const COURSE_ENDPOINT = `http://localhost:8000/api/courses/${params.courseCode}`;
+
+	useEffect(() => {
+		async function fetchCourseDetail() {
+			try {
+				const data = await fetch(COURSE_ENDPOINT);
+				const course = await data.json();
+				setCourseData(course);
+			} catch (e) {
+				console.error(e);
+			}
+		}
+
+		fetchCourseDetail();
+	}, []);
 
 	useEffect(() => {
 		async function fetchCourseReviews() {
-			const data = await fetch(
-				//				`http://localhost:8000/api/courses/${params.courseCode}/reviews?pageNumber=${pageNumber}&pageSize=10`,
-				`http://localhost:8000/api/courses/${params.courseCode}/reviews?pageNumber=${pageNumber}`,
-				{
+			try {
+				const data = await fetch(`${COURSE_ENDPOINT}/reviews?pageNumber=${pageNumber}&pageSize=10`, {
 					headers: {
-						Authorization: `Bearer ${"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6ImtoaW5nQHN0dWRlbnRzLnN0YW1mb3JkLmVkdSIsImV4cCI6MTcwNzc1MzEyMCwic3ViIjoiOGE3YjNjMmUtM2U1Zi00ZjFhLWE4YjctM2MyZTFhNGY1YjZkIn0.tbjXsCJVVl-QtIHh5-QNy_6TNSx6RrPCOoz758c0ULk"}`
+						Authorization: `Bearer ${TOKEN}`
 					}
-				}
-			);
-			const reviews = await data.json();
+				});
+				const reviews = await data.json();
 
-			setReviewsData(reviews);
+				setReviewsData(reviews);
+			} catch (e) {
+				console.error(e);
+			}
 		}
 
 		fetchCourseReviews();
 	}, [pageNumber]);
 
-	const markdownEditor = useEditor({
-		extensions: [StarterKit, Markdown],
-		content: markDownTemplate
-	});
-
 	return (
 		<Container>
-			{/* headings */}
+			{/* course details section */}
 			<LinkButton where="/" />
-			<Flex direction="column" gap="sm">
-				<Flex direction="row" gap="md" mt="md">
-					<Box component="a" href="/">
-						<Image
-							h="auto"
-							w={300}
-							src="/assets/logos/stamford-logo-clearbg-white.png"
-							alt="Stamford Internation University logo"
-						/>
-					</Box>
-					<Box component="a" href="/">
-						<Image
-							h={90}
-							w={90}
-							src="/assets/logos/codelogo.png"
-							alt="Stamford Internation University logo"
-							radius={50}
-						/>
-					</Box>
+			<Flex direction="column" my="xl" gap="sm" justify="center" align="center">
+				<Title order={1}>
+					{courseData?.full_name} ({courseData?.code})
+				</Title>
+				<Flex direction="row" gap="xs">
+					<Title order={3}>Prerequisites:</Title>
+					{courseData?.prerequisites &&
+						courseData?.prerequisites.map((preq) => (
+							<Link key={`preq_${preq}`} href={`/courses/${preq}`}>
+								<Title c={"blue"} order={3}>
+									{preq}
+								</Title>
+							</Link>
+						))}
 				</Flex>
-				<Title order={1}>ITE221 - Programming 1</Title>
-				{/* TODO: add prerequisites */}
 			</Flex>
 
-			<Divider size={5} mt="md" />
+			<Divider size={5} />
 
 			{/* show reviews section*/}
-			<Title my="sm" order={2}>
+			<Title my="lg" order={2}>
 				What people are saying about {params.courseCode}
 			</Title>
 
 			<Stack gap="sm">
 				{reviewsData?.data &&
 					reviewsData?.data.map((review) =>
-						review?.isOwner ? <MyReviewCard review={review} /> : <ReviewCard review={review} />
+						review?.isOwner ? (
+							<MyReviewCard key={`my_review_card_${review.id}`} review={review} />
+						) : (
+							<ReviewCard key={`review_card_${review.id}`} review={review} />
+						)
 					)}
 				<Center>
 					<Pagination total={reviewsData?.totalPages ? reviewsData.totalPages : 1} onChange={setPageNumber} />
@@ -141,26 +149,12 @@ export default function CourseReview({ params }: { params: { courseCode: string 
 			<Divider mt="md" />
 
 			{/* write a review section*/}
-			<Grid my="sm">
-				<Grid.Col span={4}>
-					<Flex justify="flex-start">
-						<Title order={2}>Write a Review</Title>
-					</Flex>
-				</Grid.Col>
-				<Grid.Col span={4}>
-					<Flex justify="center">
-						<Rating size="lg" defaultValue={0} fractions={2} />
-					</Flex>
-				</Grid.Col>
-				<Grid.Col span={4}>
-					<Flex justify="flex-end">
-						<Select data={academicYearOptions} placeholder="Academic year" />
-					</Flex>
-				</Grid.Col>
-			</Grid>
+			<Title my="md" order={2}>
+				Write a Review
+			</Title>
 
 			{reviewGuidelines.map((guide) => (
-				<Blockquote color={guide.color} w="100%" p="sm" mb="xs">
+				<Blockquote key={`"review_guideline_${guide.text}`} color={guide.color} w="100%" p="sm" mb="xs">
 					<Flex justify="flex-start" gap="sm">
 						{guide.displayIcon}
 						<Text>{guide.text}</Text>
@@ -169,11 +163,26 @@ export default function CourseReview({ params }: { params: { courseCode: string 
 			))}
 
 			<Paper shadow="md" w="100%" h="100%">
+				<Flex direction="row" gap="sm" my="sm">
+					<Select data={academicYearOptions} placeholder="Select Academic year" />
+					<Rating
+						size="lg"
+						defaultValue={0}
+						fractions={2}
+						onChange={(value) => {
+							// TODO: validate if user have rated the course before submit}
+							// useState, setRating
+							console.log(`selected: ${value}`);
+						}}
+					/>
+				</Flex>
+
 				<MarkdownEditor editor={markdownEditor} />
 				<Flex gap="sm" justify="end">
 					<Button
 						mt="md"
 						onClick={(e) => {
+							// TODO: call submit review api and attach this as description
 							console.log(markdownEditor?.storage.markdown.getMarkdown());
 						}}
 					>

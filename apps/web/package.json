@@ -18,6 +18,7 @@
 		"@tabler/icons-react": "^2.46.0",
 		"@tiptap/extension-highlight": "^2.2.2",
 		"@tiptap/extension-link": "^2.2.2",
+		"@tiptap/extension-placeholder": "^2.2.2",
 		"@tiptap/extension-superscript": "^2.2.2",
 		"@tiptap/extension-text-align": "^2.2.2",
 		"@tiptap/extension-underline": "^2.2.2",
