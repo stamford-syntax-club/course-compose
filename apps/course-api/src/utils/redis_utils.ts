@@ -20,7 +20,7 @@ export async function getRedisClient() {
 		return redisClient;
 	} catch (error) {
 		console.log("error connecting to redis:", error);
-		await redisClient.disconnect();
+		redisClient.disconnect();
 		return null;
 	}
 }

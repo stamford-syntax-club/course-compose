@@ -53,11 +53,13 @@ export function MyReviewCard({ review }: ReviewCardProps) {
 				<Flex direction="column" align="center" gap="4" justify="center" className="max-w-sm text-center">
 					<Avatar size="70" src={null} alt="anonymous profile" />
 					<Text>You</Text>
+					<Badge color={getStatusColor(review.status)}>{review.status}</Badge>
 				</Flex>
 
 				{/* review and ratings */}
 				<Flex direction="column" justify="flex-start" ml="3" gap="4" w="100%">
 					<Rating size="md" value={review.rating} fractions={2} defaultValue={0} readOnly />
+
 					<Text fw={800} size="md">
 						Academic Year: {review.academicYear}
 					</Text>
@@ -65,22 +67,18 @@ export function MyReviewCard({ review }: ReviewCardProps) {
 						<ReactMarkdown>{review.description}</ReactMarkdown>
 					</TypographyStylesProvider>
 				</Flex>
+				<Menu>
+					<Menu.Target>
+						<IconDots />
+					</Menu.Target>
 
-				<Flex direction="row" gap="md">
-					<Badge color={getStatusColor(review.status)}>{review.status}</Badge>
-					<Menu>
-						<Menu.Target>
-							<IconDots />
-						</Menu.Target>
-
-						<Menu.Dropdown>
-							<Menu.Item leftSection={<IconEdit />}>Edit Review</Menu.Item>
-							<Menu.Item leftSection={<IconX />} className="text-red-500">
-								Delete Review
-							</Menu.Item>
-						</Menu.Dropdown>
-					</Menu>
-				</Flex>
+					<Menu.Dropdown>
+						<Menu.Item leftSection={<IconEdit />}>Edit Review</Menu.Item>
+						<Menu.Item leftSection={<IconX />} className="text-red-500">
+							Delete Review
+						</Menu.Item>
+					</Menu.Dropdown>
+				</Menu>
 			</Flex>
 		</Card>
 	);

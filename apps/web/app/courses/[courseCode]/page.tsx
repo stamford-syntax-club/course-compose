@@ -52,7 +52,7 @@ const reviewGuidelines = [
 ];
 
 const TOKEN =
-	"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6ImtoaW5nQHN0dWRlbnRzLnN0YW1mb3JkLmVkdSIsImV4cCI6MTcwNzgwMzMwNywic3ViIjoiOGE3YjNjMmUtM2U1Zi00ZjFhLWE4YjctM2MyZTFhNGY1YjZkIn0.qBsyCMq6M9-0VOTD2LuWmeKwDZZQbnqQBDP6hdhBIG0";
+	"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6ImtoaW5nQHN0dWRlbnRzLnN0YW1mb3JkLmVkdSIsImV4cCI6MTcwNzgwNzc4OSwic3ViIjoiOGE3YjNjMmUtM2U1Zi00ZjFhLWE4YjctM2MyZTFhNGY1YjZkIn0.n2EDF5b4Zp8PHVbro8mObxgJM_k3EA-Dt716q6Ds2qo";
 
 export default function CourseReview({ params }: { params: { courseCode: string } }) {
 	const [courseData, setCourseData] = useState<Course>();
@@ -108,12 +108,14 @@ export default function CourseReview({ params }: { params: { courseCode: string 
 		<Container>
 			{/* course details section */}
 			<LinkButton where="/" />
-			<Flex direction="column" my="xl" gap="sm" justify="center" align="center">
-				<Title order={1}>
+			<Flex direction="column" my="xl" gap="sm" align="center">
+				<Title className="text-center text-3xl">
 					{courseData?.full_name} ({courseData?.code})
 				</Title>
 				<Flex direction="row" gap="xs">
-					<Title order={3}>Prerequisites:</Title>
+					<Title order={3}>
+						Prerequisites:
+					</Title>
 					{courseData?.prerequisites &&
 						courseData?.prerequisites.map((preq) => (
 							<Link key={`preq_${preq}`} href={`/courses/${preq}`}>
