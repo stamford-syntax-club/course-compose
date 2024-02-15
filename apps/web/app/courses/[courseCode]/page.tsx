@@ -13,7 +13,8 @@ import {
 	Select,
 	Stack,
 	Title,
-	Text
+	Text,
+	Modal
 } from "@mantine/core";
 import "@mantine/tiptap/styles.css";
 import { MyReviewCard, ReviewCard } from "@components/ui/review-card";
@@ -29,6 +30,8 @@ import { Markdown } from "tiptap-markdown";
 import LinkButton from "@components/ui/back-button";
 import Link from "next/link";
 import Placeholder from "@tiptap/extension-placeholder";
+import { ErrorResponse, ERR_EXPIRED_TOKEN } from "types/errors";
+import { useDisclosure } from "@mantine/hooks";
 
 const academicYearOptions = [
 	{ value: "2020", label: "2020" },
@@ -51,13 +54,14 @@ const reviewGuidelines = [
 	}
 ];
 
-const TOKEN =
-	"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6ImtoaW5nQHN0dWRlbnRzLnN0YW1mb3JkLmVkdSIsImV4cCI6MTcwNzgxNDkxMywic3ViIjoiOGE3YjNjMmUtM2U1Zi00ZjFhLWE4YjctM2MyZTFhNGY1YjZkIn0.TzFf4PXTrFWx9it9xOBrH2AEImBjSLgbt6-dHvlTj_k";
+let token =
+	"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6ImtoaW5nQHN0dWRlbnRzLnN0YW1mb3JkLmVkdSIsImV4cCI6MTcwNzk5MDcxMSwic3ViIjoiOGE3YjNjMmUtM2U1Zi00ZjFhLWE4YjctM2MyZTFhNGY1YjZkIn0.6F8AAdXEFyVHur3Nz-OkceCvm9LiR7IVedyi5SM4aH8";
 
 export default function CourseReview({ params }: { params: { courseCode: string } }) {
 	const [courseData, setCourseData] = useState<Course>();
 	const [reviewsData, setReviewsData] = useState<PaginatedResponse<Review>>();
 	const [pageNumber, setPageNumber] = useState(1);
+	const [opened, { open, close }] = useDisclosure(false);
 	const markdownEditor = useEditor({
 		extensions: [
 			StarterKit,
@@ -90,10 +94,14 @@ export default function CourseReview({ params }: { params: { courseCode: string 
 			try {
 				const data = await fetch(`${COURSE_ENDPOINT}/reviews?pageNumber=${pageNumber}&pageSize=10`, {
 					headers: {
-						Authorization: `Bearer ${TOKEN}`
+						Authorization: `Bearer ${token}`
 					}
 				});
 				const reviews = await data.json();
+
+				if ((reviews as ErrorResponse).message == ERR_EXPIRED_TOKEN) {
+					open();
+				}
 
 				setReviewsData(reviews);
 			} catch (e) {
@@ -102,7 +110,7 @@ export default function CourseReview({ params }: { params: { courseCode: string 
 		}
 
 		fetchCourseReviews();
-	}, [pageNumber]);
+	}, [pageNumber, token]);
 
 	return (
 		<Container>
@@ -114,7 +122,7 @@ export default function CourseReview({ params }: { params: { courseCode: string 
 				</Title>
 				<Flex direction="row" gap="xs">
 					<Title order={3}>Prerequisites:</Title>
-					{courseData && courseData.prerequisites.length > 0 ? (
+					{courseData?.prerequisites && courseData.prerequisites.length > 0 ? (
 						courseData?.prerequisites.map((preq) => (
 							<Link key={`preq_${preq}`} href={`/courses/${preq}`}>
 								<Title c={"blue"} order={3}>
@@ -130,20 +138,40 @@ export default function CourseReview({ params }: { params: { courseCode: string 
 
 			<Divider size={5} />
 
+			<Modal
+				opened={opened}
+				onClose={() => {
+					// TODO: set token as state, then do setToken()
+					token = "";
+					close();
+				}}
+			>
+				<Center>
+					{/* TODO: redirect to auth page */}
+					<Text>Session Expired. Please Login Again</Text>
+				</Center>
+			</Modal>
+
 			{/* show reviews section*/}
 			<Title my="lg" order={2}>
 				What people are saying about {params.courseCode}
 			</Title>
 
 			<Stack gap="sm">
-				{reviewsData?.data &&
+				{reviewsData?.data && reviewsData.data.length > 0 ? (
 					reviewsData?.data.map((review) =>
 						review?.isOwner ? (
 							<MyReviewCard key={`my_review_card_${review.id}`} review={review} />
 						) : (
 							<ReviewCard key={`review_card_${review.id}`} review={review} />
 						)
-					)}
+					)
+				) : (
+					<Center my="md">
+						<Text>No reviews for this course</Text>
+					</Center>
+				)}
+
 				<Center>
 					<Pagination total={reviewsData?.totalPages ? reviewsData.totalPages : 1} onChange={setPageNumber} />
 				</Center>
