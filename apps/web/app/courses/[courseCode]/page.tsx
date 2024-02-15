@@ -52,7 +52,7 @@ const reviewGuidelines = [
 ];
 
 const TOKEN =
-	"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6ImtoaW5nQHN0dWRlbnRzLnN0YW1mb3JkLmVkdSIsImV4cCI6MTcwNzgwNzc4OSwic3ViIjoiOGE3YjNjMmUtM2U1Zi00ZjFhLWE4YjctM2MyZTFhNGY1YjZkIn0.n2EDF5b4Zp8PHVbro8mObxgJM_k3EA-Dt716q6Ds2qo";
+	"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6ImtoaW5nQHN0dWRlbnRzLnN0YW1mb3JkLmVkdSIsImV4cCI6MTcwNzgxNDkxMywic3ViIjoiOGE3YjNjMmUtM2U1Zi00ZjFhLWE4YjctM2MyZTFhNGY1YjZkIn0.TzFf4PXTrFWx9it9xOBrH2AEImBjSLgbt6-dHvlTj_k";
 
 export default function CourseReview({ params }: { params: { courseCode: string } }) {
 	const [courseData, setCourseData] = useState<Course>();
@@ -113,17 +113,18 @@ export default function CourseReview({ params }: { params: { courseCode: string 
 					{courseData?.full_name} ({courseData?.code})
 				</Title>
 				<Flex direction="row" gap="xs">
-					<Title order={3}>
-						Prerequisites:
-					</Title>
-					{courseData?.prerequisites &&
+					<Title order={3}>Prerequisites:</Title>
+					{courseData && courseData.prerequisites.length > 0 ? (
 						courseData?.prerequisites.map((preq) => (
 							<Link key={`preq_${preq}`} href={`/courses/${preq}`}>
 								<Title c={"blue"} order={3}>
 									{preq}
 								</Title>
 							</Link>
-						))}
+						))
+					) : (
+						<Title order={3}>None</Title>
+					)}
 				</Flex>
 			</Flex>
 
@@ -155,6 +156,7 @@ export default function CourseReview({ params }: { params: { courseCode: string 
 				Write a Review
 			</Title>
 
+			{/* TODO: extract these as a component (reuse it for edit review)*/}
 			{reviewGuidelines.map((guide) => (
 				<Blockquote key={`"review_guideline_${guide.text}`} color={guide.color} w="100%" p="sm" mb="xs">
 					<Flex justify="flex-start" gap="sm">
@@ -164,7 +166,7 @@ export default function CourseReview({ params }: { params: { courseCode: string 
 				</Blockquote>
 			))}
 
-			<Paper shadow="md" w="100%" h="100%">
+			<Paper shadow="xs" w="100%" h="100%">
 				<Flex direction="row" gap="sm" my="sm">
 					<Select data={academicYearOptions} placeholder="Select Academic year" />
 					<Rating
@@ -183,15 +185,13 @@ export default function CourseReview({ params }: { params: { courseCode: string 
 				<Flex gap="sm" justify="end">
 					<Button
 						mt="md"
+						variant="filled"
 						onClick={(e) => {
 							// TODO: call submit review api and attach this as description
 							console.log(markdownEditor?.storage.markdown.getMarkdown());
 						}}
 					>
-						Submit
-					</Button>
-					<Button mt="md" variant="light">
-						Cancel
+						Submit Review
 					</Button>
 				</Flex>
 			</Paper>
