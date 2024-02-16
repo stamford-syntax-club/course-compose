@@ -1,6 +1,6 @@
 "use client";
 
-import { Center, Container, Divider, Flex, Pagination, Stack, Title, Text, Modal } from "@mantine/core";
+import { Center, Container, Divider, Flex, Pagination, Stack, Title, Text } from "@mantine/core";
 import { MyReviewCard, ReviewCard } from "@components/ui/review-card";
 import { useEffect, useState } from "react";
 import { PaginatedResponse } from "types/pagination";
@@ -8,20 +8,28 @@ import { Course } from "types/course";
 import { Review } from "types/reviews";
 import LinkButton from "@components/ui/back-button";
 import Link from "next/link";
-import { ErrorResponse, ERR_EXPIRED_TOKEN, ERR_REVIEW_EXIST, ERR_MISSING_TOKEN } from "types/errors";
-import { useDisclosure } from "@mantine/hooks";
+import { ErrorResponse } from "types/errors";
 import { notifications } from "@mantine/notifications";
 import WriteReviewForm from "@components/ui/write-review-form";
+import SessionModal from "@components/ui/session-modal";
+import { AUTH_TOKEN_KEY, ERR_EXPIRED_TOKEN, ERR_REVIEW_EXIST, ERR_MISSING_TOKEN  } from "@utils/constants";
 
-let token =
-	"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6ImtoaW5nQHN0dWRlbnRzLnN0YW1mb3JkLmVkdSIsImV4cCI6MTcwODEwNDE2NSwic3ViIjoiOGE3YjNjMmUtM2U1Zi00ZjFhLWE4YjctM2MyZTFhNGY1YjZkIn0.4hnlK3iLnRKbQMyB_bKS3wF4mpy0RRL7i02CNF1VUvE";
+// TODO: remove this when auth is implemented
+localStorage.setItem(
+	AUTH_TOKEN_KEY,
+	"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6ImtoaW5nQHN0dWRlbnRzLnN0YW1mb3JkLmVkdSIsImV4cCI6MTcwODEwNDE2NSwic3ViIjoiOGE3YjNjMmUtM2U1Zi00ZjFhLWE4YjctM2MyZTFhNGY1YjZkIn0.4hnlK3iLnRKbQMyB_bKS3wF4mpy0RRL7i02CNF1VUvE"
+
+	//"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6ImtoaW5nQHN0dWRlbnRzLnN0YW1mb3JkLmVkdSIsImV4cCI6MTcwODExMDY0NCwic3ViIjoiOGE3YjNjMmUtM2U1Zi00ZjFhLWE4YjctM2MyZTFhNGY1YjZkIn0.YS_e_SXtq_a1Kwz4T415spS1w0k0R-EhdV2TFK2yWdw"
+);
+// expired token for test = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6ImtoaW5nQHN0dWRlbnRzLnN0YW1mb3JkLmVkdSIsImV4cCI6MTcwODEwNDE2NSwic3ViIjoiOGE3YjNjMmUtM2U1Zi00ZjFhLWE4YjctM2MyZTFhNGY1YjZkIn0.4hnlK3iLnRKbQMyB_bKS3wF4mpy0RRL7i02CNF1VUvE"
 
 export default function CourseReview({ params }: { params: { courseCode: string } }) {
 	const [courseData, setCourseData] = useState<Course>();
 	const [reviewsData, setReviewsData] = useState<PaginatedResponse<Review>>();
 	const [pageNumber, setPageNumber] = useState(1);
-	const [opened, { open, close }] = useDisclosure(false);
+	const [tokenErr, setTokenErr] = useState(!localStorage.getItem(AUTH_TOKEN_KEY));
 
+	// TODO: make host dynamic (either use api-gateway:8000 or localhost:8000)
 	const COURSE_ENDPOINT = `http://localhost:8000/api/courses/${params.courseCode}`;
 	const REVIEW_ENDPOINT = `${COURSE_ENDPOINT}/reviews`;
 
@@ -39,13 +47,14 @@ export default function CourseReview({ params }: { params: { courseCode: string 
 		try {
 			const data = await fetch(`${REVIEW_ENDPOINT}?pageNumber=${pageNumber}&pageSize=10`, {
 				headers: {
-					Authorization: `Bearer ${token}`
+					Authorization: `Bearer ${localStorage.getItem(AUTH_TOKEN_KEY)}`
 				}
 			});
 			const reviews = await data.json();
 
 			if ((reviews as ErrorResponse).message == ERR_EXPIRED_TOKEN) {
-				open();
+				setTokenErr(true);
+				return;
 			}
 
 			setReviewsData(reviews);
@@ -64,10 +73,9 @@ export default function CourseReview({ params }: { params: { courseCode: string 
 			}),
 			headers: {
 				"Content-Type": "application/json",
-				Authorization: `Bearer ${token}`
+				Authorization: `Bearer ${localStorage.getItem(AUTH_TOKEN_KEY)}`
 			}
 		});
-
 		const data = await res.json();
 
 		switch ((data as ErrorResponse).message) {
@@ -80,7 +88,7 @@ export default function CourseReview({ params }: { params: { courseCode: string 
 				});
 				break;
 			case ERR_MISSING_TOKEN || ERR_EXPIRED_TOKEN:
-				open(); // open "Please login" modal
+				setTokenErr(true);
 				break;
 			default:
 				notifications.show({
@@ -100,7 +108,7 @@ export default function CourseReview({ params }: { params: { courseCode: string 
 
 	useEffect(() => {
 		fetchCourseReviews();
-	}, [pageNumber, token]);
+	}, [pageNumber, tokenErr]);
 
 	return (
 		<Container>
@@ -128,19 +136,13 @@ export default function CourseReview({ params }: { params: { courseCode: string 
 
 			<Divider size={5} />
 
-			<Modal
-				opened={opened}
-				onClose={() => {
-					// TODO: set token as state, then do setToken()
-					token = "";
-					close();
-				}}
-			>
-				<Center>
-					{/* TODO: redirect to auth page */}
-					<Text>Session Expired. Please Login Again</Text>
-				</Center>
-			</Modal>
+			{tokenErr && (
+				<SessionModal
+					onCloseCallBack={() => {
+						setTokenErr(false);
+					}}
+				/>
+			)}
 
 			{/* show reviews section*/}
 			<Title my="lg" order={2}>
