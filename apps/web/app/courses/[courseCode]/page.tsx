@@ -32,6 +32,7 @@ import Link from "next/link";
 import Placeholder from "@tiptap/extension-placeholder";
 import { ErrorResponse, ERR_EXPIRED_TOKEN } from "types/errors";
 import { useDisclosure } from "@mantine/hooks";
+import { notifications } from "@mantine/notifications";
 
 const academicYearOptions = [
 	{ value: "2020", label: "2020" },
@@ -55,12 +56,15 @@ const reviewGuidelines = [
 ];
 
 let token =
-	"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6ImtoaW5nQHN0dWRlbnRzLnN0YW1mb3JkLmVkdSIsImV4cCI6MTcwNzk5MDcxMSwic3ViIjoiOGE3YjNjMmUtM2U1Zi00ZjFhLWE4YjctM2MyZTFhNGY1YjZkIn0.6F8AAdXEFyVHur3Nz-OkceCvm9LiR7IVedyi5SM4aH8";
+	"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6ImtoaW5nQHN0dWRlbnRzLnN0YW1mb3JkLmVkdSIsImV4cCI6MTcwODA2Njg2NCwic3ViIjoiOGE3YjNjMmUtM2U1Zi00ZjFhLWE4YjctM2MyZTFhNGY1YjZkIn0.vjXCSVUR3iW_QKDP_-pDYZzsCt7iqeTLnb7Ri4_PiWw";
 
 export default function CourseReview({ params }: { params: { courseCode: string } }) {
 	const [courseData, setCourseData] = useState<Course>();
 	const [reviewsData, setReviewsData] = useState<PaginatedResponse<Review>>();
 	const [pageNumber, setPageNumber] = useState(1);
+	const [academicYear, setAcademicYear] = useState<string | null>("");
+	const [rating, setRating] = useState(0);
+
 	const [opened, { open, close }] = useDisclosure(false);
 	const markdownEditor = useEditor({
 		extensions: [
@@ -196,17 +200,13 @@ export default function CourseReview({ params }: { params: { courseCode: string 
 
 			<Paper shadow="xs" w="100%" h="100%">
 				<Flex direction="row" gap="sm" my="sm">
-					<Select data={academicYearOptions} placeholder="Select Academic year" />
-					<Rating
-						size="lg"
-						defaultValue={0}
-						fractions={2}
-						onChange={(value) => {
-							// TODO: validate if user have rated the course before submit}
-							// useState, setRating
-							console.log(`selected: ${value}`);
-						}}
+					<Select
+						data={academicYearOptions}
+						value={academicYear}
+						onChange={setAcademicYear}
+						placeholder="Select Academic year"
 					/>
+					<Rating size="lg" defaultValue={0} fractions={2} onChange={setRating} />
 				</Flex>
 
 				<MarkdownEditor editor={markdownEditor} />
@@ -215,8 +215,17 @@ export default function CourseReview({ params }: { params: { courseCode: string 
 						mt="md"
 						variant="filled"
 						onClick={(e) => {
-							// TODO: call submit review api and attach this as description
-							console.log(markdownEditor?.storage.markdown.getMarkdown());
+							e.preventDefault();
+							// academicYear, markdownEditor?.storage.markdown.getMarkdown(), rating;
+							if (!academicYear || !markdownEditor?.storage.markdown.getMarkdown() || !rating) {
+								notifications.show({
+									title: "Hold on! Your review still contains some missing fields",
+									color: "red",
+									message:
+										"Make sure you have filled all the fields such as academic year, ratings, and review descriptions",
+									autoClose: 3000
+								});
+							}
 						}}
 					>
 						Submit Review
