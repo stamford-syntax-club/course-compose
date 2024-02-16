@@ -30,7 +30,7 @@ import { Markdown } from "tiptap-markdown";
 import LinkButton from "@components/ui/back-button";
 import Link from "next/link";
 import Placeholder from "@tiptap/extension-placeholder";
-import { ErrorResponse, ERR_EXPIRED_TOKEN } from "types/errors";
+import { ErrorResponse, ERR_EXPIRED_TOKEN, ERR_REVIEW_EXIST } from "types/errors";
 import { useDisclosure } from "@mantine/hooks";
 import { notifications } from "@mantine/notifications";
 
@@ -56,7 +56,7 @@ const reviewGuidelines = [
 ];
 
 let token =
-	"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6ImtoaW5nQHN0dWRlbnRzLnN0YW1mb3JkLmVkdSIsImV4cCI6MTcwODA2Njg2NCwic3ViIjoiOGE3YjNjMmUtM2U1Zi00ZjFhLWE4YjctM2MyZTFhNGY1YjZkIn0.vjXCSVUR3iW_QKDP_-pDYZzsCt7iqeTLnb7Ri4_PiWw";
+	"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6ImtoaW5nQHN0dWRlbnRzLnN0YW1mb3JkLmVkdSIsImV4cCI6MTcwODA5ODM0NCwic3ViIjoiOGE3YjNjMmUtM2U1Zi00ZjFhLWE4YjctM2MyZTFhNGY1YjZkIn0.79XLV7IAXIu2LSoKQU-WwlmlpnA1GAfQM45D-SDIBaA";
 
 export default function CourseReview({ params }: { params: { courseCode: string } }) {
 	const [courseData, setCourseData] = useState<Course>();
@@ -64,7 +64,7 @@ export default function CourseReview({ params }: { params: { courseCode: string 
 	const [pageNumber, setPageNumber] = useState(1);
 	const [academicYear, setAcademicYear] = useState<string | null>("");
 	const [rating, setRating] = useState(0);
-
+	const [apiErrMsg, setApiErrMsg] = useState("");
 	const [opened, { open, close }] = useDisclosure(false);
 	const markdownEditor = useEditor({
 		extensions: [
@@ -78,41 +78,78 @@ export default function CourseReview({ params }: { params: { courseCode: string 
 	});
 
 	const COURSE_ENDPOINT = `http://localhost:8000/api/courses/${params.courseCode}`;
+	const REVIEW_ENDPOINT = `${COURSE_ENDPOINT}/reviews`;
 
-	useEffect(() => {
-		async function fetchCourseDetail() {
-			try {
-				const data = await fetch(COURSE_ENDPOINT);
-				const course = await data.json();
-				setCourseData(course);
-			} catch (e) {
-				console.error(e);
+	const fetchCourseDetail = async () => {
+		try {
+			const data = await fetch(COURSE_ENDPOINT);
+			const course = await data.json();
+			setCourseData(course);
+		} catch (e) {
+			console.error(e);
+		}
+	};
+
+	const fetchCourseReviews = async () => {
+		try {
+			const data = await fetch(`${REVIEW_ENDPOINT}?pageNumber=${pageNumber}&pageSize=10`, {
+				headers: {
+					Authorization: `Bearer ${token}`
+				}
+			});
+			const reviews = await data.json();
+
+			if ((reviews as ErrorResponse).message == ERR_EXPIRED_TOKEN) {
+				open();
 			}
+
+			setReviewsData(reviews);
+		} catch (e) {
+			console.error(e);
+		}
+	};
+
+	const submitReview = async () => {
+		if (!academicYear || !markdownEditor?.storage.markdown.getMarkdown() || !rating) {
+			notifications.show({
+				title: "Hold on! Your review still contains some missing fields",
+				color: "red",
+				message:
+					"Make sure you have filled all the fields such as academic year, ratings, and review descriptions",
+				autoClose: 3000
+			});
+			return;
 		}
 
+		const res = await fetch(REVIEW_ENDPOINT, {
+			method: "POST",
+			body: JSON.stringify({
+				academic_year: parseInt(academicYear),
+				description: markdownEditor?.storage.markdown.getMarkdown(),
+				rating: rating
+			}),
+			headers: {
+				"Content-Type": "application/json",
+				Authorization: `Bearer ${token}`
+			}
+		});
+
+		const data = await res.json();
+
+		if ((data as ErrorResponse).message == ERR_REVIEW_EXIST) {
+			console.error("Error submitting review", data);
+			setApiErrMsg(ERR_REVIEW_EXIST);
+			return;
+		}
+
+        window.location.reload()
+	};
+
+	useEffect(() => {
 		fetchCourseDetail();
 	}, []);
 
 	useEffect(() => {
-		async function fetchCourseReviews() {
-			try {
-				const data = await fetch(`${COURSE_ENDPOINT}/reviews?pageNumber=${pageNumber}&pageSize=10`, {
-					headers: {
-						Authorization: `Bearer ${token}`
-					}
-				});
-				const reviews = await data.json();
-
-				if ((reviews as ErrorResponse).message == ERR_EXPIRED_TOKEN) {
-					open();
-				}
-
-				setReviewsData(reviews);
-			} catch (e) {
-				console.error(e);
-			}
-		}
-
 		fetchCourseReviews();
 	}, [pageNumber, token]);
 
@@ -211,23 +248,7 @@ export default function CourseReview({ params }: { params: { courseCode: string 
 
 				<MarkdownEditor editor={markdownEditor} />
 				<Flex gap="sm" justify="end">
-					<Button
-						mt="md"
-						variant="filled"
-						onClick={(e) => {
-							e.preventDefault();
-							// academicYear, markdownEditor?.storage.markdown.getMarkdown(), rating;
-							if (!academicYear || !markdownEditor?.storage.markdown.getMarkdown() || !rating) {
-								notifications.show({
-									title: "Hold on! Your review still contains some missing fields",
-									color: "red",
-									message:
-										"Make sure you have filled all the fields such as academic year, ratings, and review descriptions",
-									autoClose: 3000
-								});
-							}
-						}}
-					>
+					<Button mt="md" variant="filled" onClick={(e) => submitReview()}>
 						Submit Review
 					</Button>
 				</Flex>
