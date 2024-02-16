@@ -1,6 +1,6 @@
 export interface Review {
 	id: number;
-	academicYear: number;
+	academicYear: string;
 	description: string;
 	isOwner: boolean;
 	rating: number;

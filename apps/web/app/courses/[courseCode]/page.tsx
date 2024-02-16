@@ -1,81 +1,26 @@
 "use client";
 
-import {
-	Blockquote,
-	Button,
-	Center,
-	Container,
-	Divider,
-	Flex,
-	Pagination,
-	Paper,
-	Rating,
-	Select,
-	Stack,
-	Title,
-	Text,
-	Modal
-} from "@mantine/core";
-import "@mantine/tiptap/styles.css";
+import { Center, Container, Divider, Flex, Pagination, Stack, Title, Text, Modal } from "@mantine/core";
 import { MyReviewCard, ReviewCard } from "@components/ui/review-card";
-import { MarkdownEditor } from "@components/ui/markdown-editor";
-import { IconAlertCircle, IconAlertTriangle } from "@tabler/icons-react";
 import { useEffect, useState } from "react";
 import { PaginatedResponse } from "types/pagination";
 import { Course } from "types/course";
 import { Review } from "types/reviews";
-import { useEditor } from "@tiptap/react";
-import StarterKit from "@tiptap/starter-kit";
-import { Markdown } from "tiptap-markdown";
 import LinkButton from "@components/ui/back-button";
 import Link from "next/link";
-import Placeholder from "@tiptap/extension-placeholder";
-import { ErrorResponse, ERR_EXPIRED_TOKEN, ERR_REVIEW_EXIST } from "types/errors";
+import { ErrorResponse, ERR_EXPIRED_TOKEN, ERR_REVIEW_EXIST, ERR_MISSING_TOKEN } from "types/errors";
 import { useDisclosure } from "@mantine/hooks";
 import { notifications } from "@mantine/notifications";
-
-const academicYearOptions = [
-	{ value: "2020", label: "2020" },
-	{ value: "2021", label: "2021" },
-	{ value: "2022", label: "2022" },
-	{ value: "2023", label: "2023" },
-	{ value: "2024", label: "2024" }
-];
-
-const reviewGuidelines = [
-	{
-		text: "Your review will be displayed anonymously to the public after approved",
-		color: "blue",
-		displayIcon: <IconAlertCircle size={25} />
-	},
-	{
-		text: "Kindly refrain from mentioning names and write your reviews with respect. Constructive criticism is encouraged",
-		color: "yellow",
-		displayIcon: <IconAlertTriangle size={25} />
-	}
-];
+import WriteReviewForm from "@components/ui/write-review-form";
 
 let token =
-	"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6ImtoaW5nQHN0dWRlbnRzLnN0YW1mb3JkLmVkdSIsImV4cCI6MTcwODA5ODM0NCwic3ViIjoiOGE3YjNjMmUtM2U1Zi00ZjFhLWE4YjctM2MyZTFhNGY1YjZkIn0.79XLV7IAXIu2LSoKQU-WwlmlpnA1GAfQM45D-SDIBaA";
+	"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6ImtoaW5nQHN0dWRlbnRzLnN0YW1mb3JkLmVkdSIsImV4cCI6MTcwODEwNDE2NSwic3ViIjoiOGE3YjNjMmUtM2U1Zi00ZjFhLWE4YjctM2MyZTFhNGY1YjZkIn0.4hnlK3iLnRKbQMyB_bKS3wF4mpy0RRL7i02CNF1VUvE";
 
 export default function CourseReview({ params }: { params: { courseCode: string } }) {
 	const [courseData, setCourseData] = useState<Course>();
 	const [reviewsData, setReviewsData] = useState<PaginatedResponse<Review>>();
 	const [pageNumber, setPageNumber] = useState(1);
-	const [academicYear, setAcademicYear] = useState<string | null>("");
-	const [rating, setRating] = useState(0);
-	const [apiErrMsg, setApiErrMsg] = useState("");
 	const [opened, { open, close }] = useDisclosure(false);
-	const markdownEditor = useEditor({
-		extensions: [
-			StarterKit,
-			Markdown,
-			Placeholder.configure({
-				placeholder:
-					"Tell us how did you feel about the course. Do you have any suggestions for other students?"
-			})
-		]
-	});
 
 	const COURSE_ENDPOINT = `http://localhost:8000/api/courses/${params.courseCode}`;
 	const REVIEW_ENDPOINT = `${COURSE_ENDPOINT}/reviews`;
@@ -109,23 +54,12 @@ export default function CourseReview({ params }: { params: { courseCode: string 
 		}
 	};
 
-	const submitReview = async () => {
-		if (!academicYear || !markdownEditor?.storage.markdown.getMarkdown() || !rating) {
-			notifications.show({
-				title: "Hold on! Your review still contains some missing fields",
-				color: "red",
-				message:
-					"Make sure you have filled all the fields such as academic year, ratings, and review descriptions",
-				autoClose: 3000
-			});
-			return;
-		}
-
+	const submitReview = async (academicYear: string, description: string, rating: number) => {
 		const res = await fetch(REVIEW_ENDPOINT, {
 			method: "POST",
 			body: JSON.stringify({
 				academic_year: parseInt(academicYear),
-				description: markdownEditor?.storage.markdown.getMarkdown(),
+				description: description,
 				rating: rating
 			}),
 			headers: {
@@ -136,13 +70,28 @@ export default function CourseReview({ params }: { params: { courseCode: string 
 
 		const data = await res.json();
 
-		if ((data as ErrorResponse).message == ERR_REVIEW_EXIST) {
-			console.error("Error submitting review", data);
-			setApiErrMsg(ERR_REVIEW_EXIST);
-			return;
+		switch ((data as ErrorResponse).message) {
+			case ERR_REVIEW_EXIST:
+				notifications.show({
+					title: ERR_REVIEW_EXIST,
+					message: "You can either edit or delete your existing review",
+					color: "red",
+					autoClose: 5000
+				});
+				break;
+			case ERR_MISSING_TOKEN || ERR_EXPIRED_TOKEN:
+				open(); // open "Please login" modal
+				break;
+			default:
+				notifications.show({
+					title: "Submit review successfully",
+					message: "Your review has been submitted. Thank you so much for making Stamford a better place!",
+					color: "green"
+				});
+				setTimeout(() => {
+					window.location.reload();
+				}, 5000);
 		}
-
-        window.location.reload()
 	};
 
 	useEffect(() => {
@@ -224,35 +173,11 @@ export default function CourseReview({ params }: { params: { courseCode: string 
 			<Title my="md" order={2}>
 				Write a Review
 			</Title>
-
-			{/* TODO: extract these as a component (reuse it for edit review)*/}
-			{reviewGuidelines.map((guide) => (
-				<Blockquote key={`"review_guideline_${guide.text}`} color={guide.color} w="100%" p="sm" mb="xs">
-					<Flex justify="flex-start" gap="sm">
-						{guide.displayIcon}
-						<Text>{guide.text}</Text>
-					</Flex>
-				</Blockquote>
-			))}
-
-			<Paper shadow="xs" w="100%" h="100%">
-				<Flex direction="row" gap="sm" my="sm">
-					<Select
-						data={academicYearOptions}
-						value={academicYear}
-						onChange={setAcademicYear}
-						placeholder="Select Academic year"
-					/>
-					<Rating size="lg" defaultValue={0} fractions={2} onChange={setRating} />
-				</Flex>
-
-				<MarkdownEditor editor={markdownEditor} />
-				<Flex gap="sm" justify="end">
-					<Button mt="md" variant="filled" onClick={(e) => submitReview()}>
-						Submit Review
-					</Button>
-				</Flex>
-			</Paper>
+			<WriteReviewForm
+				onSubmitCallBack={(academicYear, description, rating) => {
+					submitReview(academicYear, description, rating);
+				}}
+			/>
 		</Container>
 	);
 }
