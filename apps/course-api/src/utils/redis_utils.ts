@@ -4,11 +4,16 @@ const redisClient = createClient({
 	url: process.env.REDIS_URL
 });
 
-process.on("exit", async () => {
-	console.log("exiting redis..");
-	await redisClient.disconnect();
-	console.log("redis exited");
-});
+if (process.env.APP_ENV === "beta" || process.env.APP_ENV === "prod") {
+	process.on("exit", async () => {
+		console.log("exiting redis..");
+		try {
+			redisClient.disconnect();
+		} catch (error) {
+			console.error("error exiting redis:", error);
+		}
+	});
+}
 
 export async function getRedisClient() {
 	if (redisClient.isReady && redisClient.isOpen) {
@@ -19,8 +24,7 @@ export async function getRedisClient() {
 		await redisClient.connect();
 		return redisClient;
 	} catch (error) {
-		console.log("error connecting to redis:", error);
-		redisClient.disconnect();
+		console.error("error connecting to redis:", error);
 		return null;
 	}
 }
