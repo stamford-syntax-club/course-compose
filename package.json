@@ -1,25 +1,26 @@
 {
-  "private": true,
-  "scripts": {
-    "build": "turbo run build",
-    "dev": "turbo run dev",
-    "bootstrap": "turbo run bootstrap && docker compose -f docker-compose.dev.yaml down -v && docker compose -f docker-compose.dev.yaml up -d --build --force-recreate",
-    "test": "turbo run test",
-    "unit": "turbo run unit",
-    "integration": "turbo run integration",
-    "lint": "turbo run lint",
-    "format": "prettier --write \"**/*.{ts,tsx,md,go}\""
-  },
-  "devDependencies": {
-    "eslint": "^8.56.0",
-    "prettier": "^3.2.2",
-    "tsconfig": "workspace:*",
-    "turbo": "^1.11.3"
-  },
-  "packageManager": "pnpm@8.9.0",
-  "name": "course-compose",
-  "dependencies": {
-    "@prisma/client": "^5.8.0",
-    "prettier-plugin-go-template": "^0.0.15"
-  }
+	"private": true,
+	"scripts": {
+		"build": "turbo run build",
+		"dev": "turbo run dev",
+		"bootstrap:unix": "turbo run bootstrap:unix && docker compose -f docker-compose.dev.yaml down -v && docker compose -f docker-compose.dev.yaml up -d --build --force-recreate",
+		"bootstrap:windows": "turbo run bootstrap:windows && docker compose -f docker-compose.dev.yaml down -v && docker compose -f docker-compose.dev.yaml up -d --build --force-recreate",
+		"test": "turbo run test",
+		"unit": "turbo run unit",
+		"integration": "turbo run integration",
+		"lint": "turbo run lint",
+		"format": "prettier --write \"**/*.{ts,tsx,md,go}\""
+	},
+	"devDependencies": {
+		"eslint": "^8.56.0",
+		"prettier": "^3.2.2",
+		"tsconfig": "workspace:*",
+		"turbo": "^1.11.3"
+	},
+	"packageManager": "pnpm@8.9.0",
+	"name": "course-compose",
+	"dependencies": {
+		"@prisma/client": "^5.8.0",
+		"prettier-plugin-go-template": "^0.0.15"
+	}
 }

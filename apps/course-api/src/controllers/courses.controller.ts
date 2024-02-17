@@ -17,8 +17,8 @@ const handleGetAllCourses = async (req: Request, res: Response) => {
 	}
 
 	try {
-		const { courses, count } = await getAllCourses(search, pageSize, pageNumber);
-		const data = paginate(courses, pageSize, pageNumber, count);
+		const { courseResponse, count } = await getAllCourses(search, pageSize, pageNumber);
+		const data = paginate(courseResponse, pageSize, pageNumber, count);
 
 		// fire and forget
 		const redisClient = await getRedisClient();

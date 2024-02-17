@@ -1,34 +1,30 @@
 {
-  "$schema": "https://turbo.build/schema.json",
-  "globalDependencies": [
-    "**/.env.*local"
-  ],
-  "pipeline": {
-    "build": {
-      "dependsOn": [
-        "^build"
-      ],
-      "outputs": [
-        ".next/**",
-        "!.next/cache/**"
-      ]
-    },
-    "lint": {},
-    "test": {
-      "cache": false
-    },
-    "unit": {
-      "cache": false
-    },
-    "integration": {
-      "cache": false
-    },
-    "dev": {
-      "cache": false,
-      "persistent": true
-    },
-    "bootstrap": {
-      "cache": false
-    }
-  }
+	"$schema": "https://turbo.build/schema.json",
+	"globalDependencies": ["**/.env.*local"],
+	"pipeline": {
+		"build": {
+			"dependsOn": ["^build"],
+			"outputs": [".next/**", "!.next/cache/**"]
+		},
+		"lint": {},
+		"test": {
+			"cache": false
+		},
+		"unit": {
+			"cache": false
+		},
+		"integration": {
+			"cache": false
+		},
+		"dev": {
+			"cache": false,
+			"persistent": true
+		},
+		"bootstrap:unix": {
+			"cache": false
+		},
+		"bootstrap:windows": {
+			"cache": false
+		}
+	}
 }
