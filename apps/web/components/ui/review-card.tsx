@@ -1,10 +1,11 @@
-import { Avatar, Badge, Box, Card, Flex, Menu, Rating, Text, TypographyStylesProvider } from "@mantine/core";
+import { Avatar, Badge, Card, Flex, Menu, Rating, Text, TypographyStylesProvider } from "@mantine/core";
 import { IconEdit, IconDots, IconX } from "@tabler/icons-react";
 import ReactMarkdown from "react-markdown";
 import { Review } from "types/reviews";
 
 interface ReviewCardProps {
 	review: Review;
+	// TODO: add 2 callbacks: onEditReview, onDeleteReview (only for MyReviewCard)
 }
 
 const getStatusColor = (status: string): string => {

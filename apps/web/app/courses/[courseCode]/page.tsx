@@ -6,19 +6,18 @@ import { useEffect, useState } from "react";
 import { PaginatedResponse } from "types/pagination";
 import { Course } from "types/course";
 import { Review } from "types/reviews";
-import LinkButton from "@components/ui/back-button";
+import BackButton from "@components/ui/back-button";
 import Link from "next/link";
 import { ErrorResponse } from "types/errors";
 import { notifications } from "@mantine/notifications";
 import WriteReviewForm from "@components/ui/write-review-form";
 import SessionModal from "@components/ui/session-modal";
-import { AUTH_TOKEN_KEY, ERR_EXPIRED_TOKEN, ERR_REVIEW_EXIST, ERR_MISSING_TOKEN  } from "@utils/constants";
+import { AUTH_TOKEN_KEY, ERR_EXPIRED_TOKEN, ERR_REVIEW_EXIST, ERR_MISSING_TOKEN } from "@utils/constants";
 
 // TODO: remove this when auth is implemented
 localStorage.setItem(
 	AUTH_TOKEN_KEY,
-	"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6ImtoaW5nQHN0dWRlbnRzLnN0YW1mb3JkLmVkdSIsImV4cCI6MTcwODEwNDE2NSwic3ViIjoiOGE3YjNjMmUtM2U1Zi00ZjFhLWE4YjctM2MyZTFhNGY1YjZkIn0.4hnlK3iLnRKbQMyB_bKS3wF4mpy0RRL7i02CNF1VUvE"
-
+	"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6ImtoaW5nQHN0dWRlbnRzLnN0YW1mb3JkLmVkdSIsImV4cCI6MTcwODE0ODQ1NCwic3ViIjoiOGE3YjNjMmUtM2U1Zi00ZjFhLWE4YjctM2MyZTFhNGY1YjZkIn0.f-CqAxXi72eVj-hBuBmXAD3AuV6ZTOJ3rIwsltmfZQw"
 	//"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6ImtoaW5nQHN0dWRlbnRzLnN0YW1mb3JkLmVkdSIsImV4cCI6MTcwODExMDY0NCwic3ViIjoiOGE3YjNjMmUtM2U1Zi00ZjFhLWE4YjctM2MyZTFhNGY1YjZkIn0.YS_e_SXtq_a1Kwz4T415spS1w0k0R-EhdV2TFK2yWdw"
 );
 // expired token for test = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6ImtoaW5nQHN0dWRlbnRzLnN0YW1mb3JkLmVkdSIsImV4cCI6MTcwODEwNDE2NSwic3ViIjoiOGE3YjNjMmUtM2U1Zi00ZjFhLWE4YjctM2MyZTFhNGY1YjZkIn0.4hnlK3iLnRKbQMyB_bKS3wF4mpy0RRL7i02CNF1VUvE"
@@ -113,7 +112,7 @@ export default function CourseReview({ params }: { params: { courseCode: string 
 	return (
 		<Container>
 			{/* course details section */}
-			<LinkButton where="/" />
+			<BackButton href="/" pageName="Home" />
 			<Flex direction="column" my="xl" gap="sm" align="center">
 				<Title className="text-center text-3xl">
 					{courseData?.full_name} ({courseData?.code})
