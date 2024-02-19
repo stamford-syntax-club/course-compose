@@ -171,7 +171,7 @@ export default function HomePage(): JSX.Element {
 							<div className="grid grid-cols-12 grid-rows-3 gap-4">
 								{filteredCourses.map((course) => {
 									return (
-										<MyReviewCard
+										<CourseCard
 											// Ensure that the key is unique, otherwise same keys will cause a lot of issues.
 											key={`CourseCard_${course.courseCode}`}
 											courseName={course.courseName}
