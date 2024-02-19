@@ -1,5 +1,6 @@
 "use client";
 
+import { MyReviewCard } from "@components/ui/cards/my-review-card";
 import { CourseCard } from "@components/ui/course-card";
 import { Button, Grid, Group, Menu, Pagination, Paper, Stack, Text, TextInput, rem } from "@mantine/core";
 import {
@@ -170,7 +171,7 @@ export default function HomePage(): JSX.Element {
 							<div className="grid grid-cols-12 grid-rows-3 gap-4">
 								{filteredCourses.map((course) => {
 									return (
-										<CourseCard
+										<MyReviewCard
 											// Ensure that the key is unique, otherwise same keys will cause a lot of issues.
 											key={`CourseCard_${course.courseCode}`}
 											courseName={course.courseName}
