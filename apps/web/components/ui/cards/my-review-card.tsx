@@ -1,5 +1,6 @@
 import { Button, Card, Flex, Group, Image, Rating, Stack, Text } from "@mantine/core";
 import { limitWords } from "@utils/limit-text";
+import { IconArrowDown, IconArrowUp } from "@tabler/icons-react";
 
 interface CourseCardProps {
 	courseName: string;
@@ -31,7 +32,7 @@ export function MyReviewCard({
 			>
 				<Stack className="h-full" gap="xs">
 					<Group style={{ padding: "10px", borderRadius: "8px" }} bg="dark.6">
-						<Stack gap="0">
+						<Stack gap="0" className="w-full">
 							<Text span c="dimmed" inherit>
 								{courseCode}
 							</Text>
@@ -47,9 +48,9 @@ export function MyReviewCard({
 					<Flex gap="xs" align="center" justify="space-between">
 						<Rating value={courseRating} fractions={2} readOnly />
 						<Flex gap="5px" align="center">
-							<Image alt="uparrowgreen" height={6} src="uparrowgreen.svg" width={4} />
+							<IconArrowUp color="green" strokeWidth={3} />
 							30
-							<Image alt="downarrowred" height={6} src="downarrowred.svg" width={4} />
+							<IconArrowDown opacity={0.7} color="red" strokeWidth={3} />
 							40
 						</Flex>
 					</Flex>
@@ -57,12 +58,12 @@ export function MyReviewCard({
 					<Group>
 						{limitWords(
 							"Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. In pellentesque massa placerat duis ultricies lacus sed.",
-							30
+							20
 						)}
 					</Group>
 
 					<Group className="mt-auto w-full" justify="flex-end" gap="xs">
-						<Button bg="blue.4">GO TO MY REVIEW</Button>
+						<Button bg="blue.4">{"SEE MY REVIEW".toUpperCase()}</Button>
 					</Group>
 				</Stack>
 			</Card>
