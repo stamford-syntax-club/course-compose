@@ -24,10 +24,10 @@ export default function RootLayout({ children }: { children: React.ReactNode }):
 	return (
 		<html lang="en">
 			<head>
-				<ColorSchemeScript />
+				<ColorSchemeScript defaultColorScheme="dark" />
 			</head>
 			<body>
-				<MantineProvider theme={theme}>
+				<MantineProvider theme={theme} defaultColorScheme="dark">
 					<ApplicationShell>{children}</ApplicationShell>
 				</MantineProvider>
 			</body>

@@ -13,7 +13,6 @@ export default function ApplicationHeader({ opened, toggle }: { opened: boolean;
 						<span className="select-none text-3xl font-bold uppercase">Course Compose</span>
 					</Link>
 				</div>
-				{/* <MantineLogo size={30} /> */}
 			</Group>
 		</AppShell.Header>
 	);
