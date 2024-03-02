@@ -1,7 +1,7 @@
 "use client";
 
 import { MyReviewCard } from "@components/ui/cards/my-review-card";
-import { Accordion, Badge, Grid, Paper, Stack } from "@mantine/core";
+import { Accordion, Badge, Grid, Paper, Stack, Text } from "@mantine/core";
 import type { AccordionItems, MyReviewCardProps } from "types";
 
 const MY_COURSE_REVIEW_LIST = [
@@ -27,7 +27,7 @@ const MY_COURSE_REVIEW_LIST = [
 		coursePrerequisites: ["WEB301", "WEB302"],
 		courseRating: 5.0,
 		courseReviewCount: 150,
-		status: "Pending"
+		status: "Approved"
 	},
 	{
 		courseName: "Emerging Technologies",
@@ -105,9 +105,9 @@ export default function MyReviews(): JSX.Element {
 				<Stack gap="md">
 					<Paper bg="dark.8" p="md" withBorder>
 						<div className="relative flex size-full flex-col">
-							<div className="grid grid-cols-12 grid-rows-2 gap-6">
-								{item.posts.map((course) => {
-									return (
+							<div className="grid grid-cols-12 grid-rows-1 gap-6">
+								{item.posts.length !== 0 ? (
+									item.posts.map((course) => (
 										<MyReviewCard
 											key={`CourseCard_${course.courseCode}`}
 											courseName={course.courseName}
@@ -116,8 +116,10 @@ export default function MyReviews(): JSX.Element {
 											courseRating={course.courseRating}
 											courseReviewCount={course.courseReviewCount}
 										/>
-									);
-								})}
+									))
+								) : (
+									<Text className="col-span-12 text-center">No {item.value} Posts Yet</Text>
+								)}
 							</div>
 						</div>
 					</Paper>
@@ -134,7 +136,7 @@ export default function MyReviews(): JSX.Element {
 			}}
 		>
 			<Grid.Col span={{ base: 12, xl: 12 }}>
-				<Accordion radius="xs" defaultValue="Approved">
+				<Accordion multiple radius="xs" defaultValue={["Approved", "Pending", "Rejected"]}>
 					{items}
 				</Accordion>
 			</Grid.Col>
