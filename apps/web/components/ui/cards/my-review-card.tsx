@@ -1,5 +1,4 @@
 import { Button, Card, Flex, Group, Image, Rating, Stack, Text } from "@mantine/core";
-import { limitWords } from "@utils/limit-text";
 import { IconArrowDown, IconArrowUp } from "@tabler/icons-react";
 
 interface CourseCardProps {
@@ -55,12 +54,11 @@ export function MyReviewCard({
 						</Flex>
 					</Flex>
 
-					<Group>
-						{limitWords(
-							"Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. In pellentesque massa placerat duis ultricies lacus sed.",
-							20
-						)}
-					</Group>
+					<Text truncate="end">
+						Lorem ipsum dolor sit amet consectetur adipisicing elit. Unde provident eos fugiat id
+						necessitatibus magni ducimus molestias. Placeat, consequatur. Quisquam, quae magnam perspiciatis
+						excepturi iste sint itaque sunt laborum. Nihil?
+					</Text>
 
 					<Group className="mt-auto w-full" justify="flex-end" gap="xs">
 						<Button bg="blue.4">{"SEE MY REVIEW".toUpperCase()}</Button>
