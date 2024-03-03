@@ -52,6 +52,7 @@ export default function ApplicationHeader({
 							<Menu.Dropdown>
 								<Menu.Label>Logged in as</Menu.Label>
 								<Menu.Item disabled className="text-white">
+									{/* TODO: Fix ESLint complaining. Later. */}
 									{sessionData?.user?.email ? sessionData.user.email.split("@")[0] : "No email"}
 								</Menu.Item>
 								<Menu.Label>Actions</Menu.Label>
@@ -83,7 +84,6 @@ export default function ApplicationHeader({
 									.signInWithOAuth({ provider: "azure" })
 									.then((result) => {
 										console.log("OAuth result", result.data);
-										setSessionData(result);
 									})
 									.catch((error) => {
 										console.error(error);
