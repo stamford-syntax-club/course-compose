@@ -119,6 +119,28 @@ func (r *reviewRepositoryImpl) EditReview(ctx context.Context, review *review_db
 	return result, nil
 }
 
+func (r *reviewRepositoryImpl) DeleteReview(ctx context.Context, reviewId int, courseCode, userId string) error {
+	courseId, err := getCourseID(ctx, r.reviewDB, courseCode)
+	if err != nil {
+		return err
+	}
+
+	if err := isReviewOwner(ctx, r.reviewDB, reviewId, courseId, userId); err != nil {
+		return err
+	}
+
+	deletedReview, err := r.reviewDB.Review.FindUnique(
+		review_db.Review.ID.Equals(reviewId),
+	).Delete().Exec(ctx)
+	if err != nil {
+		log.Println("exec delete review: ", err)
+		return fiber.ErrInternalServerError
+	}
+
+	log.Printf("Deleted review %+v\n", deletedReview)
+	return nil
+}
+
 func (r *reviewRepositoryImpl) UpdateReviewStatus(ctx context.Context, reviewDecision *dto.ReviewDecisionDTO) (*review_db.ReviewModel, error) {
 	updatedReview, err := r.reviewDB.Review.FindUnique(
 		review_db.Review.ID.Equals(reviewDecision.ID),

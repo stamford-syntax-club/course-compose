@@ -20,6 +20,7 @@ func (r *ReviewRouter) RegisterRoutes() {
 	r.commonRouter.Get("/courses/:courseCode/reviews", middleware.JWTAuth(), r.rc.GetReviews)
 	r.commonRouter.Post("/courses/:courseCode/reviews", middleware.JWTAuth(), r.rc.SubmitReview)
 	r.commonRouter.Put("/courses/:courseCode/reviews/edit", middleware.JWTAuth(), r.rc.EditReview)
+	r.commonRouter.Delete("/courses/:courseCode/reviews/:reviewId", middleware.JWTAuth(), r.rc.DeleteReview)
 	r.commonRouter.Get("/myreviews", middleware.JWTAuth(), r.rc.GetAllMyReviews)
 	r.commonRouter.Put("/admin/reviews", middleware.AdminAuth(), r.rc.UpdateReviewStatus)
 }
