@@ -13,24 +13,21 @@ import { notifications } from "@mantine/notifications";
 import WriteReviewForm from "@components/ui/write-review-form";
 import SessionModal from "@components/ui/session-modal";
 import { AUTH_TOKEN_KEY, ERR_EXPIRED_TOKEN, ERR_REVIEW_EXIST, ERR_MISSING_TOKEN } from "@utils/constants";
+import { Session } from "@supabase/supabase-js";
+import { createClient } from "lib/supabase/component";
 
-// TODO: remove this when auth is implemented
-localStorage.setItem(
-	AUTH_TOKEN_KEY,
-	"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6ImtoaW5nQHN0dWRlbnRzLnN0YW1mb3JkLmVkdSIsImV4cCI6MTcwODE0ODQ1NCwic3ViIjoiOGE3YjNjMmUtM2U1Zi00ZjFhLWE4YjctM2MyZTFhNGY1YjZkIn0.f-CqAxXi72eVj-hBuBmXAD3AuV6ZTOJ3rIwsltmfZQw"
-	//"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6ImtoaW5nQHN0dWRlbnRzLnN0YW1mb3JkLmVkdSIsImV4cCI6MTcwODExMDY0NCwic3ViIjoiOGE3YjNjMmUtM2U1Zi00ZjFhLWE4YjctM2MyZTFhNGY1YjZkIn0.YS_e_SXtq_a1Kwz4T415spS1w0k0R-EhdV2TFK2yWdw"
-);
 // expired token for test = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6ImtoaW5nQHN0dWRlbnRzLnN0YW1mb3JkLmVkdSIsImV4cCI6MTcwODEwNDE2NSwic3ViIjoiOGE3YjNjMmUtM2U1Zi00ZjFhLWE4YjctM2MyZTFhNGY1YjZkIn0.4hnlK3iLnRKbQMyB_bKS3wF4mpy0RRL7i02CNF1VUvE"
 
 export default function CourseReview({ params }: { params: { courseCode: string } }) {
 	const [courseData, setCourseData] = useState<Course>();
 	const [reviewsData, setReviewsData] = useState<PaginatedResponse<Review>>();
+	const [sessionData, setSessionData] = useState<Session | null>(null);
 	const [pageNumber, setPageNumber] = useState(1);
-	const [tokenErr, setTokenErr] = useState(!localStorage.getItem(AUTH_TOKEN_KEY));
 
 	// TODO: make host dynamic (either use api-gateway:8000 or localhost:8000)
 	const COURSE_ENDPOINT = `http://localhost:8000/api/courses/${params.courseCode}`;
 	const REVIEW_ENDPOINT = `${COURSE_ENDPOINT}/reviews`;
+	const supabase = createClient();
 
 	const fetchCourseDetail = async () => {
 		try {
@@ -46,13 +43,13 @@ export default function CourseReview({ params }: { params: { courseCode: string 
 		try {
 			const data = await fetch(`${REVIEW_ENDPOINT}?pageNumber=${pageNumber}&pageSize=10`, {
 				headers: {
-					Authorization: `Bearer ${localStorage.getItem(AUTH_TOKEN_KEY)}`
+					Authorization: `Bearer ${sessionData?.access_token ? sessionData?.access_token : ""}`
 				}
 			});
 			const reviews = await data.json();
 
 			if ((reviews as ErrorResponse).message == ERR_EXPIRED_TOKEN) {
-				setTokenErr(true);
+				setSessionData(null);
 				return;
 			}
 
@@ -72,7 +69,7 @@ export default function CourseReview({ params }: { params: { courseCode: string 
 			}),
 			headers: {
 				"Content-Type": "application/json",
-				Authorization: `Bearer ${localStorage.getItem(AUTH_TOKEN_KEY)}`
+				Authorization: `Bearer ${sessionData?.access_token ? sessionData?.access_token : ""}`
 			}
 		});
 		const data = await res.json();
@@ -87,7 +84,7 @@ export default function CourseReview({ params }: { params: { courseCode: string 
 				});
 				break;
 			case ERR_MISSING_TOKEN || ERR_EXPIRED_TOKEN:
-				setTokenErr(true);
+				setSessionData(null);
 				break;
 			default:
 				notifications.show({
@@ -102,12 +99,23 @@ export default function CourseReview({ params }: { params: { courseCode: string 
 	};
 
 	useEffect(() => {
+		supabase.auth
+			.getSession()
+			.then((session) => {
+				setSessionData(session.data.session !== null ? session.data.session : null);
+			})
+			.catch((error) => {
+				console.error(error);
+			});
+	}, [supabase.auth]);
+
+	useEffect(() => {
 		fetchCourseDetail();
 	}, []);
 
 	useEffect(() => {
 		fetchCourseReviews();
-	}, [pageNumber, tokenErr]);
+	}, [pageNumber, sessionData]);
 
 	return (
 		<Container>
@@ -135,13 +143,7 @@ export default function CourseReview({ params }: { params: { courseCode: string 
 
 			<Divider size={5} />
 
-			{tokenErr && (
-				<SessionModal
-					onCloseCallBack={() => {
-						setTokenErr(false);
-					}}
-				/>
-			)}
+			{!sessionData && <SessionModal />}
 
 			{/* show reviews section*/}
 			<Title my="lg" order={2}>
