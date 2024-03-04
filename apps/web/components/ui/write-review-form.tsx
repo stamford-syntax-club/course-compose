@@ -75,7 +75,7 @@ export default function WriteReviewForm({ onSubmitCallBack }: WriteReviewFormPro
 				</Blockquote>
 			))}
 
-			<Paper shadow="xs" w="100%" h="100%">
+			<Paper w="100%" h="100%">
 				<Flex direction="row" gap="sm" my="sm">
 					<Select
 						data={academicYearOptions}
@@ -89,7 +89,7 @@ export default function WriteReviewForm({ onSubmitCallBack }: WriteReviewFormPro
 				<MarkdownEditor editor={markdownEditor} />
 
 				<Flex gap="sm" justify="end">
-					<Button mt="md" variant="filled" type="submit">
+					<Button mt="md" variant="outline" type="submit">
 						Submit Review
 					</Button>
 				</Flex>

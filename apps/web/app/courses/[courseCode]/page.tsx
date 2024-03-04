@@ -12,7 +12,7 @@ import { ErrorResponse } from "types/errors";
 import { notifications } from "@mantine/notifications";
 import WriteReviewForm from "@components/ui/write-review-form";
 import SessionModal from "@components/ui/session-modal";
-import { AUTH_TOKEN_KEY, ERR_EXPIRED_TOKEN, ERR_REVIEW_EXIST, ERR_MISSING_TOKEN } from "@utils/constants";
+import { ERR_EXPIRED_TOKEN, ERR_REVIEW_EXIST, ERR_MISSING_TOKEN } from "@utils/constants";
 import { Session } from "@supabase/supabase-js";
 import { createClient } from "lib/supabase/component";
 
@@ -21,7 +21,7 @@ import { createClient } from "lib/supabase/component";
 export default function CourseReview({ params }: { params: { courseCode: string } }) {
 	const [courseData, setCourseData] = useState<Course>();
 	const [reviewsData, setReviewsData] = useState<PaginatedResponse<Review>>();
-	const [sessionData, setSessionData] = useState<Session | null>(null);
+	const [sessionData, setSessionData] = useState<Session | null>();
 	const [pageNumber, setPageNumber] = useState(1);
 
 	// TODO: make host dynamic (either use api-gateway:8000 or localhost:8000)
@@ -102,7 +102,7 @@ export default function CourseReview({ params }: { params: { courseCode: string 
 		supabase.auth
 			.getSession()
 			.then((session) => {
-				setSessionData(session.data.session !== null ? session.data.session : null);
+				setSessionData(session.data.session);
 			})
 			.catch((error) => {
 				console.error(error);
@@ -143,7 +143,7 @@ export default function CourseReview({ params }: { params: { courseCode: string 
 
 			<Divider size={5} />
 
-			{!sessionData && <SessionModal />}
+			{!sessionData && <SessionModal supabase={supabase} />}
 
 			{/* show reviews section*/}
 			<Title my="lg" order={2}>
