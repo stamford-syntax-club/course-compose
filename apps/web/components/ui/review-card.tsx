@@ -1,4 +1,4 @@
-import { Avatar, Badge, Card, Flex, Menu, Rating, Text, TypographyStylesProvider } from "@mantine/core";
+import { Avatar, Badge, Card, Flex, Menu, Rating, Spoiler, Text, TypographyStylesProvider } from "@mantine/core";
 import { IconEdit, IconDots, IconX } from "@tabler/icons-react";
 import ReactMarkdown from "react-markdown";
 import { Review } from "types/reviews";
@@ -21,10 +21,17 @@ const getStatusColor = (status: string): string => {
 
 export function ReviewCard({ review }: ReviewCardProps) {
 	return (
-		<Card padding="md" radius="md" shadow="sm">
+		<Card radius="md" shadow="sm">
 			<Flex direction="row" gap="lg" justify="center">
 				{/* user profile and badges */}
-				<Flex direction="column" align="center" gap="4" justify="center" className="max-w-sm text-center">
+				<Flex
+					visibleFrom="md"
+					direction="column"
+					align="center"
+					gap="4"
+					justify="center"
+					className="max-w-sm text-center"
+				>
 					<Avatar size="70" src={null} alt="anonymous profile" />
 					<Text>Anonymous</Text>
 				</Flex>
@@ -35,9 +42,11 @@ export function ReviewCard({ review }: ReviewCardProps) {
 					<Text fw={800} size="sm">
 						Academic Year: {review.academicYear}
 					</Text>
-					<TypographyStylesProvider mt="md">
-						<ReactMarkdown>{review.description}</ReactMarkdown>
-					</TypographyStylesProvider>
+					<Spoiler maxHeight={75} showLabel="Show more" hideLabel="Hide">
+						<TypographyStylesProvider mt="md">
+							<ReactMarkdown>{review.description}</ReactMarkdown>
+						</TypographyStylesProvider>
+					</Spoiler>
 				</Flex>
 
 				{/* TODO: like and dislike button */}
