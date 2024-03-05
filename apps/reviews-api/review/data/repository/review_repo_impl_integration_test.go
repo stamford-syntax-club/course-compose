@@ -30,6 +30,15 @@ func (suite *ReviewRepoTestSuite) SetupSuite() {
 	seedReviewData(suite.client)
 }
 
+//
+//func (suite *ReviewRepoTestSuite) SetupTest() {
+//	seedReviewData(suite.client)
+//}
+//
+//func (suite *ReviewRepoTestSuite) TearDownTest() {
+//	suite.client.Prisma.ExecuteRaw(`DELETE FROM public."Review"`).Exec(suite.ctx)
+//}
+
 func (suite *ReviewRepoTestSuite) TearDownSuite() {
 	err := suite.client.Prisma.Disconnect()
 	suite.NoError(err)
@@ -191,9 +200,11 @@ func (suite *ReviewRepoTestSuite) TestEditReview() {
 					userId:       "2d1f3c4e-5a6b-7c8d-9e0f-1a2b3c4d5e6f",
 				},
 	*/
+	targetReview, err := suite.client.Review.FindFirst(db.Review.CourseID.Equals(2), db.Review.UserID.Equals(ownerID)).Exec(suite.ctx)
+	suite.NoError(err)
 	newReview := &db.ReviewModel{
 		InnerReview: db.InnerReview{
-			ID:           2,
+			ID:           targetReview.ID,
 			AcademicYear: 2023,
 			Description:  "Some edited data",
 			Rating:       2,
@@ -342,8 +353,31 @@ func (suite *ReviewRepoTestSuite) TestSubmitReview() {
 	})
 }
 
-func TestDeleteReview(t *testing.T) {
+func (suite *ReviewRepoTestSuite) TestDeleteReview() {
+	repo := NewReviewRepositoryImpl(suite.client)
+	ownerId := "3f9e87a9-6d27-4a09-8a0a-20e58d609315"
+	nonOwnerId := "d5a59cb2-1f22-4e23-8ef0-7108e54f842b"
+	testReview, err := suite.client.Review.CreateOne(
+		db.Review.AcademicYear.Set(2099),
+		db.Review.Description.Set("To be deleted"),
+		db.Review.Rating.Set(2.0),
+		db.Review.Votes.Set(0),
+		db.Review.Status.Set("REJECTED"),
+		db.Review.Course.Link(db.Course.ID.Equals(1)),
+		db.Review.Profile.Link(db.Profile.ID.Equals(ownerId)),
+	).Exec(suite.ctx)
+	suite.NoError(err)
 
+	suite.Run("user is not review owner", func() {
+		err := repo.DeleteReview(suite.ctx, testReview.ID, "CSCI101", nonOwnerId)
+		suite.Error(err)
+		suite.Equal("User is not the owner of this review", err.Error())
+	})
+
+	suite.Run("requested by review owner", func() {
+		err := repo.DeleteReview(suite.ctx, testReview.ID, "CSCI101", ownerId)
+		suite.NoError(err)
+	})
 }
 
 func TestReviewRepoSuite(t *testing.T) {
