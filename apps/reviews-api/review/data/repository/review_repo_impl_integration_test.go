@@ -365,7 +365,7 @@ func (suite *ReviewRepoTestSuite) TestDeleteReview() {
 		suite.Equal("User is not the owner of this review", err.Error())
 	})
 
-	suite.Run("requested by review owner", func() {
+	suite.Run("user is review owner", func() {
 		err := repo.DeleteReview(suite.ctx, testReview.ID, "CSCI101", ownerId)
 		suite.NoError(err)
 	})

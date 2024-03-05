@@ -174,8 +174,8 @@ func (rc *ReviewController) DeleteReview(c *fiber.Ctx) error {
 		return fiber.NewError(http.StatusBadRequest, "Invalid user ID")
 	}
 
-	ctx, cancleFunc := context.WithTimeout(context.Background(), 5*time.Second)
-	defer cancleFunc()
+	ctx, cancelFunc := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancelFunc()
 	err = rc.reviewRepo.DeleteReview(ctx, reviewId, courseCode, userId)
 	if err != nil {
 		return err
