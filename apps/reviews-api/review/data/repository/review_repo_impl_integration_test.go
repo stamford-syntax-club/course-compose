@@ -30,15 +30,6 @@ func (suite *ReviewRepoTestSuite) SetupSuite() {
 	seedReviewData(suite.client)
 }
 
-//
-//func (suite *ReviewRepoTestSuite) SetupTest() {
-//	seedReviewData(suite.client)
-//}
-//
-//func (suite *ReviewRepoTestSuite) TearDownTest() {
-//	suite.client.Prisma.ExecuteRaw(`DELETE FROM public."Review"`).Exec(suite.ctx)
-//}
-
 func (suite *ReviewRepoTestSuite) TearDownSuite() {
 	err := suite.client.Prisma.Disconnect()
 	suite.NoError(err)
