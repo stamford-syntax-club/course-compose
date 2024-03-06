@@ -1,100 +1,116 @@
-"use client";
-
 import { AppShell, Avatar, Burger, Button, Group, Menu } from "@mantine/core";
-import type { Session, SupabaseClient } from "@supabase/auth-helpers-nextjs";
+import { useSupabaseStore } from "@stores/supabase-store";
+import type { Session } from "@supabase/auth-helpers-nextjs";
 import Link from "next/link";
 import { useEffect, useState } from "react";
 
 interface ApplicationHeaderProps {
 	opened: boolean;
 	toggle: () => void;
-	supabase: SupabaseClient<any, "public", any>; // TODO: properly type this (2x)
-	isLoggedIn: boolean;
 }
 
-export default function ApplicationHeader({
-	opened,
-	toggle,
-	supabase,
-	isLoggedIn
-}: ApplicationHeaderProps): JSX.Element {
+// Assuming proper typing for SupabaseClient is completed outside this snippet
+export default function ApplicationHeader({ opened, toggle }: ApplicationHeaderProps): JSX.Element {
 	const [sessionData, setSessionData] = useState<Session | null>(null);
+	const { supabase, isLoggedIn } = useSupabaseStore();
 
-	// TODO: share this state in a global state
+	const [working, setWorking] = useState(false);
+
 	useEffect(() => {
-		supabase.auth
-			.getSession()
-			.then((session) => {
-				setSessionData(session.data.session !== null ? session.data.session : null);
-			})
-			.catch((error) => {
+		const fetchSession = async (): Promise<void> => {
+			if (!supabase?.auth) return;
+
+			try {
+				const {
+					data: { session }
+				} = await supabase.auth.getSession();
+				setSessionData(session);
+			} catch (error) {
 				console.error(error);
+			}
+		};
+
+		fetchSession().catch(console.error);
+	}, [supabase]);
+
+	const signOut = async (): Promise<void> => {
+		if (!supabase?.auth) return;
+
+		try {
+			await supabase.auth.signOut();
+		} catch (error) {
+			console.error(error);
+		}
+	};
+
+	const signInWithAzure = async (): Promise<void> => {
+		if (!supabase?.auth) return;
+
+		try {
+			const result = await supabase.auth.signInWithOAuth({ provider: "azure" });
+		} catch (error) {
+			console.error(error);
+		}
+	};
+
+	const handleSignOut = (): void => {
+		if (working) return;
+		setWorking(true);
+
+		signOut()
+			.catch(console.error)
+			.finally(() => {
+				setWorking(false);
 			});
-	}, [supabase.auth]);
+	};
+
+	// TODO: better anti-spam functionality. signInWithOAuth resolves very quickly and can be spammed.. for some reason.
+	const handleSignInWithAzure = (): void => {
+		if (working) return;
+		setWorking(true);
+
+		signInWithAzure()
+			.catch(console.error)
+			.finally(() => {
+				setWorking(false);
+			});
+	};
 
 	return (
 		<AppShell.Header>
 			<Group h="100%" px="md">
 				<Burger onClick={toggle} opened={opened} size="lg" />
-				<div>
-					<Link href="/">
-						<span className="select-none text-3xl font-bold uppercase">Course Compose</span>
-					</Link>
-				</div>
-
-				{isLoggedIn ? (
-					<div className="ml-auto">
+				<Link href="/">
+					<span className="cursor-pointer select-none text-3xl font-bold uppercase">Course Compose</span>
+				</Link>
+				<div className="ml-auto">
+					{isLoggedIn ? (
 						<Menu shadow="md" withArrow arrowPosition="center" position="left-start">
 							<Menu.Target>
 								<Avatar alt="profile picture" />
 							</Menu.Target>
-
 							<Menu.Dropdown>
 								<Menu.Label>Logged in as</Menu.Label>
-								<Menu.Item disabled className="text-white">
-									{/* TODO: Fix ESLint complaining. Later. */}
-									{sessionData?.user?.email ? sessionData.user.email.split("@")[0] : "No email"}
+								<Menu.Item disabled>
+									{sessionData?.user.email ? sessionData.user.email.split("@")[0] : "No email"}
 								</Menu.Item>
 								<Menu.Label>Actions</Menu.Label>
-								<Button
-									className="w-full"
-									color="red"
-									onClick={() => {
-										supabase.auth
-											.signOut()
-											.then(() => {
-												console.log("Signed out");
-											})
-											.catch((error) => {
-												console.error(error);
-											});
-									}}
-								>
+								<Button disabled={working} className="w-full" color="red" onClick={handleSignOut}>
 									Sign Out
 								</Button>
 							</Menu.Dropdown>
 						</Menu>
-					</div>
-				) : (
-					<div>
+					) : (
 						<Button
+							disabled={working}
 							variant="default"
-							onClick={() => {
-								supabase.auth
-									.signInWithOAuth({ provider: "azure" })
-									.then((result) => {
-										console.log("OAuth result", result.data);
-									})
-									.catch((error) => {
-										console.error(error);
-									});
-							}}
+							onClick={handleSignInWithAzure}
 							className="select-none text-lg font-bold uppercase"
 						>
 							Sign In
 						</Button>
-					</div>
-				)}
+					)}
+				</div>
 			</Group>
 		</AppShell.Header>
 	);

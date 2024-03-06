@@ -2,22 +2,23 @@
 
 import { AppShell } from "@mantine/core";
 import { useDisclosure } from "@mantine/hooks";
+import { useSupabaseStore } from "@stores/supabase-store";
 import { createClient } from "lib/supabase/component";
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import ApplicationHeader from "./application-header";
 import ApplicationNavbar from "./application-navbar";
 
 export function ApplicationShell({ children }: { children: React.ReactNode }): JSX.Element {
 	const [opened, { toggle }] = useDisclosure();
 
+	const { setSupabase, setIsLoggedIn } = useSupabaseStore();
+
 	const supabase = createClient();
 
-	// TODO: share this state in a global state
-	const [isLoggedIn, setIsLoggedIn] = useState(false);
-
 	useEffect(() => {
+		setSupabase(supabase);
+
 		const { data } = supabase.auth.onAuthStateChange((event, session) => {
-			console.log(event, session);
 			setIsLoggedIn(session !== null);
 		});
 
@@ -34,7 +35,7 @@ export function ApplicationShell({ children }: { children: React.ReactNode }): J
 			// call unsubscribe to remove the callback
 			data.subscription.unsubscribe();
 		};
-	}, [supabase.auth]);
+	}, [supabase, supabase.auth, setSupabase, setIsLoggedIn]);
 
 	return (
 		<AppShell
@@ -46,7 +47,7 @@ export function ApplicationShell({ children }: { children: React.ReactNode }): J
 			}}
 			padding="md"
 		>
-			<ApplicationHeader opened={opened} toggle={toggle} supabase={supabase} isLoggedIn={isLoggedIn} />
+			<ApplicationHeader opened={opened} toggle={toggle} />
 			<ApplicationNavbar />
 
 			{/* TODO: Make this not stupid  Lets you use 100% height for the main content (?) */}
