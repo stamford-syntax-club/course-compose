@@ -71,9 +71,8 @@ func createHandler(route config.Route) fiber.Handler {
 		endpoint := route.Dest.Endpoint
 		params := c.Route().Params
 
-		if len(params) != 0 {
-			// only support one parameter for now
-			endpoint = strings.ReplaceAll(endpoint, ":"+params[0], c.Params(params[0]))
+		for _, p := range params {
+			endpoint = strings.ReplaceAll(endpoint, ":"+p, c.Params(p))
 		}
 
 		appendQueryParams(c.Queries(), &endpoint)

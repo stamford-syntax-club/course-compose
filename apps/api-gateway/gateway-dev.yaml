@@ -3,14 +3,14 @@ routes:
       method: GET
       destination:
           service: list_all_courses
-          endpoint: https://center-be.stamford.dev/api/resources/resources # temp url
+          endpoint: http://localhost:8002/api/courses
           is_array: true
 
     - path: /api/courses/:courseCode
       method: GET
       destination:
           service: get_course_info
-          endpoint: http://localhost:8002/courses/:courseCode
+          endpoint: http://localhost:8002/api/courses/:courseCode
 
     - path: /api/courses/:courseCode/reviews
       method: GET
@@ -19,8 +19,14 @@ routes:
           endpoint: http://localhost:8003/api/courses/:courseCode/reviews
           is_array: true
 
-    - path: /api/:courseCode/reviews
+    - path: /api/courses/:courseCode/reviews
       method: POST
       destination:
           service: submit_new_review
           endpoint: http://localhost:8003/api/courses/:courseCode/reviews
+
+    - path: /api/courses/:courseCode/reviews/:reviewId
+      method: DELETE
+      destination:
+          service: submit_new_review
+          endpoint: http://localhost:8003/api/courses/:courseCode/reviews/:reviewId
