@@ -1,14 +1,14 @@
 import { Text, Title, Modal, Button } from "@mantine/core";
-import { useDisclosure } from "@mantine/hooks";
-import type { SupabaseClient } from "@supabase/auth-helpers-nextjs";
-import { useEffect } from "react";
+import { useSupabaseStore } from "@stores/supabase-store";
 
-export default function SessionModal({ supabase }: { supabase: SupabaseClient<any, "public", any> }) {
-	const [opened, { open, close }] = useDisclosure(false);
+interface SessionModalProps {
+	opened: boolean;
+	open: () => void;
+	close: () => void;
+}
 
-	useEffect(() => {
-		open();
-	}, []);
+export default function SessionModal({ opened, open, close }: SessionModalProps) {
+	const { supabase } = useSupabaseStore();
 
 	return (
 		<Modal
@@ -29,7 +29,7 @@ export default function SessionModal({ supabase }: { supabase: SupabaseClient<an
 				<Button
 					my="md"
 					onClick={() => {
-						supabase.auth
+						supabase?.auth
 							.signInWithOAuth({
 								provider: "azure",
 								options: { redirectTo: window.location.href }
