@@ -13,7 +13,7 @@ import { ErrorResponse } from "types/errors";
 import { notifications } from "@mantine/notifications";
 import WriteReviewForm from "@components/ui/write-review-form";
 import SessionModal from "@components/ui/session-modal";
-import { ERR_EXPIRED_TOKEN, ERR_REVIEW_EXIST, ERR_MISSING_TOKEN } from "@utils/constants";
+import { ERR_EXPIRED_TOKEN, ERR_REVIEW_EXIST, ERR_MISSING_TOKEN, ERR_USER_NOT_EXIST } from "@utils/constants";
 import { Session } from "@supabase/supabase-js";
 import { useSupabaseStore } from "@stores/supabase-store";
 
@@ -94,7 +94,7 @@ export default function CourseReview({ params }: { params: { courseCode: string 
 					autoClose: 5000
 				});
 				break;
-			case ERR_MISSING_TOKEN || ERR_EXPIRED_TOKEN:
+			case ERR_MISSING_TOKEN || ERR_EXPIRED_TOKEN || ERR_USER_NOT_EXIST:
 				open(); // session modal
 				break;
 			default:
