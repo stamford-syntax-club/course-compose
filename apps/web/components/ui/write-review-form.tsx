@@ -31,11 +31,16 @@ const reviewGuidelines = [
 
 interface WriteReviewFormProps {
 	onSubmitCallBack: (academicYear: string, description: string, rating: number) => void;
+	initialValues?: {
+		academicYear: string;
+		description: string;
+		rating: number;
+	};
 }
 
-export default function WriteReviewForm({ onSubmitCallBack }: WriteReviewFormProps) {
-	const [academicYear, setAcademicYear] = useState<string | null>("");
-	const [rating, setRating] = useState(0);
+export default function WriteReviewForm({ onSubmitCallBack, initialValues }: WriteReviewFormProps) {
+	const [academicYear, setAcademicYear] = useState<string>(initialValues?.academicYear || "");
+	const [rating, setRating] = useState(initialValues?.rating || 0);
 	const markdownEditor = useEditor({
 		extensions: [
 			StarterKit,
@@ -44,7 +49,8 @@ export default function WriteReviewForm({ onSubmitCallBack }: WriteReviewFormPro
 				placeholder:
 					"Tell us how did you feel about the course. Do you have any suggestions for other students?"
 			})
-		]
+		],
+		content: initialValues?.description || "",
 	});
 
 	return (
@@ -80,7 +86,7 @@ export default function WriteReviewForm({ onSubmitCallBack }: WriteReviewFormPro
 					<Select
 						data={academicYearOptions}
 						value={academicYear}
-						onChange={setAcademicYear}
+						onChange={(value) => setAcademicYear(value || "")}
 						placeholder="Select Academic year"
 					/>
 					<Rating size="lg" defaultValue={0} fractions={2} value={rating} onChange={setRating} />
