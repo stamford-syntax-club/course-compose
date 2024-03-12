@@ -25,8 +25,14 @@ routes:
           service: submit_new_review
           endpoint: http://localhost:8003/api/courses/:courseCode/reviews
 
+    - path: /api/courses/:courseCode/reviews/edit
+      method: PUT
+      destination:
+          service: edit_review
+          endpoint: http://localhost:8003/api/courses/:courseCode/reviews/edit
+
     - path: /api/courses/:courseCode/reviews/:reviewId
       method: DELETE
       destination:
-          service: submit_new_review
+          service: delete_review
           endpoint: http://localhost:8003/api/courses/:courseCode/reviews/:reviewId
