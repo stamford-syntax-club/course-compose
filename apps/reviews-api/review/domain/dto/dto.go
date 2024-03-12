@@ -10,16 +10,17 @@ type CourseDTO struct {
 }
 
 type ReviewDTO struct {
-	ID           int       `json:"id"`
-	AcademicYear int       `json:"academicYear"`
-	Description  string    `json:"description"`
-	IsOwner      bool      `json:"isOwner,omitempty"`
-	Rating       float64   `json:"rating"`
-	Status       string    `json:"status"`
-	Votes        int       `json:"votes"`
-	Course       CourseDTO `json:"course"`
-	Profile      UserDTO   `json:"profile"`
-	CreatedAt    time.Time `json:"created_at"`
+	ID             int       `json:"id"`
+	AcademicYear   int       `json:"academicYear"`
+	Description    string    `json:"description"`
+	IsOwner        bool      `json:"isOwner,omitempty"`
+	Rating         float64   `json:"rating"`
+	Status         string    `json:"status"`
+	RejectedReason string    `json:"rejectedReason,omitempty"`
+	Votes          int       `json:"votes"`
+	Course         CourseDTO `json:"course"`
+	Profile        UserDTO   `json:"profile"`
+	CreatedAt      time.Time `json:"created_at"`
 }
 
 type UserDTO struct {

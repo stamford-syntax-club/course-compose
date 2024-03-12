@@ -10,175 +10,166 @@ import (
 
 	"github.com/stamford-syntax-club/course-compose/reviews/common/utils"
 	"github.com/stamford-syntax-club/course-compose/reviews/review/data/datasource/db"
-	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/suite"
 )
 
-func setupTestDB(t *testing.T) *db.PrismaClient {
-	client := db.NewClient()
-	if err := client.Prisma.Connect(); err != nil {
-		t.Fatalf("Prisma Connect: %v", err)
-	}
-
-	log.Println("Connected to test DB")
-	seedReviewData(client)
-	return client
+type ReviewRepoTestSuite struct {
+	ctx       context.Context
+	ctxCancel context.CancelFunc
+	suite.Suite
+	client *db.PrismaClient
 }
 
-func TestGetCourseReview(t *testing.T) {
+func (suite *ReviewRepoTestSuite) SetupSuite() {
+	suite.client = db.NewClient()
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
-	client := setupTestDB(t)
-	t.Cleanup(
-		func() {
-			cancel()
-			if err := client.Prisma.Disconnect(); err != nil {
-				t.Fatalf("Prisma Disconnect: %v", err)
-			}
-		})
+	suite.ctx = ctx
+	suite.ctxCancel = cancel
+	err := suite.client.Prisma.Connect()
+	suite.NoError(err)
+	seedReviewData(suite.client)
+}
 
-	repo := NewReviewRepositoryImpl(client)
+func (suite *ReviewRepoTestSuite) TearDownSuite() {
+	err := suite.client.Prisma.Disconnect()
+	suite.NoError(err)
+	suite.ctxCancel()
+}
+
+func (suite *ReviewRepoTestSuite) TestGetCourseReview() {
+	repo := NewReviewRepositoryImpl(suite.client)
 
 	const (
 		activeUserID    = "8a7b3c2e-3e5f-4f1a-a8b7-3c2e1a4f5b6d"
 		nonActiveUserID = "1a2b3c4d-5e6f-7a8b-9c0d-1e2f3a4b5c6d"
 	)
 
-	t.Run("Return nil when course does not exist", func(t *testing.T) {
+	suite.Run("Return nil when course does not exist", func() {
 		pageInformation := &utils.PageInformation{
 			Size:   2,
 			Number: 1,
 		}
 
-		result, count, err := repo.GetCourseReviews(ctx, "CHINATHAI999", nonActiveUserID, pageInformation)
-		assert.Nil(t, result)
-		assert.Equal(t, 0, count)
-		assert.Error(t, err)
+		result, count, err := repo.GetCourseReviews(suite.ctx, "CHINATHAI999", nonActiveUserID, pageInformation)
+		suite.Nil(result)
+		suite.Equal(0, count)
+		suite.Error(err)
 	})
 
-	t.Run("Return empty for data array when course exists but no reviews", func(t *testing.T) {
+	suite.Run("Return empty for data array when course exists but no reviews", func() {
 		pageInformation := &utils.PageInformation{
 			Size:   2,
 			Number: 1,
 		}
-		result, count, err := repo.GetCourseReviews(ctx, "NOREVIEW101", nonActiveUserID, pageInformation)
+		result, count, err := repo.GetCourseReviews(suite.ctx, "NOREVIEW101", nonActiveUserID, pageInformation)
 
-		assert.NoError(t, err)
-		assert.Empty(t, result)
-		assert.Equal(t, 0, count)
+		suite.NoError(err)
+		suite.Empty(result)
+		suite.Equal(0, count)
 	})
 
-	t.Run("Return reviews as specified by pageSize and pageNumber", func(t *testing.T) {
+	suite.Run("Return reviews as specified by pageSize and pageNumber", func() {
 		// Context: There are 4 approved reviews for PHYS101
 		firstPageInformation := &utils.PageInformation{
 			Size:   4,
 			Number: 1,
 		}
-		firstResult, count, err := repo.GetCourseReviews(ctx, "PHYS101", activeUserID, firstPageInformation)
-		assert.NoError(t, err)
+		firstResult, count, err := repo.GetCourseReviews(suite.ctx, "PHYS101", activeUserID, firstPageInformation)
+		suite.NoError(err)
 
 		secondPageInformation := &utils.PageInformation{
 			Size:   2,
 			Number: 1,
 		}
-		secondResult, count, err := repo.GetCourseReviews(ctx, "PHYS101", activeUserID, secondPageInformation)
-		assert.NoError(t, err)
+		secondResult, count, err := repo.GetCourseReviews(suite.ctx, "PHYS101", activeUserID, secondPageInformation)
+		suite.NoError(err)
 
-		assert.Equal(t, 4, len(firstResult))
-		assert.Equal(t, 4, count)
+		suite.Equal(4, len(firstResult))
+		suite.Equal(4, count)
 
-		assert.Equal(t, 2, len(secondResult))
-		assert.Equal(t, 4, count)
+		suite.Equal(2, len(secondResult))
+		suite.Equal(4, count)
 	})
 
-	t.Run("Return reviews as is when pageSize is greater than total number of reviews", func(t *testing.T) {
+	suite.Run("Return reviews as is when pageSize is greater than total number of reviews", func() {
 		// Context: There are 4 approved reviews for PHYS101
 		pageInformation := &utils.PageInformation{
 			Size:   10,
 			Number: 1,
 		}
-		result, count, err := repo.GetCourseReviews(ctx, "PHYS101", activeUserID, pageInformation)
+		result, count, err := repo.GetCourseReviews(suite.ctx, "PHYS101", activeUserID, pageInformation)
 
-		assert.NoError(t, err)
-		assert.Equal(t, 4, len(result))
-		assert.Equal(t, 4, count)
+		suite.NoError(err)
+		suite.Equal(4, len(result))
+		suite.Equal(4, count)
 	})
 
-	t.Run("Limit 2 reviews if user is not in activeUser table", func(t *testing.T) {
+	suite.Run("Limit 2 reviews if user is not in activeUser table", func() {
 		pageInformation := &utils.PageInformation{
 			Size:   10,
 			Number: 1,
 		}
-		result, count, err := repo.GetCourseReviews(ctx, "PHYS101", nonActiveUserID, pageInformation)
+		result, count, err := repo.GetCourseReviews(suite.ctx, "PHYS101", nonActiveUserID, pageInformation)
 
-		assert.NoError(t, err)
-		assert.Equal(t, 2, len(result)) // only give out 2 reviews for non-active user
-		assert.Equal(t, 4, count)
+		suite.NoError(err)
+		suite.Equal(2, len(result)) // only give out 2 reviews for non-active user
+		suite.Equal(4, count)
 	})
 
-	t.Run("put myReview as first item in list if exist", func(t *testing.T) {
+	suite.Run("put myReview as first item in list if exist", func() {
 		pageInformation := &utils.PageInformation{
 			Size:   2,
 			Number: 1,
 		}
 		userID := "3f9e87a9-6d27-4a09-8a0a-20e58d609315" // this user has myReview for PHYS101
-		result, count, err := repo.GetCourseReviews(ctx, "PHYS101", userID, pageInformation)
+		result, count, err := repo.GetCourseReviews(suite.ctx, "PHYS101", userID, pageInformation)
 
-		assert.NoError(t, err)
-		assert.Equal(t, 3, len(result)) // myReview is included
-		assert.Equal(t, 4, count)
-		assert.Equal(t, "Yikes!", result[0].Description)
-		assert.Equal(t, float64(2), result[0].Rating)
-		assert.Equal(t, 5, result[0].Votes)
+		suite.NoError(err)
+		suite.Equal(3, len(result)) // myReview is included
+		suite.Equal(4, count)
+		suite.Equal("Yikes!", result[0].Description)
+		suite.Equal(float64(2), result[0].Rating)
+		suite.Equal(5, result[0].Votes)
 	})
 
-	t.Run("do not query for myReview if not first page", func(t *testing.T) {
+	suite.Run("do not query for myReview if not first page", func() {
 		pageInformation := &utils.PageInformation{
 			Size:   2,
 			Number: 2,
 		}
 		userID := "3f9e87a9-6d27-4a09-8a0a-20e58d609315"
-		result, count, err := repo.GetCourseReviews(ctx, "PHYS101", userID, pageInformation)
+		result, count, err := repo.GetCourseReviews(suite.ctx, "PHYS101", userID, pageInformation)
 
-		assert.NoError(t, err)
-		assert.Equal(t, 1, len(result)) // first page already shows 3 (because myReview was there)
-		assert.Equal(t, 4, count)
-		assert.NotEqual(t, "Yikes!", result[0].Description)
+		suite.NoError(err)
+		suite.Equal(1, len(result)) // first page already shows 3 (because myReview was there)
+		suite.Equal(4, count)
+		suite.NotEqual("Yikes!", result[0].Description)
 	})
 
-	t.Run("Get all my reviews", func(t *testing.T) {
-		t.Run("Should return all reviews for specified user", func(t *testing.T) {
+	suite.Run("Get all my reviews", func() {
+		suite.Run("Should return all reviews for specified user", func() {
 			userID := "d5a59cb2-1f22-4e23-8ef0-7108e54f842b"
-			myReviews, err := repo.GetAllMyReviews(ctx, userID)
+			myReviews, err := repo.GetAllMyReviews(suite.ctx, userID)
 
-			assert.NoError(t, err)
-			assert.Equal(t, 3, len(myReviews))
-			assert.Equal(t, userID, myReviews[0].UserID)
-			assert.Equal(t, userID, myReviews[1].UserID)
-			assert.Equal(t, userID, myReviews[2].UserID)
+			suite.NoError(err)
+			suite.Equal(3, len(myReviews))
+			suite.Equal(userID, myReviews[0].UserID)
+			suite.Equal(userID, myReviews[1].UserID)
+			suite.Equal(userID, myReviews[2].UserID)
 		})
 
-		t.Run("Return empty array if token is not provided", func(t *testing.T) {
+		suite.Run("Return empty array if token is not provided", func() {
 			// 00000000-0000-0000-0000-000000000000 is used if userID cannot be extracted from JWT
-			myReviews, err := repo.GetAllMyReviews(ctx, "00000000-0000-0000-0000-000000000000")
+			myReviews, err := repo.GetAllMyReviews(suite.ctx, "00000000-0000-0000-0000-000000000000")
 
-			assert.NoError(t, err)
-			assert.Empty(t, myReviews)
+			suite.NoError(err)
+			suite.Empty(myReviews)
 		})
 	})
-
 }
 
-func TestEditReview(t *testing.T) {
-	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
-	client := setupTestDB(t)
-	t.Cleanup(
-		func() {
-			cancel()
-			if err := client.Prisma.Disconnect(); err != nil {
-				t.Fatalf("Prisma Disconnect: %v", err)
-			}
-		})
-
-	repo := NewReviewRepositoryImpl(client)
+func (suite *ReviewRepoTestSuite) TestEditReview() {
+	repo := NewReviewRepositoryImpl(suite.client)
 
 	const (
 		validCourseCode   = "MATH201"
@@ -200,23 +191,25 @@ func TestEditReview(t *testing.T) {
 					userId:       "2d1f3c4e-5a6b-7c8d-9e0f-1a2b3c4d5e6f",
 				},
 	*/
+	targetReview, err := suite.client.Review.FindFirst(db.Review.CourseID.Equals(2), db.Review.UserID.Equals(ownerID)).Exec(suite.ctx)
+	suite.NoError(err)
 	newReview := &db.ReviewModel{
 		InnerReview: db.InnerReview{
-			ID:           2,
+			ID:           targetReview.ID,
 			AcademicYear: 2023,
 			Description:  "Some edited data",
 			Rating:       2,
 		},
 	}
 
-	t.Run("update review as given in the model and set status back to pending for re-evaluation", func(t *testing.T) {
-		editedReview, err := repo.EditReview(ctx, newReview, validCourseCode, ownerID)
+	suite.Run("update review as given in the model and set status back to pending for re-evaluation", func() {
+		editedReview, err := repo.EditReview(suite.ctx, newReview, validCourseCode, ownerID)
 
-		assert.NoError(t, err)
-		assert.Equal(t, newReview.AcademicYear, editedReview.AcademicYear)
-		assert.Equal(t, newReview.Description, editedReview.Description)
-		assert.Equal(t, newReview.Rating, editedReview.Rating)
-		assert.Equal(t, "PENDING", editedReview.Status)
+		suite.NoError(err)
+		suite.Equal(newReview.AcademicYear, editedReview.AcademicYear)
+		suite.Equal(newReview.Description, editedReview.Description)
+		suite.Equal(newReview.Rating, editedReview.Rating)
+		suite.Equal("PENDING", editedReview.Status)
 	})
 
 	errTest := []struct {
@@ -246,36 +239,26 @@ func TestEditReview(t *testing.T) {
 	}
 
 	for _, et := range errTest {
-		t.Run(et.name, func(t *testing.T) {
-			editedReview, err := repo.EditReview(ctx, newReview, et.courseCode, et.userId)
+		suite.Run(et.name, func() {
+			editedReview, err := repo.EditReview(suite.ctx, newReview, et.courseCode, et.userId)
 
-			assert.Error(t, err)
-			assert.Equal(t, et.errMsg, err.Error())
-			assert.Nil(t, editedReview)
+			suite.Error(err)
+			suite.Equal(et.errMsg, err.Error())
+			suite.Nil(editedReview)
 		})
 
 	}
 }
 
-func TestSubmitReview(t *testing.T) {
-	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
-	client := setupTestDB(t)
-	t.Cleanup(
-		func() {
-			cancel()
-			if err := client.Prisma.Disconnect(); err != nil {
-				t.Fatalf("Prisma Disconnect: %v", err)
-			}
-		})
-
-	repo := NewReviewRepositoryImpl(client)
+func (suite *ReviewRepoTestSuite) TestSubmitReview() {
+	repo := NewReviewRepositoryImpl(suite.client)
 
 	const (
 		validCourseCode   = "MATH201"
 		invalidCourseCode = "UWU123456"
 	)
 
-	t.Run("should accept if user never writes a review for that course", func(t *testing.T) {
+	suite.Run("should accept if user never writes a review for that course", func() {
 		userID := "8b84c3b5-5b87-4c9b-832d-60d0966d4f7d"
 		review := &db.ReviewModel{
 			InnerReview: db.InnerReview{
@@ -284,19 +267,19 @@ func TestSubmitReview(t *testing.T) {
 				Rating:       2,
 			},
 		}
-		result, err := repo.SubmitReview(ctx, review, validCourseCode, userID)
+		result, err := repo.SubmitReview(suite.ctx, review, validCourseCode, userID)
 
-		assert.NoError(t, err)
-		assert.Equal(t, review.AcademicYear, result.AcademicYear)
-		assert.Equal(t, review.Description, result.Description)
-		assert.Equal(t, review.Rating, result.Rating)
-		assert.Equal(t, "PENDING", result.Status)
-		assert.Equal(t, 0, result.Votes)
-		assert.Equal(t, userID, result.UserID)
-		assert.Equal(t, 2, result.CourseID)
+		suite.NoError(err)
+		suite.Equal(review.AcademicYear, result.AcademicYear)
+		suite.Equal(review.Description, result.Description)
+		suite.Equal(review.Rating, result.Rating)
+		suite.Equal("PENDING", result.Status)
+		suite.Equal(0, result.Votes)
+		suite.Equal(userID, result.UserID)
+		suite.Equal(2, result.CourseID)
 	})
 
-	t.Run("should reject if the same user tries to submit another review for the same course", func(t *testing.T) {
+	suite.Run("should reject if the same user tries to submit another review for the same course", func() {
 		userID := "8b84c3b5-5b87-4c9b-832d-60d0966d4f7d"
 		review := &db.ReviewModel{
 			InnerReview: db.InnerReview{
@@ -305,14 +288,14 @@ func TestSubmitReview(t *testing.T) {
 				Rating:       2,
 			},
 		}
-		result, err := repo.SubmitReview(ctx, review, validCourseCode, userID)
+		result, err := repo.SubmitReview(suite.ctx, review, validCourseCode, userID)
 
-		assert.Error(t, err)
-		assert.Equal(t, "You have already written a review for this course", err.Error())
-		assert.Nil(t, result)
+		suite.Error(err)
+		suite.Equal("You have already written a review for this course", err.Error())
+		suite.Nil(result)
 	})
 
-	t.Run("should reject course code does not exist", func(t *testing.T) {
+	suite.Run("should reject course code does not exist", func() {
 		userID := "8b84c3b5-5b87-4c9b-832d-60d0966d4f7d"
 		review := &db.ReviewModel{
 			InnerReview: db.InnerReview{
@@ -321,14 +304,14 @@ func TestSubmitReview(t *testing.T) {
 				Rating:       2,
 			},
 		}
-		result, err := repo.SubmitReview(ctx, review, invalidCourseCode, userID)
+		result, err := repo.SubmitReview(suite.ctx, review, invalidCourseCode, userID)
 
-		assert.Error(t, err)
-		assert.Equal(t, "Course does not exist", err.Error())
-		assert.Nil(t, result)
+		suite.Error(err)
+		suite.Equal("Course does not exist", err.Error())
+		suite.Nil(result)
 	})
 
-	t.Run("should reject course code does not exist", func(t *testing.T) {
+	suite.Run("should reject course code does not exist", func() {
 		userID := "8b84c3b5-5b87-4c9b-832d-60d0966d4f7d"
 		review := &db.ReviewModel{
 			InnerReview: db.InnerReview{
@@ -337,14 +320,14 @@ func TestSubmitReview(t *testing.T) {
 				Rating:       2,
 			},
 		}
-		result, err := repo.SubmitReview(ctx, review, invalidCourseCode, userID)
+		result, err := repo.SubmitReview(suite.ctx, review, invalidCourseCode, userID)
 
-		assert.Error(t, err)
-		assert.Equal(t, "Course does not exist", err.Error())
-		assert.Nil(t, result)
+		suite.Error(err)
+		suite.Equal("Course does not exist", err.Error())
+		suite.Nil(result)
 	})
 
-	t.Run("should reject user does not exist", func(t *testing.T) {
+	suite.Run("should reject user does not exist", func() {
 		userID := "7b84c3b5-5b87-4c9b-832d-60d0966d4f7d" // some random uuid
 		review := &db.ReviewModel{
 			InnerReview: db.InnerReview{
@@ -353,13 +336,43 @@ func TestSubmitReview(t *testing.T) {
 				Rating:       2,
 			},
 		}
-		result, err := repo.SubmitReview(ctx, review, validCourseCode, userID)
+		result, err := repo.SubmitReview(suite.ctx, review, validCourseCode, userID)
 
-		assert.Error(t, err)
-		assert.Equal(t, "User does not exist", err.Error())
-		assert.Nil(t, result)
+		suite.Error(err)
+		suite.Equal("User does not exist", err.Error())
+		suite.Nil(result)
+	})
+}
+
+func (suite *ReviewRepoTestSuite) TestDeleteReview() {
+	repo := NewReviewRepositoryImpl(suite.client)
+	ownerId := "3f9e87a9-6d27-4a09-8a0a-20e58d609315"
+	nonOwnerId := "d5a59cb2-1f22-4e23-8ef0-7108e54f842b"
+	testReview, err := suite.client.Review.CreateOne(
+		db.Review.AcademicYear.Set(2099),
+		db.Review.Description.Set("To be deleted"),
+		db.Review.Rating.Set(2.0),
+		db.Review.Votes.Set(0),
+		db.Review.Status.Set("REJECTED"),
+		db.Review.Course.Link(db.Course.ID.Equals(1)),
+		db.Review.Profile.Link(db.Profile.ID.Equals(ownerId)),
+	).Exec(suite.ctx)
+	suite.NoError(err)
+
+	suite.Run("user is not review owner", func() {
+		err := repo.DeleteReview(suite.ctx, testReview.ID, "CSCI101", nonOwnerId)
+		suite.Error(err)
+		suite.Equal("User is not the owner of this review", err.Error())
 	})
 
+	suite.Run("user is review owner", func() {
+		err := repo.DeleteReview(suite.ctx, testReview.ID, "CSCI101", ownerId)
+		suite.NoError(err)
+	})
+}
+
+func TestReviewRepoSuite(t *testing.T) {
+	suite.Run(t, new(ReviewRepoTestSuite))
 }
 
 func seedReviewData(client *db.PrismaClient) {

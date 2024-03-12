@@ -16,13 +16,14 @@ func MapReviewToReviewDTO(reviews []db.ReviewModel, userID string) []ReviewDTO {
 		}
 
 		reviewJSONResponses = append(reviewJSONResponses, ReviewDTO{
-			ID:           review.ID,
-			AcademicYear: review.AcademicYear,
-			Description:  review.Description,
-			IsOwner:      review.UserID == userID,
-			Rating:       review.Rating,
-			Status:       review.Status,
-			Votes:        review.Votes,
+			ID:             review.ID,
+			AcademicYear:   review.AcademicYear,
+			Description:    review.Description,
+			IsOwner:        review.UserID == userID,
+			Rating:         review.Rating,
+			Status:         review.Status,
+			RejectedReason: review.RejectedReason,
+			Votes:          review.Votes,
 			Course: CourseDTO{
 				ID:   review.Course().ID,
 				Code: review.Course().Code,

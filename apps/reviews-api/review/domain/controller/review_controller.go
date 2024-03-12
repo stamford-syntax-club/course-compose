@@ -2,6 +2,7 @@ package review_controller
 
 import (
 	"context"
+	"log"
 	"net/http"
 	"strings"
 	"time"
@@ -151,4 +152,34 @@ func (rc *ReviewController) UpdateReviewStatus(c *fiber.Ctx) error {
 	}
 
 	return c.Status(http.StatusOK).JSON(result)
+}
+
+func (rc *ReviewController) DeleteReview(c *fiber.Ctx) error {
+	courseCode := c.Params("courseCode")
+	if courseCode == "" {
+		return fiber.NewError(http.StatusBadRequest, "Invalid course code")
+	}
+
+	reviewId, err := c.ParamsInt("reviewId", 0)
+	if reviewId == 0 || err != nil {
+		if err != nil {
+			log.Printf("err delete review param: %v", err)
+		}
+
+		return fiber.NewError(http.StatusBadRequest, "Required review id")
+	}
+
+	userId := utils.GetUserID(c)
+	if userId == "" {
+		return fiber.NewError(http.StatusBadRequest, "Invalid user ID")
+	}
+
+	ctx, cancelFunc := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancelFunc()
+	err = rc.reviewRepo.DeleteReview(ctx, reviewId, courseCode, userId)
+	if err != nil {
+		return err
+	}
+
+	return c.SendStatus(http.StatusNoContent)
 }
