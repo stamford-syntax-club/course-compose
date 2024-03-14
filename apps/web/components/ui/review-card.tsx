@@ -116,7 +116,7 @@ export function MyReviewCard({ review }: ReviewCardProps) {
 						</Badge>
 						{review.status === "REJECTED" && (
 							<Blockquote color="red" w="100%" p="sm" mb="xs">
-								<Text>Your review has been rejected Your review has been rejected</Text>
+								<Text><b>Reason for rejection:</b> {review.rejectedReason}</Text>
 							</Blockquote>
 						)}
 
