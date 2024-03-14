@@ -16,11 +16,11 @@ import { IconEdit, IconDots, IconX } from "@tabler/icons-react";
 import ReactMarkdown from "react-markdown";
 import { Review } from "types/reviews";
 import WriteReviewForm from "./write-review-form";
-import { useState } from "react";
 
 interface ReviewCardProps {
 	review: Review;
-	// TODO: add 2 callbacks: onEditReview, onDeleteReview (only for MyReviewCard)
+	onEditReview?: (id: number, academicYear: string, description: string, rating: number) => void;
+	// TODO: add 1 callbacks: onDeleteReview (only for MyReviewCard)
 }
 
 const getStatusColor = (status: string): string => {
@@ -70,14 +70,8 @@ export function ReviewCard({ review }: ReviewCardProps) {
 	);
 }
 
-export function MyReviewCard({ review }: ReviewCardProps) {
+export function MyReviewCard({ review, onEditReview }: ReviewCardProps) {
 	const [opened, { open, close }] = useDisclosure(false);
-	const [updatedReview, setUpdatedReview] = useState<Review>(review);
-
-	const handleEditReview = () => {
-		review = updatedReview ? updatedReview : review;
-		open();
-	};
 
 	const handleDeleteReview = () => {
 		//TODO: implement delete review
@@ -109,14 +103,15 @@ export function MyReviewCard({ review }: ReviewCardProps) {
 					</Flex>
 
 					{/* review and ratings */}
-
 					<Flex direction="column" justify="flex-start" ml="3" gap="xs" w="100%">
 						<Badge color={getStatusColor(review.status)} hiddenFrom="md">
 							{review.status}
 						</Badge>
 						{review.status === "REJECTED" && (
 							<Blockquote color="red" w="100%" p="sm" mb="xs">
-								<Text><b>Reason for rejection:</b> {review.rejectedReason}</Text>
+								<Text>
+									<b>Reason for rejection:</b> {review.rejectedReason}
+								</Text>
 							</Blockquote>
 						)}
 
@@ -136,7 +131,7 @@ export function MyReviewCard({ review }: ReviewCardProps) {
 						</Menu.Target>
 
 						<Menu.Dropdown>
-							<Menu.Item leftSection={<IconEdit />} onClick={handleEditReview}>
+							<Menu.Item leftSection={<IconEdit />} onClick={open}>
 								Edit Review
 							</Menu.Item>
 							<Menu.Item leftSection={<IconX />} onClick={handleDeleteReview} className="text-red-500">
@@ -160,20 +155,12 @@ export function MyReviewCard({ review }: ReviewCardProps) {
 			>
 				{/* Modal content */}
 				<WriteReviewForm
-					onSubmitCallBack={(academicYear, description, rating) => {
-						setUpdatedReview((prevReview) => ({
-							...prevReview,
-							academicYear,
-							description,
-							rating
-						}));
+					onSubmit={(academicYear, description, rating) => {
+						// when user submit their edited review
+						if (onEditReview) onEditReview(review.id, academicYear, description, rating);
 						close();
 					}}
-					initialValues={{
-						academicYear: updatedReview.academicYear,
-						description: updatedReview.description,
-						rating: updatedReview.rating
-					}}
+					previousReview={review}
 				/>
 			</Modal>
 		</>

@@ -5,7 +5,7 @@ export interface Review {
 	isOwner: boolean;
 	rating: number;
 	status: string;
-    rejectedReason: string;
+	rejectedReason: string;
 	votes: number;
 	course: { id: number; code: string };
 	profile: { id: string };

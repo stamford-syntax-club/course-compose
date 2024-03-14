@@ -7,6 +7,7 @@ import Placeholder from "@tiptap/extension-placeholder";
 import StarterKit from "@tiptap/starter-kit";
 import { Markdown } from "tiptap-markdown";
 import { notifications } from "@mantine/notifications";
+import { Review } from "types/reviews";
 
 const academicYearOptions = [
 	{ value: "2020", label: "2020" },
@@ -30,17 +31,13 @@ const reviewGuidelines = [
 ];
 
 interface WriteReviewFormProps {
-	onSubmitCallBack: (academicYear: string, description: string, rating: number) => void;
-	initialValues?: {
-		academicYear: string;
-		description: string;
-		rating: number;
-	};
+	onSubmit: (academicYear: string, description: string, rating: number) => void;
+	previousReview?: Review;
 }
 
-export default function WriteReviewForm({ onSubmitCallBack, initialValues }: WriteReviewFormProps) {
-	const [academicYear, setAcademicYear] = useState<string>(initialValues?.academicYear || "");
-	const [rating, setRating] = useState(initialValues?.rating || 0);
+export default function WriteReviewForm({ onSubmit, previousReview }: WriteReviewFormProps) {
+	const [academicYear, setAcademicYear] = useState<string | null>(previousReview?.academicYear || null);
+	const [rating, setRating] = useState(previousReview?.rating || 0);
 	const markdownEditor = useEditor({
 		extensions: [
 			StarterKit,
@@ -50,7 +47,7 @@ export default function WriteReviewForm({ onSubmitCallBack, initialValues }: Wri
 					"Tell us how did you feel about the course. Do you have any suggestions for other students?"
 			})
 		],
-		content: initialValues?.description || "",
+		content: previousReview?.description || ""
 	});
 
 	return (
@@ -69,7 +66,7 @@ export default function WriteReviewForm({ onSubmitCallBack, initialValues }: Wri
 					return;
 				}
 
-				onSubmitCallBack(academicYear, markdownEditor?.storage.markdown.getMarkdown(), rating);
+				onSubmit(academicYear, markdownEditor?.storage.markdown.getMarkdown(), rating);
 			}}
 		>
 			{reviewGuidelines.map((guide) => (
@@ -86,7 +83,8 @@ export default function WriteReviewForm({ onSubmitCallBack, initialValues }: Wri
 					<Select
 						data={academicYearOptions}
 						value={academicYear}
-						onChange={(value) => setAcademicYear(value || "")}
+						defaultSearchValue={academicYear || undefined}
+						onChange={setAcademicYear}
 						placeholder="Select Academic year"
 					/>
 					<Rating size="lg" defaultValue={0} fractions={2} value={rating} onChange={setRating} />

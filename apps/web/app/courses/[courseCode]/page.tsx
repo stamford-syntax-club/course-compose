@@ -112,6 +112,25 @@ export default function CourseReview({ params }: { params: { courseCode: string 
 		}
 	};
 
+	const editReview = async (id: number, academicYear: string, description: string, rating: number) => {
+		const res = await fetch(`${REVIEW_ENDPOINT}/edit`, {
+			method: "PUT",
+			body: JSON.stringify({
+				id: id,
+				academic_year: parseInt(academicYear),
+				description: description,
+				rating: rating
+			}),
+			headers: {
+				"Content-Type": "application/json",
+				Authorization: `Bearer ${sessionData?.access_token ? sessionData?.access_token : ""}`
+			}
+		});
+
+		const data = await res.json();
+		console.log(data);
+	};
+
 	useEffect(() => {
 		if (isLoading) return; // prevent fetching before the session is retrieved
 
@@ -171,34 +190,39 @@ export default function CourseReview({ params }: { params: { courseCode: string 
 
 			<SessionModal opened={opened} open={open} close={close} />
 
-			{isLoading ? (
-				<Center>
+			{isLoading && (
+				<Center my="md">
 					<Loader />
 				</Center>
-			) : (
-				<Stack gap="sm">
-					{reviewsData?.data && reviewsData.data.length > 0 ? (
-						reviewsData?.data.map((review) =>
-							review?.isOwner ? (
-								<MyReviewCard key={`my_review_card_${review.id}`} review={review} />
-							) : (
-								<ReviewCard key={`review_card_${review.id}`} review={review} />
-							)
+			)}
+
+			<Stack gap="sm">
+				{reviewsData?.data &&
+					reviewsData.data.length > 0 &&
+					reviewsData?.data.map((review) =>
+						review?.isOwner ? (
+							<MyReviewCard
+								key={`my_review_card_${review.id}`}
+								review={review}
+								onEditReview={(id, academicYear, description, rating) =>
+									editReview(id, academicYear, description, rating)
+								}
+							/>
+						) : (
+							<ReviewCard key={`review_card_${review.id}`} review={review} />
 						)
-					) : (
-						<Center my="md">
-							<Text>No reviews for this course</Text>
-						</Center>
 					)}
 
-					<Center>
-						<Pagination
-							total={reviewsData?.totalPages ? reviewsData.totalPages : 1}
-							onChange={setPageNumber}
-						/>
+				{!isLoading && !reviewsData?.data.length && (
+					<Center my="md">
+						<Text>No reviews for this course</Text>
 					</Center>
-				</Stack>
-			)}
+				)}
+
+				<Center>
+					<Pagination total={reviewsData?.totalPages ? reviewsData.totalPages : 1} onChange={setPageNumber} />
+				</Center>
+			</Stack>
 
 			<Divider mt="md" />
 
@@ -207,9 +231,7 @@ export default function CourseReview({ params }: { params: { courseCode: string 
 				Write a Review
 			</Title>
 			<WriteReviewForm
-				onSubmitCallBack={(academicYear, description, rating) => {
-					submitReview(academicYear, description, rating);
-				}}
+				onSubmit={(academicYear, description, rating) => submitReview(academicYear, description, rating)}
 			/>
 		</Container>
 	);
