@@ -13,7 +13,13 @@ import { ErrorResponse } from "types/errors";
 import { notifications } from "@mantine/notifications";
 import WriteReviewForm from "@components/ui/write-review-form";
 import SessionModal from "@components/ui/session-modal";
-import { ERR_EXPIRED_TOKEN, ERR_REVIEW_EXIST, ERR_MISSING_TOKEN, ERR_USER_NOT_EXIST } from "@utils/constants";
+import {
+	ERR_EXPIRED_TOKEN,
+	ERR_REVIEW_EXIST,
+	ERR_MISSING_TOKEN,
+	ERR_USER_NOT_EXIST,
+	BASE_API_ENDPOINT
+} from "@utils/constants";
 import { Session } from "@supabase/supabase-js";
 import { useSupabaseStore } from "@stores/supabase-store";
 
@@ -26,8 +32,7 @@ export default function CourseReview({ params }: { params: { courseCode: string 
 	const { supabase } = useSupabaseStore();
 	const [opened, { open, close }] = useDisclosure(false);
 
-	// TODO: make host dynamic (either use api-gateway:8000 or localhost:8000)
-	const COURSE_ENDPOINT = `http://localhost:8000/api/courses/${params.courseCode}`;
+	const COURSE_ENDPOINT = `${BASE_API_ENDPOINT}/courses/${params.courseCode}`;
 	const REVIEW_ENDPOINT = `${COURSE_ENDPOINT}/reviews`;
 
 	const fetchCourseDetail = async () => {
@@ -108,10 +113,6 @@ export default function CourseReview({ params }: { params: { courseCode: string 
 	};
 
 	useEffect(() => {
-		fetchCourseDetail();
-	}, []);
-
-	useEffect(() => {
 		if (isLoading) return; // prevent fetching before the session is retrieved
 
 		setIsLoading(true);
@@ -122,6 +123,7 @@ export default function CourseReview({ params }: { params: { courseCode: string 
 	}, [pageNumber, sessionData]);
 
 	useEffect(() => {
+		fetchCourseDetail();
 		setIsLoading(true);
 		supabase?.auth
 			.getSession()
