@@ -9,10 +9,9 @@ import { Review } from "types/reviews";
 import BackButton from "@components/ui/back-button";
 import { useDisclosure } from "@mantine/hooks";
 import Link from "next/link";
-import { notifications } from "@mantine/notifications";
+import { NotificationData, notifications } from "@mantine/notifications";
 import WriteReviewForm from "@components/ui/write-review-form";
 import SessionModal from "@components/ui/session-modal";
-import { BASE_API_ENDPOINT } from "@utils/constants";
 import { Session } from "@supabase/supabase-js";
 import { useSupabaseStore } from "@stores/supabase-store";
 import CourseComposeAPIClient from "lib/api/api";
@@ -26,28 +25,15 @@ export default function CourseReview({ params }: { params: { courseCode: string 
 	const { supabase } = useSupabaseStore();
 	const [opened, { open, close }] = useDisclosure(false);
 
-	const COURSE_ENDPOINT = `${BASE_API_ENDPOINT}/courses/${params.courseCode}`;
-	const REVIEW_ENDPOINT = `${COURSE_ENDPOINT}/reviews`;
-
 	const apiClient = new CourseComposeAPIClient(params.courseCode);
 
-	const editReview = async (id: number, academicYear: string, description: string, rating: number) => {
-		const res = await fetch(`${REVIEW_ENDPOINT}/edit`, {
-			method: "PUT",
-			body: JSON.stringify({
-				id: id,
-				academic_year: parseInt(academicYear),
-				description: description,
-				rating: rating
-			}),
-			headers: {
-				"Content-Type": "application/json",
-				Authorization: `Bearer ${sessionData?.access_token ? sessionData?.access_token : ""}`
-			}
-		});
-
-		const data = await res.json();
-		console.log(data);
+	const handleSubmitResponse = (result: NotificationData) => {
+		if (result.title && result.message) {
+			notifications.show(result);
+		} else {
+			// inform user to re-login when submit with missing or expired token
+			open();
+		}
 	};
 
 	useEffect(() => {
@@ -136,7 +122,15 @@ export default function CourseReview({ params }: { params: { courseCode: string 
 								key={`my_review_card_${review.id}`}
 								review={review}
 								onEditReview={(id, academicYear, description, rating) =>
-									editReview(id, academicYear, description, rating)
+									apiClient
+										.submitEditedReview(
+											id,
+											academicYear,
+											description,
+											rating,
+											sessionData?.access_token || ""
+										)
+										.then((result) => handleSubmitResponse(result))
 								}
 							/>
 						) : (
@@ -151,7 +145,7 @@ export default function CourseReview({ params }: { params: { courseCode: string 
 				)}
 
 				<Center>
-					<Pagination total={reviewsData?.totalPages ? reviewsData.totalPages : 1} onChange={setPageNumber} />
+					<Pagination total={reviewsData?.totalPages || 1} onChange={setPageNumber} />
 				</Center>
 			</Stack>
 
@@ -164,11 +158,8 @@ export default function CourseReview({ params }: { params: { courseCode: string 
 			<WriteReviewForm
 				onSubmit={(academicYear, description, rating) =>
 					apiClient
-						.submitReview(academicYear, description, rating, sessionData?.access_token || "")
-						.then((result) => {
-							if (result.title && result.message) notifications.show(result);
-							else open();
-						})
+						.submitNewReview(academicYear, description, rating, sessionData?.access_token || "")
+						.then((result) => handleSubmitResponse(result))
 				}
 			/>
 		</Container>
