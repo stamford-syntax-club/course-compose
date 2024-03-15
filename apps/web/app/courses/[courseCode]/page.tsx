@@ -22,6 +22,7 @@ import {
 } from "@utils/constants";
 import { Session } from "@supabase/supabase-js";
 import { useSupabaseStore } from "@stores/supabase-store";
+import { fetchCourseDetails, fetchCourseReviews } from "lib/api/api";
 
 export default function CourseReview({ params }: { params: { courseCode: string } }) {
 	const [courseData, setCourseData] = useState<Course>();
@@ -34,36 +35,6 @@ export default function CourseReview({ params }: { params: { courseCode: string 
 
 	const COURSE_ENDPOINT = `${BASE_API_ENDPOINT}/courses/${params.courseCode}`;
 	const REVIEW_ENDPOINT = `${COURSE_ENDPOINT}/reviews`;
-
-	const fetchCourseDetail = async () => {
-		try {
-			const data = await fetch(COURSE_ENDPOINT);
-			const course = await data.json();
-			setCourseData(course);
-		} catch (e) {
-			console.error(e);
-		}
-	};
-
-	const fetchCourseReviews = async () => {
-		try {
-			const data = await fetch(`${REVIEW_ENDPOINT}?pageNumber=${pageNumber}&pageSize=10`, {
-				headers: {
-					Authorization: `Bearer ${sessionData?.access_token ? sessionData?.access_token : ""}`
-				}
-			});
-			const reviews = await data.json();
-
-			if ((reviews as ErrorResponse).message == ERR_EXPIRED_TOKEN) {
-				open(); // session modal
-				return;
-			}
-
-			setReviewsData(reviews);
-		} catch (e) {
-			console.error(e);
-		}
-	};
 
 	const submitReview = async (academicYear: string, description: string, rating: number) => {
 		const res = await fetch(REVIEW_ENDPOINT, {
@@ -132,18 +103,28 @@ export default function CourseReview({ params }: { params: { courseCode: string 
 	};
 
 	useEffect(() => {
-		if (isLoading) return; // prevent fetching before the session is retrieved
+		if (isLoading) {
+			return; // prevent fetching before the session is retrieved
+		}
 
 		setIsLoading(true);
-		fetchCourseReviews().finally(() => setIsLoading(false));
+
+		fetchCourseReviews(params.courseCode, pageNumber, sessionData?.access_token || "")
+			.then((reviews) => setReviewsData(reviews))
+			.catch(() => open()) // expired token
+			.finally(() => setIsLoading(false));
 
 		if (!sessionData) open();
 		else close();
 	}, [pageNumber, sessionData]);
 
 	useEffect(() => {
-		fetchCourseDetail();
+		fetchCourseDetails(params.courseCode)
+			.then((course) => setCourseData(course))
+			.catch((error) => console.error(error)); // TODO: handle if no course found? - maybe redirect to home page
+
 		setIsLoading(true);
+
 		supabase?.auth
 			.getSession()
 			.then((session) => {
