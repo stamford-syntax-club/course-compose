@@ -28,12 +28,13 @@ export default function CourseReview({ params }: { params: { courseCode: string 
 	const apiClient = new CourseComposeAPIClient(params.courseCode);
 
 	const handleSubmitResponse = (result: NotificationData) => {
-		if (result.title && result.message) {
-			notifications.show(result);
-		} else {
+		if (!result.title || !result.message) {
 			// inform user to re-login when submit with missing or expired token
 			open();
 		}
+
+		notifications.show(result);
+		setTimeout(() => window.location.reload(), 3000);
 	};
 
 	useEffect(() => {
