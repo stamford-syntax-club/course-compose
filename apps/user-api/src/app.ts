@@ -1,24 +1,30 @@
-import express, { Request, Response } from "express";
+import express, { Request, Response, NextFunction, ErrorRequestHandler } from "express";
 import cors from "cors";
-import prismaClient from "@utils/prisma_utils";
-import courseRouter from "@routes/courses.route";
 import morgan from "morgan";
+import userRouter from "@routes/user.route";
+import { expressjwt } from "express-jwt";
+
+if (!process.env.JWT_SECRET) {
+	throw new Error("Missing JWT Secret");
+}
 
 const app = express();
 
 app.use(cors());
 app.use(morgan("combined"));
 
-app.get("/", (req: Request, res: Response) => {
-	res.send("Welcome to Express & TypeScript Server");
+app.get("/", (_, res) => {
+	res.send("Course Compose User Service");
 });
 
-app.get("/test", (req: Request, res: Response) => {
-	prismaClient.course.findMany().then((courses) => {
-		res.send(courses);
-	});
-});
-
-app.use("/api/courses", courseRouter);
+app.use(
+	"/api/users",
+	expressjwt({
+		secret: process.env.JWT_SECRET,
+		credentialsRequired: false,
+		algorithms: ["HS256"]
+	}),
+	userRouter
+);
 
 export default app;
