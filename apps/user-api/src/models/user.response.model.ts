@@ -1,3 +1,5 @@
+// TODO: Delete
+
 interface RawCourse {
 	id: number;
 	code: string;

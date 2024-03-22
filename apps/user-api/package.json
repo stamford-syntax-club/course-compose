@@ -1,5 +1,5 @@
 {
-  "name": "course-api",
+  "name": "user-api",
   "version": "1.0.0",
   "description": "",
   "main": "dist/src/index.js",
@@ -26,6 +26,7 @@
     "cors": "^2.8.5",
     "dotenv": "^16.3.1",
     "express": "^4.18.2",
+    "express-jwt": "^8.4.1",
     "module-alias": "^2.2.3",
     "mongodb": "^6.3.0",
     "mongoose": "^8.0.3",
@@ -55,6 +56,7 @@
     "@models": "dist/src/models",
     "@routes": "dist/src/routes",
     "@utils": "dist/src/utils",
+    "@services": "dist/src/services",
     "@middlewares": "dist/src/middlewares",
     "@root": "."
   }
