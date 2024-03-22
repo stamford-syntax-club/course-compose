@@ -1,0 +1,6 @@
+.dockerignore
+node_modules
+.prisma
+README.md
+.gitignore
+.env*
