@@ -1,7 +1,7 @@
 version: "3.8"
 
 networks:
-    courses-test:
+    user-test:
 
 services:
     app:
@@ -17,7 +17,7 @@ services:
             PRISMA_PROVIDER: prisma-client-js
             PRISMA_OUTPUT: ./.prisma/client
         networks:
-            - courses-test
+            - user-test
 
     postgres-integration:
         image: postgres
@@ -31,4 +31,4 @@ services:
             timeout: 5s
             retries: 5
         networks:
-            - courses-test
+            - user-test
