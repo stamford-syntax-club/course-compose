@@ -9,10 +9,11 @@ import {
 	Spoiler,
 	Text,
 	Modal,
+	Button,
 	TypographyStylesProvider
 } from "@mantine/core";
 import { useDisclosure } from "@mantine/hooks";
-import { IconEdit, IconDots, IconX } from "@tabler/icons-react";
+import { IconEdit, IconDots, IconX, IconTrash, IconLetterXSmall, IconAlertCircle } from "@tabler/icons-react";
 import ReactMarkdown from "react-markdown";
 import { Review } from "types/reviews";
 import WriteReviewForm from "./write-review-form";
@@ -20,7 +21,7 @@ import WriteReviewForm from "./write-review-form";
 interface ReviewCardProps {
 	review: Review;
 	onEditReview?: (id: number, academicYear: string, description: string, rating: number) => void;
-	// TODO: add 1 callbacks: onDeleteReview (only for MyReviewCard)
+	onDeleteReview?: (id: number) => void;
 }
 
 const getStatusColor = (status: string): string => {
@@ -70,13 +71,9 @@ export function ReviewCard({ review }: ReviewCardProps) {
 	);
 }
 
-export function MyReviewCard({ review, onEditReview }: ReviewCardProps) {
-	const [opened, { open, close }] = useDisclosure(false);
-
-	const handleDeleteReview = () => {
-		//TODO: implement delete review
-		console.log("Delete review");
-	};
+export function MyReviewCard({ review, onEditReview, onDeleteReview }: ReviewCardProps) {
+	const [openedEdit, { open: openEdit, close: closeEdit }] = useDisclosure(false);
+	const [openedDelete, { open: openDelete, close: closeDelete }] = useDisclosure(false);
 
 	return (
 		<>
@@ -131,10 +128,10 @@ export function MyReviewCard({ review, onEditReview }: ReviewCardProps) {
 						</Menu.Target>
 
 						<Menu.Dropdown>
-							<Menu.Item leftSection={<IconEdit />} onClick={open}>
+							<Menu.Item leftSection={<IconEdit />} onClick={openEdit}>
 								Edit Review
 							</Menu.Item>
-							<Menu.Item leftSection={<IconX />} onClick={handleDeleteReview} className="text-red-500">
+							<Menu.Item leftSection={<IconX />} onClick={openDelete} className="text-red-500">
 								Delete Review
 							</Menu.Item>
 						</Menu.Dropdown>
@@ -144,8 +141,8 @@ export function MyReviewCard({ review, onEditReview }: ReviewCardProps) {
 
 			{/* Modal Edit Form */}
 			<Modal
-				opened={opened}
-				onClose={close}
+				opened={openedEdit}
+				onClose={closeEdit}
 				title="Editing Review"
 				centered
 				overlayProps={{
@@ -158,10 +155,45 @@ export function MyReviewCard({ review, onEditReview }: ReviewCardProps) {
 					onSubmit={(academicYear, description, rating) => {
 						// when user submit their edited review
 						if (onEditReview) onEditReview(review.id, academicYear, description, rating);
-						close();
+						closeEdit();
 					}}
 					previousReview={review}
 				/>
+			</Modal>
+
+			{/* Modal Delete Form */}
+			<Modal
+				opened={openedDelete}
+				onClose={closeDelete}
+				title="Delete Review"
+				centered
+				overlayProps={{
+					backgroundOpacity: 0.55,
+					blur: 3
+				}}
+				
+			>
+			
+				{/* Modal content */}
+				<Text mb="sm" className="text-center">
+					Are you sure you want to delete your review?
+				</Text>
+				<Flex justify="center" gap="sm">
+					<Button
+						color="red"
+						onClick={() => {
+							if (onDeleteReview) onDeleteReview(review.id);
+							closeDelete();
+						}}
+					>
+						<IconTrash className="mr-1" />
+						Yes, delete review
+					</Button>
+					<Button onClick={closeDelete}>
+						<IconX className="mr-1" />
+						No, take me back
+					</Button>
+				</Flex>
 			</Modal>
 		</>
 	);

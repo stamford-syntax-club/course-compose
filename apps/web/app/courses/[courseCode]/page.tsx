@@ -133,6 +133,11 @@ export default function CourseReview({ params }: { params: { courseCode: string 
 										)
 										.then((result) => handleSubmitResponse(result))
 								}
+								onDeleteReview={(id) => {
+									apiClient
+										.submitDeleteReview(id, sessionData?.access_token || "")
+										.then((result) => handleSubmitResponse(result));
+								}}
 							/>
 						) : (
 							<ReviewCard key={`review_card_${review.id}`} review={review} />

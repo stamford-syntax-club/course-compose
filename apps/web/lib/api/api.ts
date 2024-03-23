@@ -148,4 +148,28 @@ export default class CourseComposeAPIClient {
 				};
 		}
 	}
+
+	async submitDeleteReview(reviewId: number, accessToken: string): Promise<NotificationData> {
+		const data = await fetch(`${this.reviewEndpoint}/${reviewId}`, {
+			method: "DELETE",
+			headers: {
+				"Content-Type": "application/json",
+				Authorization: `Bearer ${accessToken}`
+			}
+		});
+		if (data.ok) {
+			return {
+				title: "The review deleted",
+				message: "Your review has been deleted successfully",
+				color: "green"
+			};
+		} else {
+			return {
+				title: "Something is wrong on our end",
+				message: "Your review cannot be deleted yet, please try again later",
+				color: "red",
+				autoClose: 5000
+			};
+		}
+	}
 }
