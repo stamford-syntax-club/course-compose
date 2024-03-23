@@ -3,7 +3,7 @@ FROM node:alpine AS builder
 
 WORKDIR /app
 
-COPY ./apps/course-api/ .
+COPY ./apps/user-api/ .
 
 COPY ./packages/prisma/schema.prisma .
 

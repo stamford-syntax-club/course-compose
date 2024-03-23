@@ -22,7 +22,7 @@ app.use(
 	expressjwt({
 		secret: process.env.JWT_SECRET,
 		credentialsRequired: false,
-		algorithms: ["HS256"]
+		algorithms: ["HS256"],
 	}),
 	userRouter
 );
