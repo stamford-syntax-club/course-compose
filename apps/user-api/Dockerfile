@@ -37,6 +37,6 @@ COPY --from=builder /app/package.json ./
 # Install only production dependencies
 RUN npm i --omit=dev 
 
-EXPOSE 8002
+EXPOSE 8004
 
 CMD ["npm", "start"]

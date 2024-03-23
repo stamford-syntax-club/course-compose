@@ -2,6 +2,6 @@
 
 ## Install dependencies
 
-1. `cd apps/course-api `
+1. `cd apps/user-api `
 2. `pnpm i`
-3. `pnpm run prisma:generate_types`
+3. `pnpm run bootstrap:<your_os>`
