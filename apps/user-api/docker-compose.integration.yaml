@@ -1,0 +1,34 @@
+version: "3.8"
+
+networks:
+    user-test:
+
+services:
+    app:
+        build:
+            context: .
+            dockerfile: Dockerfile.integration
+        depends_on:
+            - postgres-integration
+        volumes:
+            - ../../packages/prisma/schema.prisma:/app/schema.prisma
+        environment:
+            DATABASE_URL: postgres://syntax:stamford@postgres-integration:5432/coursecompose-integration
+            PRISMA_PROVIDER: prisma-client-js
+            PRISMA_OUTPUT: ./.prisma/client
+        networks:
+            - user-test
+
+    postgres-integration:
+        image: postgres
+        environment:
+            POSTGRES_DB: coursecompose-integration
+            POSTGRES_USER: syntax
+            POSTGRES_PASSWORD: stamford
+        healthcheck:
+            test: ["CMD-SHELL", "pg_isready"]
+            interval: 10s
+            timeout: 5s
+            retries: 5
+        networks:
+            - user-test

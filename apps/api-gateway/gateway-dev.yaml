@@ -36,3 +36,9 @@ routes:
       destination:
           service: delete_review
           endpoint: http://localhost:8003/api/courses/:courseCode/reviews/:reviewId
+
+    - path: /api/users
+      method: GET
+      destination:
+          service: get_user_details
+          endpoint: http://localhost:8004/api/users
