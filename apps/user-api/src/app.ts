@@ -1,4 +1,4 @@
-import express, { Request, Response, NextFunction, ErrorRequestHandler } from "express";
+import express from "express";
 import cors from "cors";
 import morgan from "morgan";
 import userRouter from "@routes/user.route";
