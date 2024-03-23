@@ -11,8 +11,8 @@
     "integration": "docker compose -f docker-compose.integration.yaml down -v && docker compose -f docker-compose.integration.yaml up --build --force-recreate --abort-on-container-exit --exit-code-from app",
     "integration:jest": "jest test/integration --detectOpenHandles",
     "docker:test_build": "docker compose -f docker-compose.test-build.yaml down -v && docker compose -f docker-compose.test-build.yaml up -d --build --force-recreate",
-    "bootstrap:unix": "pnpm prisma generate --schema=../../packages/prisma/schema.prisma",
-    "bootstrap:windows": "pnpm prisma generate --schema=../../packages/prisma/schema.prisma"
+    "bootstrap:unix": "PRISMA_PROVIDER=prisma-client-js PRISMA_OUTPUT=../../apps/course-api/.prisma/client pnpm prisma generate --schema=../../packages/prisma/schema.prisma",
+    "bootstrap:windows": "@powershell $env:PRISMA_PROVIDER='prisma-client-js'; $env:PRISMA_OUTPUT='../../apps/course-api/.prisma/client'; pnpm prisma generate --schema=../../packages/prisma/schema.prisma"
   },
   "prisma": {
     "seed": "pnpm exec ts-node prisma/seed.ts"
