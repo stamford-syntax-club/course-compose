@@ -5,14 +5,9 @@ export const ERR_USER_NOT_EXIST = "User does not exist";
 export const ERR_USER_NOT_OWNER = "User is not the owner of this review";
 export const ERR_INTERNAL_SERVER = "Internal Server Error";
 
-const HOST_NAME: string = (() => {
-	switch (process.env.APP_ENV) {
-		case "production" || "beta":
-			return "api-gateway"; // this is resolvable within docker bridge network
-		default:
-			console.warn(`Unexpected APP_ENV value: ${process.env.APP_ENV}. Falling back to localhost.`);
-			return "localhost"; // otherwise we send traffic to local api gateway
-	}
-})();
+if (!process.env.NEXT_PUBLIC_BACKEND_URL) {
+	throw new Error("BACKEND URL is missing");
+}
 
-export const BASE_API_ENDPOINT = `http://${HOST_NAME}:8000/api`;
+export const BASE_API_ENDPOINT = process.env.NEXT_PUBLIC_BACKEND_URL;
+export const COURSE_API_ENDPOINT = `${BASE_API_ENDPOINT}/courses`;

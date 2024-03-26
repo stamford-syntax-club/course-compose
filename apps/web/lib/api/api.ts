@@ -3,12 +3,12 @@ import { Review } from "types/reviews";
 import { ErrorResponse } from "types/errors";
 import { PaginatedResponse } from "types/pagination";
 import {
-	BASE_API_ENDPOINT,
 	ERR_EXPIRED_TOKEN,
 	ERR_REVIEW_EXIST,
 	ERR_USER_NOT_EXIST,
 	ERR_MISSING_TOKEN,
-	ERR_USER_NOT_OWNER
+	ERR_USER_NOT_OWNER,
+	COURSE_API_ENDPOINT
 } from "@utils/constants";
 import { NotificationData } from "@mantine/notifications";
 
@@ -17,7 +17,7 @@ export default class CourseComposeAPIClient {
 	private reviewEndpoint: string;
 
 	constructor(courseCode: string) {
-		this.courseEndpoint = `${BASE_API_ENDPOINT}/courses/${courseCode}`;
+		this.courseEndpoint = `${COURSE_API_ENDPOINT}/${courseCode}`;
 		this.reviewEndpoint = `${this.courseEndpoint}/reviews`;
 	}
 
