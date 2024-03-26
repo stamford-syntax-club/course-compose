@@ -39,21 +39,23 @@ export const useAuth = (): UseAuthReturnType => {
         if (!supabase) return;
 
         try {
-            const env = process.env.APP_ENV; // Remember, use NEXT_PUBLIC_ prefix for environment variables in Next.js
+            // TODO: Implement a proper way to use email/password in beta
+            // const env = process.env.NEXT_PUBLIC_APP_ENV;
 
-            if (env === "production") {
-                // Use OAuth for production
-                await signInWithAzure(supabase);
-            } else if (env === "development") {
-                // Use email/password for development
-                // Ideally, fetch these from environment variables
-                const email = "example@example.com";
-                const password = "password";
+            // if (env === "production") {
+            //     // Use OAuth for production
+            //     await signInWithAzure(supabase);
+            // } else {
+            //     // Use email/password for development
+            //     // Ideally, fetch these from environment variables
+            //     const email = "example@example.com";
+            //     const password = "password";
 
-                await emailPasswordSignIn(supabase, email, password);
-            } else {
-                await signInWithAzure(supabase);
-            }
+            //     await emailPasswordSignIn(supabase, email, password);
+            // }
+
+            await signInWithAzure(supabase);
+
         } catch (error) {
             console.error("Error during the sign-in process:", error);
             setAuthError(error);
