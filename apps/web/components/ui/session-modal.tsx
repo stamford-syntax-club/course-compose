@@ -1,5 +1,5 @@
 import { Text, Title, Modal, Button } from "@mantine/core";
-import { useSupabaseStore } from "@stores/supabase-store";
+import { useAuth } from "hooks/use-auth";
 
 interface SessionModalProps {
 	opened: boolean;
@@ -7,8 +7,8 @@ interface SessionModalProps {
 	close: () => void;
 }
 
-export default function SessionModal({ opened, open, close }: SessionModalProps) {
-	const { supabase } = useSupabaseStore();
+export default function SessionModal({ opened, close }: SessionModalProps) {
+	const { signIn } = useAuth();
 
 	return (
 		<Modal
@@ -26,22 +26,7 @@ export default function SessionModal({ opened, open, close }: SessionModalProps)
 					You are not logged in
 				</Title>
 				<Text>Verified users get to read as many reviews as they want and can also write their own.</Text>
-				<Button
-					my="md"
-					onClick={() => {
-						supabase?.auth
-							.signInWithOAuth({
-								provider: "azure",
-								options: { redirectTo: window.location.href }
-							})
-							.then((result) => {
-								console.log("OAuth result", result.data);
-							})
-							.catch((error) => {
-								console.error(error);
-							});
-					}}
-				>
+				<Button my="md" onClick={() => signIn().catch(console.error)}>
 					Login with your Stamford account
 				</Button>
 				<Text>or</Text>

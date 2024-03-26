@@ -13,8 +13,8 @@ import { NotificationData, notifications } from "@mantine/notifications";
 import WriteReviewForm from "@components/ui/write-review-form";
 import SessionModal from "@components/ui/session-modal";
 import { Session } from "@supabase/supabase-js";
-import { useSupabaseStore } from "@stores/supabase-store";
 import CourseComposeAPIClient from "lib/api/api";
+import { useAuth } from "hooks/use-auth";
 
 export default function CourseReview({ params }: { params: { courseCode: string } }) {
 	const [courseData, setCourseData] = useState<Course>();
@@ -22,7 +22,9 @@ export default function CourseReview({ params }: { params: { courseCode: string 
 	const [sessionData, setSessionData] = useState<Session | null>();
 	const [isLoading, setIsLoading] = useState(true);
 	const [pageNumber, setPageNumber] = useState(1);
-	const { supabase } = useSupabaseStore();
+
+	const { getSession } = useAuth();
+
 	const [opened, { open, close }] = useDisclosure(false);
 
 	const apiClient = new CourseComposeAPIClient(params.courseCode);
@@ -45,10 +47,9 @@ export default function CourseReview({ params }: { params: { courseCode: string 
 
 		setIsLoading(true);
 
-		supabase?.auth
-			.getSession()
+		getSession()
 			.then((session) => {
-				setSessionData(session.data.session);
+				setSessionData(session);
 			})
 			.catch((error) => {
 				console.error(error);
@@ -56,7 +57,7 @@ export default function CourseReview({ params }: { params: { courseCode: string 
 			.finally(() => {
 				setIsLoading(false);
 			});
-	}, [supabase]);
+	}, []);
 
 	useEffect(() => {
 		if (isLoading) {
