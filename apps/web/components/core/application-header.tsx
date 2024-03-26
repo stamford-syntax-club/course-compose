@@ -1,8 +1,10 @@
 import { AppShell, Avatar, Burger, Button, Group, Menu } from "@mantine/core";
 import { useSupabaseStore } from "@stores/supabase-store";
-import type { Session } from "@supabase/auth-helpers-nextjs";
+import { useAuth } from "hooks/use-auth";
 import Link from "next/link";
 import { useEffect, useState } from "react";
+
+import type { Session } from "@supabase/supabase-js";
 
 interface ApplicationHeaderProps {
 	opened: boolean;
@@ -11,47 +13,36 @@ interface ApplicationHeaderProps {
 
 // Assuming proper typing for SupabaseClient is completed outside this snippet
 export default function ApplicationHeader({ opened, toggle }: ApplicationHeaderProps): JSX.Element {
-	const [sessionData, setSessionData] = useState<Session | null>(null);
-	const { supabase, isLoggedIn } = useSupabaseStore();
+	const { signIn, signOut, getSession } = useAuth();
+	const { supabase } = useSupabaseStore();
+	const [sessionData, setSessionData] = useState<Session>();
 
 	const [working, setWorking] = useState(false);
 
 	useEffect(() => {
-		const fetchSession = async (): Promise<void> => {
-			if (!supabase?.auth) return;
-
-			try {
-				const {
-					data: { session }
-				} = await supabase.auth.getSession();
+		getSession()
+			.then((session) => {
+				if (!session) return;
 				setSessionData(session);
-			} catch (error) {
-				console.error(error);
+			})
+			.catch((error) => console.error);
+
+		if (!supabase) return;
+
+		const eventListener = supabase.auth.onAuthStateChange((event, session) => {
+			if (event === "SIGNED_IN" && session) {
+				setSessionData(session);
+			} else if (event === "SIGNED_OUT") {
+				setSessionData(undefined);
 			}
+		});
+
+		return () => {
+			eventListener.data.subscription.unsubscribe();
 		};
+	}, [getSession, supabase]);
 
-		fetchSession().catch(console.error);
-	}, [supabase]);
-
-	const signOut = async (): Promise<void> => {
-		if (!supabase?.auth) return;
-
-		try {
-			await supabase.auth.signOut();
-		} catch (error) {
-			console.error(error);
-		}
-	};
-
-	const signInWithAzure = async (): Promise<void> => {
-		if (!supabase?.auth) return;
-
-		try {
-			const result = await supabase.auth.signInWithOAuth({ provider: "azure" });
-		} catch (error) {
-			console.error(error);
-		}
-	};
+	const isLoggedIn = sessionData?.user !== undefined;
 
 	const handleSignOut = (): void => {
 		if (working) return;
@@ -69,7 +60,7 @@ export default function ApplicationHeader({ opened, toggle }: ApplicationHeaderP
 		if (working) return;
 		setWorking(true);
 
-		signInWithAzure()
+		signIn()
 			.catch(console.error)
 			.finally(() => {
 				setWorking(false);
@@ -92,7 +83,7 @@ export default function ApplicationHeader({ opened, toggle }: ApplicationHeaderP
 							<Menu.Dropdown>
 								<Menu.Label>Logged in as</Menu.Label>
 								<Menu.Item disabled>
-									{sessionData?.user.email ? sessionData.user.email.split("@")[0] : "No email"}
+									{sessionData.user.email ? sessionData.user.email.split("@")[0] : "No email"}
 								</Menu.Item>
 								<Menu.Label>Actions</Menu.Label>
 								<Button disabled={working} className="w-full" color="red" onClick={handleSignOut}>

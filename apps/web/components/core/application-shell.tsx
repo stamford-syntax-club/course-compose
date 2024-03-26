@@ -11,31 +11,13 @@ import ApplicationNavbar from "./application-navbar";
 export function ApplicationShell({ children }: { children: React.ReactNode }): JSX.Element {
 	const [opened, { toggle }] = useDisclosure();
 
-	const { setSupabase, setIsLoggedIn } = useSupabaseStore();
+	const { setSupabase } = useSupabaseStore();
 
 	const supabase = createClient();
 
 	useEffect(() => {
 		setSupabase(supabase);
-
-		const { data } = supabase.auth.onAuthStateChange((event, session) => {
-			setIsLoggedIn(session !== null);
-		});
-
-		supabase.auth
-			.getSession()
-			.then((session) => {
-				setIsLoggedIn(session.data.session !== null);
-			})
-			.catch((error) => {
-				console.error(error);
-			});
-
-		return () => {
-			// call unsubscribe to remove the callback
-			data.subscription.unsubscribe();
-		};
-	}, [supabase, supabase.auth, setSupabase, setIsLoggedIn]);
+	}, [supabase, supabase.auth, setSupabase]);
 
 	return (
 		<AppShell
