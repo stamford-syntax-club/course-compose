@@ -1,6 +1,5 @@
 import { useSupabaseStore } from "@stores/supabase-store";
 import type { Session, SupabaseClient } from "@supabase/supabase-js";
-import { useState } from "react";
 
 async function signInWithAzure(supabase: SupabaseClient): Promise<void> {
     try {
@@ -26,14 +25,10 @@ interface UseAuthReturnType {
     signIn: () => Promise<void>;
     signOut: () => Promise<void>;
     getSession: () => Promise<Session | null>;
-    // This can be any type of error, but for simplicity, we'll use unknown for now.
-    // TODO: Properly type this.
-    error: unknown;
 }
 
 export const useAuth = (): UseAuthReturnType => {
     const { supabase } = useSupabaseStore();
-    const [authError, setAuthError] = useState<unknown>(null);
 
     const signIn = async (): Promise<void> => {
         if (!supabase) return;
@@ -58,7 +53,6 @@ export const useAuth = (): UseAuthReturnType => {
 
         } catch (error) {
             console.error("Error during the sign-in process:", error);
-            setAuthError(error);
         }
     };
 
@@ -69,7 +63,6 @@ export const useAuth = (): UseAuthReturnType => {
             await supabase.auth.signOut();
         } catch (error) {
             console.error("Error during the sign-out process:", error);
-            setAuthError(error);
         }
     }
 
@@ -95,5 +88,5 @@ export const useAuth = (): UseAuthReturnType => {
     }
 
     // Returning the signIn function and any error that might have occurred
-    return { signIn, signOut, getSession, error: authError };
+    return { signIn, signOut, getSession };
 };
