@@ -25,14 +25,14 @@ export default function CourseReview({ params }: { params: { courseCode: string 
 
 	const { getSession } = useAuth();
 
-	const [opened, { open, close }] = useDisclosure(false);
+	const [opened, { open: openSessionModal, close: closeSessionModal }] = useDisclosure(false);
 
 	const apiClient = new CourseComposeAPIClient(params.courseCode);
 
 	const handleSubmitResponse = (result: NotificationData) => {
 		if (!result.title || !result.message) {
 			// inform user to re-login when submit with missing or expired token
-			open();
+			openSessionModal();
 		}
 
 		notifications.show(result);
@@ -43,7 +43,7 @@ export default function CourseReview({ params }: { params: { courseCode: string 
 		apiClient
 			.fetchCourseDetails()
 			.then((course) => setCourseData(course))
-			.catch((error) => console.error(error)); // TODO: handle if no course found? - maybe redirect to home page
+			.catch(console.error); // TODO: handle if no course found? - maybe redirect to home page
 
 		setIsLoading(true);
 
@@ -51,9 +51,7 @@ export default function CourseReview({ params }: { params: { courseCode: string 
 			.then((session) => {
 				setSessionData(session);
 			})
-			.catch((error) => {
-				console.error(error);
-			})
+			.catch(console.error)
 			.finally(() => {
 				setIsLoading(false);
 			});
@@ -69,11 +67,11 @@ export default function CourseReview({ params }: { params: { courseCode: string 
 		apiClient
 			.fetchCourseReviews(pageNumber, sessionData?.access_token || "")
 			.then((reviews) => setReviewsData(reviews))
-			.catch(() => open()) // expired token
+			.catch(() => openSessionModal()) // expired token
 			.finally(() => setIsLoading(false));
 
-		if (!sessionData) open();
-		else close();
+		if (!sessionData) openSessionModal();
+		else closeSessionModal();
 	}, [pageNumber, sessionData]);
 
 	return (
@@ -107,7 +105,7 @@ export default function CourseReview({ params }: { params: { courseCode: string 
 				What people are saying about {params.courseCode}
 			</Title>
 
-			<SessionModal opened={opened} open={open} close={close} />
+			<SessionModal opened={opened} open={openSessionModal} close={closeSessionModal} />
 
 			{isLoading && (
 				<Center my="md">

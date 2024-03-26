@@ -3,11 +3,9 @@ package main
 import (
 	"flag"
 	"log"
-	"time"
 
 	"github.com/stamford-syntax-club/course-compose/reviews/common/config"
 	"github.com/stamford-syntax-club/course-compose/reviews/common/presentation/router"
-	"github.com/stamford-syntax-club/course-compose/reviews/common/utils"
 	review_db "github.com/stamford-syntax-club/course-compose/reviews/review/data/datasource/db"
 	review_repo_impl "github.com/stamford-syntax-club/course-compose/reviews/review/data/repository"
 	review_controller "github.com/stamford-syntax-club/course-compose/reviews/review/domain/controller"
@@ -31,11 +29,6 @@ func main() {
 		log.Fatalln("Prisma connect: ", err)
 	}
 	defer reviewDB.Prisma.Disconnect()
-	token, err := utils.GenerateNewAccessToken("8a7b3c2e-3e5f-4f1a-a8b7-3c2e1a4f5b6d", "khing@students.stamford.edu", time.Now().Add(time.Hour).Unix())
-	if err != nil {
-		log.Fatalf("generate new access token: %v", err)
-	}
-	log.Println(token)
 	reviewRepo := review_repo_impl.NewReviewRepositoryImpl(reviewDB)
 	reviewController := review_controller.NewReviewController(reviewRepo)
 

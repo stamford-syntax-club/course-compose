@@ -11,10 +11,12 @@ export function MarkdownEditor({ editor }: { editor: Editor | null }) {
 					<RichTextEditor.Italic />
 					<RichTextEditor.Strikethrough />
 					<RichTextEditor.ClearFormatting />
-					<RichTextEditor.Code />
 				</RichTextEditor.ControlsGroup>
 
 				<RichTextEditor.ControlsGroup>
+					<RichTextEditor.H1 />
+					<RichTextEditor.H2 />
+					<RichTextEditor.H3 />
 					<RichTextEditor.Hr />
 					<RichTextEditor.BulletList />
 					<RichTextEditor.OrderedList />

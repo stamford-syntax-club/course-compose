@@ -13,7 +13,7 @@ import {
 	TypographyStylesProvider
 } from "@mantine/core";
 import { useDisclosure } from "@mantine/hooks";
-import { IconEdit, IconDots, IconX, IconTrash, IconLetterXSmall, IconAlertCircle } from "@tabler/icons-react";
+import { IconEdit, IconDots, IconX, IconTrash } from "@tabler/icons-react";
 import ReactMarkdown from "react-markdown";
 import { Review } from "types/reviews";
 import WriteReviewForm from "./write-review-form";
@@ -171,9 +171,7 @@ export function MyReviewCard({ review, onEditReview, onDeleteReview }: ReviewCar
 					backgroundOpacity: 0.55,
 					blur: 3
 				}}
-				
 			>
-			
 				{/* Modal content */}
 				<Text mb="sm" className="text-center">
 					Are you sure you want to delete your review?
