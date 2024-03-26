@@ -2,22 +2,11 @@
 
 import { AppShell } from "@mantine/core";
 import { useDisclosure } from "@mantine/hooks";
-import { useSupabaseStore } from "@stores/supabase-store";
-import { createClient } from "lib/supabase/component";
-import { useEffect } from "react";
 import ApplicationHeader from "./application-header";
 import ApplicationNavbar from "./application-navbar";
 
 export function ApplicationShell({ children }: { children: React.ReactNode }): JSX.Element {
 	const [opened, { toggle }] = useDisclosure();
-
-	const { setSupabase } = useSupabaseStore();
-
-	const supabase = createClient();
-
-	useEffect(() => {
-		setSupabase(supabase);
-	}, [supabase, supabase.auth, setSupabase]);
 
 	return (
 		<AppShell
