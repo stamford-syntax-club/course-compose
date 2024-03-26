@@ -11,5 +11,9 @@ module.exports = {
 	theme: {
 		extend: {}
 	},
-	plugins: []
+	plugins: [],
+	corePlugins: {
+		// Disable preflight to get rid of base styles
+		preflight: false
+	}
 };

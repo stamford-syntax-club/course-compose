@@ -4,6 +4,7 @@
 		"baseUrl": ".",
 		"paths": {
 			"@components/*": ["./components/*"],
+			"@stores/*": ["./stores/*"],
 			"@utils/*": ["./utils/*"]
 		},
 		"plugins": [{ "name": "next" }]
