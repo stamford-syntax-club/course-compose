@@ -25,7 +25,7 @@ export default function ApplicationHeader({ opened, toggle }: ApplicationHeaderP
 				if (!session) return;
 				setSessionData(session);
 			})
-			.catch((error) => console.error);
+			.catch(console.error);
 
 		if (!supabase) return;
 
