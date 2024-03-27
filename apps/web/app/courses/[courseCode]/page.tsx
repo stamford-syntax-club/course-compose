@@ -6,7 +6,6 @@ import { useEffect, useState } from "react";
 import { PaginatedResponse } from "types/pagination";
 import { Course } from "types/course";
 import { Review } from "types/reviews";
-import BackButton from "@components/ui/back-button";
 import { useDisclosure } from "@mantine/hooks";
 import Link from "next/link";
 import { NotificationData, notifications } from "@mantine/notifications";
@@ -77,7 +76,6 @@ export default function CourseReview({ params }: { params: { courseCode: string 
 	return (
 		<Container>
 			{/* course details section */}
-			<BackButton href="/" pageName="Home" />
 			<Flex direction="column" my="xl" gap="sm" align="center">
 				<Title className="text-center text-3xl">
 					{courseData?.full_name} ({courseData?.code})

@@ -85,7 +85,7 @@ export default function WriteReviewForm({ onSubmit, previousReview }: WriteRevie
 						value={academicYear}
 						defaultSearchValue={academicYear || undefined}
 						onChange={setAcademicYear}
-						placeholder="Select Academic year"
+						placeholder="Academic year"
 					/>
 					<Rating size="lg" defaultValue={0} fractions={2} value={rating} onChange={setRating} />
 				</Flex>
