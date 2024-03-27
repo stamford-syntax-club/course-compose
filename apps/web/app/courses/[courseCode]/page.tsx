@@ -1,6 +1,6 @@
 "use client";
 
-import { Center, Container, Divider, Flex, Pagination, Stack, Title, Text, Loader } from "@mantine/core";
+import { Center, Container, Divider, Flex, Pagination, Stack, Title, Text, Loader, Alert } from "@mantine/core";
 import { MyReviewCard, ReviewCard } from "@components/ui/review-card";
 import { useEffect, useState } from "react";
 import { PaginatedResponse } from "types/pagination";
@@ -14,11 +14,13 @@ import SessionModal from "@components/ui/session-modal";
 import { Session } from "@supabase/supabase-js";
 import CourseComposeAPIClient from "lib/api/api";
 import { useAuth } from "hooks/use-auth";
+import { IconLock } from "@tabler/icons-react";
 
 export default function CourseReview({ params }: { params: { courseCode: string } }) {
 	const [courseData, setCourseData] = useState<Course>();
 	const [reviewsData, setReviewsData] = useState<PaginatedResponse<Review>>();
 	const [sessionData, setSessionData] = useState<Session | null>();
+	const [showReviewLimitAlert, setShowReviewLimitAlert] = useState(false);
 	const [isLoading, setIsLoading] = useState(true);
 	const [pageNumber, setPageNumber] = useState(1);
 
@@ -32,6 +34,7 @@ export default function CourseReview({ params }: { params: { courseCode: string 
 		if (!result.title || !result.message) {
 			// inform user to re-login when submit with missing or expired token
 			openSessionModal();
+			return;
 		}
 
 		notifications.show(result);
@@ -49,6 +52,7 @@ export default function CourseReview({ params }: { params: { courseCode: string 
 		getSession()
 			.then((session) => {
 				setSessionData(session);
+				if (!session) openSessionModal();
 			})
 			.catch(console.error)
 			.finally(() => {
@@ -65,12 +69,18 @@ export default function CourseReview({ params }: { params: { courseCode: string 
 
 		apiClient
 			.fetchCourseReviews(pageNumber, sessionData?.access_token || "")
-			.then((reviews) => setReviewsData(reviews))
-			.catch(() => openSessionModal()) // expired token
-			.finally(() => setIsLoading(false));
+			.then((reviews) => {
+				// tries to read further with anonymous or non-active status
+				// backend forces back to the same page
+				if (reviews.pageInformation.number !== pageNumber) {
+					setPageNumber(1);
+					setShowReviewLimitAlert(true);
+				}
 
-		if (!sessionData) openSessionModal();
-		else closeSessionModal();
+				setReviewsData(reviews);
+			})
+			.catch(console.error)
+			.finally(() => setIsLoading(false));
 	}, [pageNumber, sessionData]);
 
 	return (
@@ -112,6 +122,12 @@ export default function CourseReview({ params }: { params: { courseCode: string 
 			)}
 
 			<Stack gap="sm">
+				{showReviewLimitAlert && (
+					<Alert color="yellow" icon={<IconLock />}>
+						Explore up to 2 reviews per course. Share your thoughts by writing your first review to discover
+						more reviews and insights!
+					</Alert>
+				)}
 				{reviewsData?.data &&
 					reviewsData.data.length > 0 &&
 					reviewsData?.data.map((review) =>
@@ -146,9 +162,8 @@ export default function CourseReview({ params }: { params: { courseCode: string 
 						<Text>No reviews for this course</Text>
 					</Center>
 				)}
-
 				<Center>
-					<Pagination total={reviewsData?.totalPages || 1} onChange={setPageNumber} />
+					<Pagination total={reviewsData?.totalPages || 1} value={pageNumber} onChange={setPageNumber} />
 				</Center>
 			</Stack>
 

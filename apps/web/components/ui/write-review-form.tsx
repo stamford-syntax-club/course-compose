@@ -93,7 +93,7 @@ export default function WriteReviewForm({ onSubmit, previousReview }: WriteRevie
 				<MarkdownEditor editor={markdownEditor} />
 
 				<Flex gap="sm" justify="end">
-					<Button variant="outline" type="submit" my="sm">
+					<Button  type="submit" my="sm">
 						Submit Review
 					</Button>
 				</Flex>
