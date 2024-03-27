@@ -10,7 +10,6 @@ export function MarkdownEditor({ editor }: { editor: Editor | null }) {
 					<RichTextEditor.Bold />
 					<RichTextEditor.Italic />
 					<RichTextEditor.Strikethrough />
-					<RichTextEditor.ClearFormatting />
 				</RichTextEditor.ControlsGroup>
 
 				<RichTextEditor.ControlsGroup>
