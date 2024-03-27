@@ -29,7 +29,6 @@ func main() {
 		log.Fatalln("Prisma connect: ", err)
 	}
 	defer reviewDB.Prisma.Disconnect()
-
 	reviewRepo := review_repo_impl.NewReviewRepositoryImpl(reviewDB)
 	reviewController := review_controller.NewReviewController(reviewRepo)
 
