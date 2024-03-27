@@ -1,12 +1,5 @@
 import { Badge, Button, Card, Group, Rating, Stack, Text } from "@mantine/core";
-
-interface CourseCardProps {
-	courseName: string;
-	courseCode: string;
-	coursePrerequisites?: string[];
-	courseRating: number;
-	courseReviewCount: number;
-}
+import type { CourseCardProps } from "types";
 
 export function CourseCard({
 	courseName,
