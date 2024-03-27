@@ -22,8 +22,6 @@ COPY --from=pruner /app/out/json .
 COPY pnpm-lock.yaml .
 RUN pnpm install --frozen-lockfile
 
-TRY add .env to .dockerignore, and see if the build fails
-
 COPY --from=pruner /app/out/full .
 COPY turbo.json .
 RUN pnpm turbo run build --filter=web...
