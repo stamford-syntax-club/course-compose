@@ -1,0 +1,30 @@
+name: Production Release CI/CD
+on:
+    workflow_dispatch:
+        inputs:
+            deploy-service:
+                description: "Name of the service to deploy"
+                required: true
+                type: string
+            deploy-tag:
+                description: "Tag for deployment"
+                required: true
+                type: string
+
+jobs:
+    pre-release:
+        runs-on: ubuntu-latest
+        steps:
+            - name: generate production deployment manifest
+              run: |
+                  packages_deployment=$(echo '["${{ inputs.deploy-service }}"]' | jq -c 'map({name: ., imageTag:"ghcr.io/stamford-syntax-club/course-compose/\(.):prod-${{ inputs.deploy-tag }}"})')
+                  echo "PACKAGES_DEPLOYMENT=$packages_deployment" >> $GITHUB_OUTPUT
+                  echo "PACKAGES_DEPLOYMENT=$packages_deployment"
+
+    deploy-ghcr:
+        needs: pre-release
+        if: ${{ needs.pre-release.outputs.packages_deployment != '[]' }}
+        uses: ./.github/workflows/deploy-ghcr.yaml
+        with:
+            packages_deployment: ${{ needs.pre-release.outputs.packages_deployment }}
+            environment: production
