@@ -14,8 +14,13 @@ on:
 jobs:
     pre-release:
         runs-on: ubuntu-latest
+
+        outputs:
+            packages_deployment: ${{ steps.generate-deployment.outputs.PACKAGES_DEPLOYMENT }}
+
         steps:
             - name: generate production deployment manifest
+              id: generate-deployment
               run: |
                   packages_deployment=$(echo '["${{ inputs.deploy-service }}"]' | jq -c 'map({name: ., imageTag:"ghcr.io/stamford-syntax-club/course-compose/\(.):prod-${{ inputs.deploy-tag }}"})')
                   echo "PACKAGES_DEPLOYMENT=$packages_deployment" >> $GITHUB_OUTPUT
