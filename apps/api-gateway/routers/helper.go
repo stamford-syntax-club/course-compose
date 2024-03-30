@@ -84,6 +84,10 @@ func createHandler(route config.Route) fiber.Handler {
 			return fiber.NewError(http.StatusBadGateway, "Cannot reach specified service")
 		}
 
+		if len(respBody) == 0 {
+			return c.SendStatus(respCode)
+		}
+
 		resp, err := parseResponse(route, respBody)
 		if err != nil {
 			log.Printf("parseResponse: %v", err)

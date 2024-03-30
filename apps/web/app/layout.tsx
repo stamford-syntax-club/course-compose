@@ -1,6 +1,9 @@
 import { ApplicationShell } from "@components/core/application-shell";
 import { ColorSchemeScript, MantineProvider, createTheme } from "@mantine/core";
+import { Notifications } from "@mantine/notifications";
 import "@mantine/core/styles.css";
+import "@mantine/notifications/styles.css";
+import "@mantine/tiptap/styles.css";
 import type { Metadata } from "next";
 import "./globals.css";
 
@@ -28,6 +31,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }):
 			</head>
 			<body>
 				<MantineProvider theme={theme} defaultColorScheme="dark">
+					<Notifications position="bottom-center" />
 					<ApplicationShell>{children}</ApplicationShell>
 				</MantineProvider>
 			</body>

@@ -10,7 +10,12 @@ export default async function cacheEndpoint(req: Request, res: Response, next: N
 	}
 
 	const redisClient = await getRedisClient();
-	const cachedResponse = await redisClient?.get(req.originalUrl);
+	if (!redisClient) {
+		console.log("redis client not available, attempting to retrieve from database");
+		return next();
+	}
+
+	const cachedResponse = await redisClient.get(req.originalUrl);
 	if (!cachedResponse) {
 		console.log(`cache miss for endpoint: ${endpoint}, attempting to retrieve from database`);
 		return next();
