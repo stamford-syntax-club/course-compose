@@ -16,6 +16,7 @@ jobs:
   build-and-push:
     name: Build and Push Docker Image
     runs-on: ubuntu-latest
+    environment: ${{ inputs.environment }} 
 
     strategy:
       matrix:
@@ -38,6 +39,19 @@ jobs:
             echo "Dockerfile exists"
             echo "DOCKERFILE_EXISTS=true" >> $GITHUB_OUTPUT
           fi
+
+      - name: Set frontend env
+        if: ${{ matrix.packages.name }} == 'web'
+        run: |
+            echo "Setting env for frontend";
+            echo "NEXT_PUBLIC_SUPABASE_URL=\"${{ secrets.SUPABASE_URL }}\"" >> apps/${{ matrix.packages.name }}/.env
+            echo "NEXT_PUBLIC_SUPABASE_ANON_KEY=\"${{ secrets.SUPABASE_ANON_KEY }}\"" >> apps/${{ matrix.packages.name }}/.env
+            echo "NEXT_PUBLIC_APP_ENV=\"${{ inputs.environment }}\"" >> apps/${{ matrix.packages.name }}/.env
+            echo "NEXT_PUBLIC_BACKEND_URL=\"https://gateway.stamford.dev/api\"" >> apps/${{ matrix.packages.name }}/.env
+            echo "Testing environment: ${{ vars.TEST }}"
+            cat apps/${{ matrix.packages.name }}/.env
+
+        # NOT SURE IF .env is loaded inside during build or not... 
 
       - name: Login ghcr.io
         uses: docker/login-action@v2.1.0
