@@ -8,7 +8,7 @@ if (process.env.APP_ENV === "beta" || process.env.APP_ENV === "prod") {
 	process.on("exit", async () => {
 		console.log("exiting redis..");
 		try {
-			redisClient.disconnect();
+			await redisClient.disconnect();
 		} catch (error) {
 			console.error("error exiting redis:", error);
 		}

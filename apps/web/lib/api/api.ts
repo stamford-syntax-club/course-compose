@@ -23,6 +23,12 @@ export default class CourseComposeAPIClient {
 
 	async fetchCourseDetails(): Promise<Course> {
 		const data = await fetch(this.courseEndpoint);
+
+		if (!data.ok) {
+			const err = (await data.json()) as ErrorResponse;
+			throw new Error(err.message);
+		}
+
 		return data.json() as Promise<Course>;
 	}
 

@@ -13,7 +13,7 @@ import {
 	TypographyStylesProvider
 } from "@mantine/core";
 import { useDisclosure } from "@mantine/hooks";
-import { IconEdit, IconDots, IconX, IconTrash } from "@tabler/icons-react";
+import { IconEdit, IconDots, IconX } from "@tabler/icons-react";
 import ReactMarkdown from "react-markdown";
 import { Review } from "types/reviews";
 import WriteReviewForm from "./write-review-form";
@@ -184,11 +184,11 @@ export function MyReviewCard({ review, onEditReview, onDeleteReview }: ReviewCar
 							closeDelete();
 						}}
 					>
-						<IconTrash className="mr-1" />
+						{/* <IconTrash className="mr-1" /> */}
 						Yes, delete review
 					</Button>
 					<Button onClick={closeDelete}>
-						<IconX className="mr-1" />
+						{/* <IconX className="mr-1" /> */}
 						No, take me back
 					</Button>
 				</Flex>

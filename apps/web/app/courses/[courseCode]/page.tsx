@@ -38,7 +38,19 @@ export default function CourseReview({ params }: { params: { courseCode: string 
 		}
 
 		notifications.show(result);
-		setTimeout(() => window.location.reload(), 3000);
+		apiClient
+			.fetchCourseReviews(pageNumber, sessionData?.access_token || "")
+			.then((reviews) => {
+				// tries to read further with anonymous or non-active status
+				// backend forces back to the same page
+				if (reviews.pageInformation.number !== pageNumber) {
+					setPageNumber(1);
+					setShowReviewLimitAlert(true);
+				}
+
+				setReviewsData(reviews);
+			})
+			.catch(console.error);
 	};
 
 	useEffect(() => {
