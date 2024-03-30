@@ -2,7 +2,7 @@
 
 import { Center, Container, Divider, Flex, Pagination, Stack, Title, Text, Loader, Alert } from "@mantine/core";
 import { MyReviewCard, ReviewCard } from "@components/ui/review-card";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import type { PaginatedResponse } from "types/pagination";
 import type { Course } from "types/course";
 import type { Review } from "types/reviews";
@@ -24,12 +24,11 @@ export default function CourseReview({ params }: { params: { courseCode: string 
 	const [showReviewLimitAlert, setShowReviewLimitAlert] = useState(false);
 	const [isLoading, setIsLoading] = useState(true);
 	const [pageNumber, setPageNumber] = useState(1);
+	const apiClient = useMemo(() => new CourseComposeAPIClient(params.courseCode), [params.courseCode]);
 
 	const { getSession } = useAuth();
 
 	const [opened, { open: openSessionModal, close: closeSessionModal }] = useDisclosure(false);
-
-	const apiClient = new CourseComposeAPIClient(params.courseCode);
 
 	const handleSubmitResponse = (result: NotificationData): void => {
 		if (!result.title || !result.message) {
@@ -73,18 +72,18 @@ export default function CourseReview({ params }: { params: { courseCode: string 
 			.finally(() => {
 				setIsLoading(false);
 			});
-	}, []);
+	}, [apiClient, getSession, openSessionModal]);
 
 	useEffect(() => {
-		if (isLoading) {
+		if (sessionData === undefined) {
 			return; // prevent fetching before the session is retrieved
 		}
-
 		setIsLoading(true);
 
-		apiClient
-			.fetchCourseReviews(pageNumber, sessionData?.access_token || "")
-			.then((reviews) => {
+		const fetchCourseReviews = async (): Promise<void> => {
+			try {
+				const reviews = await apiClient.fetchCourseReviews(pageNumber, sessionData?.access_token || "");
+
 				// tries to read further with anonymous or non-active status
 				// backend forces back to the same page
 				if (reviews.pageInformation.number !== pageNumber) {
@@ -93,12 +92,15 @@ export default function CourseReview({ params }: { params: { courseCode: string 
 				}
 
 				setReviewsData(reviews);
-			})
-			.catch(console.error)
-			.finally(() => {
+			} catch (err) {
+				console.error(err);
+			} finally {
 				setIsLoading(false);
-			});
-	}, [pageNumber, sessionData]);
+			}
+		};
+
+		fetchCourseReviews().catch(console.error);
+	}, [apiClient, pageNumber, sessionData]);
 
 	return (
 		<Container>
