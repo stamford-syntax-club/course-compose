@@ -7,7 +7,7 @@ import Placeholder from "@tiptap/extension-placeholder";
 import StarterKit from "@tiptap/starter-kit";
 import { Markdown } from "tiptap-markdown";
 import { notifications } from "@mantine/notifications";
-import { Review } from "types/reviews";
+import type { Review } from "types/reviews";
 
 const academicYearOptions = [
 	{ value: "2020", label: "2020" },
@@ -35,7 +35,7 @@ interface WriteReviewFormProps {
 	previousReview?: Review;
 }
 
-export default function WriteReviewForm({ onSubmit, previousReview }: WriteReviewFormProps) {
+export default function WriteReviewForm({ onSubmit, previousReview }: WriteReviewFormProps): JSX.Element {
 	const [academicYear, setAcademicYear] = useState<string | null>(previousReview?.academicYear || null);
 	const [rating, setRating] = useState(previousReview?.rating || 0);
 	const markdownEditor = useEditor({
@@ -66,7 +66,7 @@ export default function WriteReviewForm({ onSubmit, previousReview }: WriteRevie
 					return;
 				}
 
-				onSubmit(academicYear, markdownEditor?.storage.markdown.getMarkdown(), rating);
+				onSubmit(academicYear, markdownEditor.storage.markdown.getMarkdown(), rating);
 			}}
 		>
 			{reviewGuidelines.map((guide) => (
@@ -93,7 +93,7 @@ export default function WriteReviewForm({ onSubmit, previousReview }: WriteRevie
 				<MarkdownEditor editor={markdownEditor} />
 
 				<Flex gap="sm" justify="end">
-					<Button  type="submit" my="sm">
+					<Button type="submit" my="sm">
 						Submit Review
 					</Button>
 				</Flex>

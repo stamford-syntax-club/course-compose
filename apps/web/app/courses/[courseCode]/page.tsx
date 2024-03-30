@@ -3,20 +3,21 @@
 import { Center, Container, Divider, Flex, Pagination, Stack, Title, Text, Loader, Alert } from "@mantine/core";
 import { MyReviewCard, ReviewCard } from "@components/ui/review-card";
 import { useEffect, useState } from "react";
-import { PaginatedResponse } from "types/pagination";
-import { Course } from "types/course";
-import { Review } from "types/reviews";
+import type { PaginatedResponse } from "types/pagination";
+import type { Course } from "types/course";
+import type { Review } from "types/reviews";
 import { useDisclosure } from "@mantine/hooks";
 import Link from "next/link";
-import { NotificationData, notifications } from "@mantine/notifications";
+import type { NotificationData } from "@mantine/notifications";
+import { notifications } from "@mantine/notifications";
 import WriteReviewForm from "@components/ui/write-review-form";
 import SessionModal from "@components/ui/session-modal";
-import { Session } from "@supabase/supabase-js";
+import type { Session } from "@supabase/supabase-js";
 import CourseComposeAPIClient from "lib/api/api";
 import { useAuth } from "hooks/use-auth";
 import { IconLock } from "@tabler/icons-react";
 
-export default function CourseReview({ params }: { params: { courseCode: string } }) {
+export default function CourseReview({ params }: { params: { courseCode: string } }): JSX.Element {
 	const [courseData, setCourseData] = useState<Course>();
 	const [reviewsData, setReviewsData] = useState<PaginatedResponse<Review>>();
 	const [sessionData, setSessionData] = useState<Session | null>();
@@ -30,7 +31,7 @@ export default function CourseReview({ params }: { params: { courseCode: string 
 
 	const apiClient = new CourseComposeAPIClient(params.courseCode);
 
-	const handleSubmitResponse = (result: NotificationData) => {
+	const handleSubmitResponse = (result: NotificationData): void => {
 		if (!result.title || !result.message) {
 			// inform user to re-login when submit with missing or expired token
 			openSessionModal();
@@ -56,7 +57,9 @@ export default function CourseReview({ params }: { params: { courseCode: string 
 	useEffect(() => {
 		apiClient
 			.fetchCourseDetails()
-			.then((course) => setCourseData(course))
+			.then((course) => {
+				setCourseData(course);
+			})
 			.catch(console.error); // TODO: handle if no course found? - maybe redirect to home page
 
 		setIsLoading(true);
@@ -92,7 +95,9 @@ export default function CourseReview({ params }: { params: { courseCode: string 
 				setReviewsData(reviews);
 			})
 			.catch(console.error)
-			.finally(() => setIsLoading(false));
+			.finally(() => {
+				setIsLoading(false);
+			});
 	}, [pageNumber, sessionData]);
 
 	return (
@@ -105,9 +110,9 @@ export default function CourseReview({ params }: { params: { courseCode: string 
 				<Flex direction="row" gap="xs">
 					<Title order={3}>Prerequisites:</Title>
 					{courseData?.prerequisites && courseData.prerequisites.length > 0 ? (
-						courseData?.prerequisites.map((preq) => (
+						courseData.prerequisites.map((preq) => (
 							<Link key={`preq_${preq}`} href={`/courses/${preq}`}>
-								<Title c={"blue"} order={3}>
+								<Title c="blue" order={3}>
 									{preq}
 								</Title>
 							</Link>
@@ -127,47 +132,53 @@ export default function CourseReview({ params }: { params: { courseCode: string 
 
 			<SessionModal opened={opened} open={openSessionModal} close={closeSessionModal} />
 
-			{isLoading && (
+			{isLoading ? (
 				<Center my="md">
 					<Loader />
 				</Center>
-			)}
+			) : null}
 
 			<Stack gap="sm">
-				{showReviewLimitAlert && (
+				{showReviewLimitAlert ? (
 					<Alert color="yellow" icon={<IconLock />}>
 						Explore up to 2 reviews per course. Share your thoughts by writing your first review to discover
 						more reviews and insights!
 					</Alert>
-				)}
-				{reviewsData?.data &&
-					reviewsData.data.length > 0 &&
-					reviewsData?.data.map((review) =>
-						review?.isOwner ? (
-							<MyReviewCard
-								key={`my_review_card_${review.id}`}
-								review={review}
-								onEditReview={(id, academicYear, description, rating) =>
-									apiClient
-										.submitEditedReview(
-											id,
-											academicYear,
-											description,
-											rating,
-											sessionData?.access_token || ""
-										)
-										.then((result) => handleSubmitResponse(result))
-								}
-								onDeleteReview={(id) => {
-									apiClient
-										.submitDeleteReview(id, sessionData?.access_token || "")
-										.then((result) => handleSubmitResponse(result));
-								}}
-							/>
-						) : (
-							<ReviewCard key={`review_card_${review.id}`} review={review} />
+				) : null}
+				{reviewsData?.data && reviewsData.data.length > 0
+					? reviewsData.data.map((review) =>
+							review.isOwner ? (
+								<MyReviewCard
+									key={`my_review_card_${review.id}`}
+									review={review}
+									onEditReview={(id, academicYear, description, rating) => {
+										apiClient
+											.submitEditedReview(
+												id,
+												academicYear,
+												description,
+												rating,
+												sessionData?.access_token || ""
+											)
+											.then((result) => {
+												handleSubmitResponse(result);
+											})
+											.catch(console.error);
+									}}
+									onDeleteReview={(id) => {
+										apiClient
+											.submitDeleteReview(id, sessionData?.access_token || "")
+											.then((result) => {
+												handleSubmitResponse(result);
+											})
+											.catch(console.error);
+									}}
+								/>
+							) : (
+								<ReviewCard key={`review_card_${review.id}`} review={review} />
+							)
 						)
-					)}
+					: null}
 
 				{!isLoading && !reviewsData?.data.length && (
 					<Center my="md">
@@ -186,11 +197,14 @@ export default function CourseReview({ params }: { params: { courseCode: string 
 				Write a Review
 			</Title>
 			<WriteReviewForm
-				onSubmit={(academicYear, description, rating) =>
+				onSubmit={(academicYear, description, rating) => {
 					apiClient
 						.submitNewReview(academicYear, description, rating, sessionData?.access_token || "")
-						.then((result) => handleSubmitResponse(result))
-				}
+						.then((result) => {
+							handleSubmitResponse(result);
+						})
+						.catch(console.error);
+				}}
 			/>
 		</Container>
 	);

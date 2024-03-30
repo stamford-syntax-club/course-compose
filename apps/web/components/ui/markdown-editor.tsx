@@ -1,8 +1,8 @@
 import "@mantine/tiptap/styles.css";
 import { RichTextEditor } from "@mantine/tiptap";
-import { Editor } from "@tiptap/react";
+import type { Editor } from "@tiptap/react";
 
-export function MarkdownEditor({ editor }: { editor: Editor | null }) {
+export function MarkdownEditor({ editor }: { editor: Editor | null }): JSX.Element {
 	return (
 		<RichTextEditor editor={editor}>
 			<RichTextEditor.Toolbar sticky stickyOffset={60}>

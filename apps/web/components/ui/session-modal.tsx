@@ -7,7 +7,7 @@ interface SessionModalProps {
 	close: () => void;
 }
 
-export default function SessionModal({ opened, close }: SessionModalProps) {
+export default function SessionModal({ opened, close }: SessionModalProps): JSX.Element {
 	const { signIn } = useAuth();
 
 	return (
@@ -26,7 +26,12 @@ export default function SessionModal({ opened, close }: SessionModalProps) {
 					You are not logged in
 				</Title>
 				<Text>Verified users get to read as many reviews as they want and can also write their own.</Text>
-				<Button my="md" onClick={() => signIn().catch(console.error)}>
+				<Button
+					my="md"
+					onClick={() => {
+						signIn().catch(console.error);
+					}}
+				>
 					Login with your Stamford account
 				</Button>
 				<Text>or</Text>

@@ -1,7 +1,7 @@
-import { Course } from "types/course";
-import { Review } from "types/reviews";
-import { ErrorResponse } from "types/errors";
-import { PaginatedResponse } from "types/pagination";
+import type { Course } from "types/course";
+import type { Review } from "types/reviews";
+import type { ErrorResponse } from "types/errors";
+import type { PaginatedResponse } from "types/pagination";
 import {
 	ERR_EXPIRED_TOKEN,
 	ERR_REVIEW_EXIST,
@@ -10,7 +10,7 @@ import {
 	ERR_USER_NOT_OWNER,
 	COURSE_API_ENDPOINT
 } from "@utils/constants";
-import { NotificationData } from "@mantine/notifications";
+import type { NotificationData } from "@mantine/notifications";
 
 export default class CourseComposeAPIClient {
 	private courseEndpoint: string;
@@ -57,8 +57,8 @@ export default class CourseComposeAPIClient {
 			method: "POST",
 			body: JSON.stringify({
 				academic_year: parseInt(academicYear),
-				description: description,
-				rating: rating
+				description,
+				rating
 			}),
 			headers: {
 				"Content-Type": "application/json",
@@ -110,10 +110,10 @@ export default class CourseComposeAPIClient {
 		const data = await fetch(`${this.reviewEndpoint}/edit`, {
 			method: "PUT",
 			body: JSON.stringify({
-				id: id,
+				id,
 				academic_year: parseInt(academicYear),
-				description: description,
-				rating: rating
+				description,
+				rating
 			}),
 			headers: {
 				"Content-Type": "application/json",
@@ -169,13 +169,13 @@ export default class CourseComposeAPIClient {
 				message: "Your review has been deleted successfully",
 				color: "green"
 			};
-		} else {
-			return {
-				title: "Something is wrong on our end",
-				message: "Your review cannot be deleted yet, please try again later",
-				color: "red",
-				autoClose: 5000
-			};
 		}
+
+		return {
+			title: "Something is wrong on our end",
+			message: "Your review cannot be deleted yet, please try again later",
+			color: "red",
+			autoClose: 5000
+		};
 	}
 }

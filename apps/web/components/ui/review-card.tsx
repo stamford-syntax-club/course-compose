@@ -15,7 +15,7 @@ import {
 import { useDisclosure } from "@mantine/hooks";
 import { IconEdit, IconDots, IconX } from "@tabler/icons-react";
 import ReactMarkdown from "react-markdown";
-import { Review } from "types/reviews";
+import type { Review } from "types/reviews";
 import WriteReviewForm from "./write-review-form";
 
 interface ReviewCardProps {
@@ -35,7 +35,7 @@ const getStatusColor = (status: string): string => {
 	}
 };
 
-export function ReviewCard({ review }: ReviewCardProps) {
+export function ReviewCard({ review }: ReviewCardProps): JSX.Element {
 	return (
 		<Card radius="md" shadow="sm">
 			<Flex direction="row" gap="lg" justify="center">
@@ -71,7 +71,7 @@ export function ReviewCard({ review }: ReviewCardProps) {
 	);
 }
 
-export function MyReviewCard({ review, onEditReview, onDeleteReview }: ReviewCardProps) {
+export function MyReviewCard({ review, onEditReview, onDeleteReview }: ReviewCardProps): JSX.Element {
 	const [openedEdit, { open: openEdit, close: closeEdit }] = useDisclosure(false);
 	const [openedDelete, { open: openDelete, close: closeDelete }] = useDisclosure(false);
 
