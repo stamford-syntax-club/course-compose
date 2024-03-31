@@ -44,8 +44,8 @@ jobs:
         if: ${{ matrix.packages.name }} == 'web'
         run: |
             echo "Setting env for frontend";
-            echo "NEXT_PUBLIC_SUPABASE_URL=\"${{ secrets.SUPABASE_URL }}\"" >> apps/${{ matrix.packages.name }}/.env
-            echo "NEXT_PUBLIC_SUPABASE_ANON_KEY=\"${{ secrets.SUPABASE_ANON_KEY }}\"" >> apps/${{ matrix.packages.name }}/.env
+            echo "NEXT_PUBLIC_SUPABASE_URL=\"${{ vars.SUPABASE_URL }}\"" >> apps/${{ matrix.packages.name }}/.env
+            echo "NEXT_PUBLIC_SUPABASE_ANON_KEY=\"${{ vars.SUPABASE_ANON_KEY }}\"" >> apps/${{ matrix.packages.name }}/.env
             echo "NEXT_PUBLIC_APP_ENV=\"${{ inputs.environment }}\"" >> apps/${{ matrix.packages.name }}/.env
             echo "NEXT_PUBLIC_BACKEND_URL=\"https://gateway.stamford.dev/api\"" >> apps/${{ matrix.packages.name }}/.env
             echo "Testing environment: ${{ vars.TEST }}"
