@@ -15,7 +15,7 @@ import { useState } from "react";
 
 const COURSE_LIST = [
 	{
-		courseName: "Basic Mathematics XD",
+		courseName: "Basic Mathematics",
 		courseCode: "MAT101",
 		coursePrerequisites: [],
 		courseRating: 4.0,

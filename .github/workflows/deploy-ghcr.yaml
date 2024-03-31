@@ -41,7 +41,7 @@ jobs:
           fi
 
       - name: Set frontend env
-        if: ${{ matrix.packages.name }} == 'web'
+        if: ${{ contains(fromJson('["web"]'), matrix.packages.name) && steps.check-dockerfile.outputs.DOCKERFILE_EXISTS == 'true' }}
         run: |
             echo "Setting env for frontend";
             echo "NEXT_PUBLIC_SUPABASE_URL=\"${{ vars.SUPABASE_URL }}\"" >> apps/${{ matrix.packages.name }}/.env
