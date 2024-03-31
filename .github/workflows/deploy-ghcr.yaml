@@ -47,9 +47,7 @@ jobs:
             echo "NEXT_PUBLIC_SUPABASE_URL=\"${{ vars.SUPABASE_URL }}\"" >> apps/${{ matrix.packages.name }}/.env
             echo "NEXT_PUBLIC_SUPABASE_ANON_KEY=\"${{ vars.SUPABASE_ANON_KEY }}\"" >> apps/${{ matrix.packages.name }}/.env
             echo "NEXT_PUBLIC_APP_ENV=\"${{ inputs.environment }}\"" >> apps/${{ matrix.packages.name }}/.env
-            echo "NEXT_PUBLIC_BACKEND_URL=\"https://gateway.stamford.dev/api\"" >> apps/${{ matrix.packages.name }}/.env
-            echo "Testing environment: ${{ vars.TEST }}"
-            cat apps/${{ matrix.packages.name }}/.env
+            echo "NEXT_PUBLIC_BACKEND_URL=\"${{ vars.BACKEND_URL }}\"" >> apps/${{ matrix.packages.name }}/.env
 
         # NOT SURE IF .env is loaded inside during build or not... 
 
