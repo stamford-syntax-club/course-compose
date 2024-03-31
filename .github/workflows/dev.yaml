@@ -4,6 +4,7 @@ on:
     push:
         branches:
             - main
+            - khing/ci/prod
 
 permissions:
     actions: read
@@ -49,7 +50,7 @@ jobs:
             - name: Generate package deployment information
               id: generate-deployment
               run: |
-                  packages_deployment=$(echo '${{ env.PACKAGES }}' | jq -c 'map({name: ., imageTag:"ghcr.io/stamford-syntax-club/course-compose:\(.)-${{ env.GITHUB_SHA }}"})')
+                  packages_deployment=$(echo '${{ env.PACKAGES }}' | jq -c 'map({name: ., imageTag:"ghcr.io/stamford-syntax-club/course-compose/\(.):${{ env.GITHUB_SHA }}"})')
                   echo "PACKAGES_DEPLOYMENT=$packages_deployment" >> $GITHUB_OUTPUT
                   echo "PACKAGES_DEPLOYMENT=$packages_deployment"
 
