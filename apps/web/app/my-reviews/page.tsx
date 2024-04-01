@@ -7,15 +7,14 @@ import { useDisclosure } from "@mantine/hooks";
 import { APPROVED, BASE_API_ENDPOINT, PENDING, REJECTED } from "@utils/constants";
 import fetcher from "@utils/fetcher";
 import { useAuth } from "hooks/use-auth";
-import type { Session } from "node:inspector";
 import { useEffect, useState } from "react";
 import type { AccordionItems, MyReviewsData } from "types";
+import type { Session } from "@supabase/supabase-js";
 
-const initialSessionData: Session | null = null;
 const initialEmptyPosts: MyReviewsData[] = [];
 
 export default function MyReviews(): JSX.Element {
-	const [sessionData, setSessionData] = useState<Session | null>(initialSessionData);
+	const [sessionData, setSessionData] = useState<Session | null>();
 	const [isLoading, setIsLoading] = useState<boolean>(true);
 	const [myReviewsData, setMyReviewsData] = useState<MyReviewsData[] | null>([]);
 
@@ -26,13 +25,11 @@ export default function MyReviews(): JSX.Element {
 		if (!sessionData) {
 			setIsLoading(true);
 			getSession()
-				.then((session: Session) => {
+				.then((session) => {
 					setSessionData(session);
 					if (!session) openSessionModal();
 				})
-				.catch((error: any) => {
-					console.error(error);
-				})
+				.catch(console.error)
 				.finally(() => {
 					setIsLoading(false);
 				});
@@ -47,14 +44,12 @@ export default function MyReviews(): JSX.Element {
 
 		const fetchMyReviews = async (): Promise<void> => {
 			try {
-				const results = await fetcher<MyReviewsData>(
+				const results = await fetcher<{ data: MyReviewsData[] }>(
 					`${BASE_API_ENDPOINT}/myreviews`,
 					sessionData.access_token || ""
 				);
 
-				const myReviews = results.data.data;
-
-				setMyReviewsData(myReviews);
+				setMyReviewsData(results.data || []);
 			} catch (err) {
 				console.error(err);
 				// Handle error here
