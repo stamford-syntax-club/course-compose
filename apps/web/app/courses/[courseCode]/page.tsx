@@ -76,6 +76,7 @@ export default function CourseReview({ params }: { params: { courseCode: string 
 
 	useEffect(() => {
 		if (sessionData === undefined) {
+			console.log(sessionData.access_token);
 			return; // prevent fetching before the session is retrieved
 		}
 		setIsLoading(true);
@@ -94,7 +95,11 @@ export default function CourseReview({ params }: { params: { courseCode: string 
 				setReviewsData(reviews);
 			} catch (err) {
 				console.error(err);
-				notifications.show({ title: "Error!", message: "Something went wrong, please try again later", color:"red" });
+				notifications.show({
+					title: "Error!",
+					message: "Something went wrong, please try again later",
+					color: "red"
+				});
 			} finally {
 				setIsLoading(false);
 			}

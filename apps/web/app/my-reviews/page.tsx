@@ -1,121 +1,111 @@
 "use client";
 
 import { MyReviewCard } from "@components/ui/cards/my-review-card";
-import { Accordion, Badge, Grid, Paper, Stack, Text } from "@mantine/core";
-import type { AccordionItems, MyReviewCardProps } from "types";
+import SessionModal from "@components/ui/session-modal";
+import { Accordion, Badge, Center, Grid, Loader, Paper, Stack, Text } from "@mantine/core";
+import { useDisclosure } from "@mantine/hooks";
+import { APPROVED, BASE_API_ENDPOINT, PENDING, REJECTED } from "@utils/constants";
+import fetcher from "@utils/fetcher";
+import { useAuth } from "hooks/use-auth";
+import type { Session } from "node:inspector";
+import { useEffect, useState } from "react";
+import type { AccordionItems, MyReviewsData } from "types";
 
-const MY_COURSE_REVIEW_LIST = [
-	{
-		courseName: "Basic Mathematics",
-		courseCode: "MAT101",
-		coursePrerequisites: [],
-		courseRating: 4.0,
-		courseReviewCount: 20,
-		status: "Approved"
-	},
-	{
-		courseName: "Advanced Programming",
-		courseCode: "CSE302",
-		coursePrerequisites: ["CSE201", "CSE202"],
-		courseRating: 4.5,
-		courseReviewCount: 50,
-		status: "Approved"
-	},
-	{
-		courseName: "Modern Web Development",
-		courseCode: "WEB403",
-		coursePrerequisites: ["WEB301", "WEB302"],
-		courseRating: 5.0,
-		courseReviewCount: 150,
-		status: "Approved"
-	},
-	{
-		courseName: "Emerging Technologies",
-		courseCode: "TECH110",
-		coursePrerequisites: ["TECH100"],
-		courseRating: 0,
-		courseReviewCount: 0,
-		status: "Approved"
-	},
-	{
-		courseName: "Comprehensive Study of Theoretical and Applied Quantum Computing",
-		courseCode: "QTCMP999",
-		coursePrerequisites: ["QTCMP500", "PHY400"],
-		courseRating: 3.8,
-		courseReviewCount: 30,
-		status: "Rejected"
-	},
-	{
-		courseName: "Introduction to Philosophy",
-		courseCode: "PHI101",
-		coursePrerequisites: ["PHI100"],
-		courseRating: 2.0,
-		courseReviewCount: 5,
-		status: "Rejected"
-	},
-	{
-		courseName: "History & Culture: 1900's",
-		courseCode: "HIS200",
-		coursePrerequisites: ["HIS100"],
-		courseRating: 3.5,
-		courseReviewCount: 25,
-		status: "Approved"
-	}
-];
-
-const approvedPosts: MyReviewCardProps[] = MY_COURSE_REVIEW_LIST.filter((item) => item.status === "Approved");
-const pendingPosts: MyReviewCardProps[] = MY_COURSE_REVIEW_LIST.filter((item) => item.status === "Pending");
-const rejectedPosts: MyReviewCardProps[] = MY_COURSE_REVIEW_LIST.filter((item) => item.status === "Rejected");
-
-const filteredCourseCards: AccordionItems[] = [
-	{
-		value: "Approved",
-		status: () => (
-			<Badge className="min-w-fit" color="green">
-				Approved
-			</Badge>
-		),
-		posts: approvedPosts
-	},
-	{
-		value: "Pending",
-		status: () => (
-			<Badge className="min-w-fit" color="gray">
-				Pending
-			</Badge>
-		),
-		posts: pendingPosts
-	},
-	{
-		value: "Rejected",
-		status: () => (
-			<Badge className="min-w-fit" color="red">
-				Rejected
-			</Badge>
-		),
-		posts: rejectedPosts
-	}
-];
+const initialSessionData: Session | null = null;
+const initialEmptyPosts: MyReviewsData[] = [];
 
 export default function MyReviews(): JSX.Element {
+	const [sessionData, setSessionData] = useState<Session | null>(initialSessionData);
+	const [isLoading, setIsLoading] = useState<boolean>(true);
+	const [myReviewsData, setMyReviewsData] = useState<MyReviewsData[] | null>([]);
+
+	const { getSession } = useAuth();
+	const [opened, { open: openSessionModal, close: closeSessionModal }] = useDisclosure(false);
+
+	useEffect(() => {
+		if (!sessionData) {
+			setIsLoading(true);
+			getSession()
+				.then((session: Session) => {
+					setSessionData(session);
+					if (!session) openSessionModal();
+				})
+				.catch((error: any) => {
+					console.error(error);
+				})
+				.finally(() => {
+					setIsLoading(false);
+				});
+		}
+	}, [getSession, openSessionModal, sessionData]);
+
+	useEffect(() => {
+		if (!sessionData) {
+			return;
+		}
+		setIsLoading(true);
+
+		const fetchMyReviews = async (): Promise<void> => {
+			try {
+				const results = await fetcher<MyReviewsData>(
+					`${BASE_API_ENDPOINT}/myreviews`,
+					sessionData.access_token || ""
+				);
+
+				const myReviews = results.data.data;
+
+				setMyReviewsData(myReviews);
+			} catch (err) {
+				console.error(err);
+				// Handle error here
+			} finally {
+				setIsLoading(false);
+			}
+		};
+
+		fetchMyReviews().catch(console.error);
+	}, [sessionData]);
+
+	const approvedPosts: MyReviewsData[] = myReviewsData
+		? myReviewsData.filter((item) => item.status === APPROVED)
+		: initialEmptyPosts;
+	const pendingPosts: MyReviewsData[] = myReviewsData
+		? myReviewsData.filter((item) => item.status === PENDING)
+		: initialEmptyPosts;
+	const rejectedPosts: MyReviewsData[] = myReviewsData
+		? myReviewsData.filter((item) => item.status === REJECTED)
+		: initialEmptyPosts;
+
+	const filteredCourseCards: AccordionItems[] = [
+		{
+			value: APPROVED,
+			posts: approvedPosts.length !== 0 ? approvedPosts : []
+		},
+		{
+			value: PENDING,
+			posts: pendingPosts.length !== 0 ? pendingPosts : []
+		},
+		{
+			value: REJECTED,
+			posts: rejectedPosts.length !== 0 ? rejectedPosts : []
+		}
+	];
+
 	const items = filteredCourseCards.map((item) => (
 		<Accordion.Item key={item.value} value={item.value}>
-			<Accordion.Control>{item.status()}</Accordion.Control>
+			<Accordion.Control>
+				<Badge className="min-w-fit" color="gray">
+					{item.value}
+				</Badge>
+			</Accordion.Control>
 			<Accordion.Panel>
 				<Stack gap="md">
 					<Paper bg="dark.8" p="md" withBorder>
 						<div className="relative flex size-full flex-col">
 							<div className="grid grid-cols-12 grid-rows-1 gap-6">
 								{item.posts.length !== 0 ? (
-									item.posts.map((course) => (
-										<MyReviewCard
-											key={`CourseCard_${course.courseCode}`}
-											courseName={course.courseName}
-											courseCode={course.courseCode}
-											coursePrerequisites={course.coursePrerequisites}
-											courseRating={course.courseRating}
-											courseReviewCount={course.courseReviewCount}
-										/>
+									item.posts.map((cardItem) => (
+										<MyReviewCard key={`CourseCard_${cardItem.course.code}`} cardData={cardItem} />
 									))
 								) : (
 									<Text className="col-span-12 text-center">No {item.value} Posts Yet</Text>
@@ -130,13 +120,21 @@ export default function MyReviews(): JSX.Element {
 
 	return (
 		<Grid
-			className="h-full"
+			className="mx-auto h-full w-[1000px]"
 			classNames={{
 				inner: "h-full"
 			}}
 		>
 			<Grid.Col span={{ base: 12, xl: 12 }}>
-				<Accordion multiple radius="xs" defaultValue={["Approved", "Pending", "Rejected"]}>
+				<SessionModal opened={opened} open={openSessionModal} close={closeSessionModal} />
+
+				{isLoading ? (
+					<Center my="md">
+						<Loader />
+					</Center>
+				) : null}
+
+				<Accordion multiple radius="xs" defaultValue={[APPROVED, PENDING, REJECTED]}>
 					{items}
 				</Accordion>
 			</Grid.Col>

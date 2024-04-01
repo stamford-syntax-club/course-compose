@@ -1,24 +1,31 @@
-import type { ReactNode } from "react";
-
 export interface CourseCardProps {
 	courseName: string;
 	courseCode: string;
 	coursePrerequisites?: string[];
 	courseRating: number;
 	courseReviewCount: number;
+	description: string;
 }
 
-export interface MyReviewCardProps {
-	courseName: string;
-	courseCode: string;
-	coursePrerequisites?: string[];
-	courseRating: number;
-	courseReviewCount: number;
+export interface MyReviewsData {
+	academicYear: number;
+	course: {
+		code: string;
+		id: number;
+	};
+	created_at: string;
+	description: string;
+	id: number;
+	isOwner: boolean;
+	profile: {
+		id: string;
+	};
+	rating: number;
 	status: string;
+	votes: number;
 }
 
 export interface AccordionItems {
 	value: string;
-	status: () => ReactNode;
-	posts: MyReviewCardProps[];
+	posts: MyReviewsData[];
 }

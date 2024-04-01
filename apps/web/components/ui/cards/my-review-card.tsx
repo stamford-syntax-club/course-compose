@@ -1,23 +1,12 @@
-import { Button, Card, Flex, Group, Image, Rating, Stack, Text } from "@mantine/core";
+import { Button, Card, Flex, Group, Rating, Stack, Text } from "@mantine/core";
 import { IconArrowDown, IconArrowUp } from "@tabler/icons-react";
+import type { MyReviewsData } from "types";
 
-interface CourseCardProps {
-	courseName: string;
-	courseCode: string;
-	coursePrerequisites?: string[];
-	courseRating: number;
-	courseReviewCount: number;
-}
+export function MyReviewCard({ cardData }: { cardData: MyReviewsData }): JSX.Element {
+	const { course, description, rating, status, votes } = cardData;
 
-export function MyReviewCard({
-	courseName,
-	courseCode,
-	coursePrerequisites = [],
-	courseRating,
-	courseReviewCount
-}: CourseCardProps): JSX.Element {
-	const coursePreReqString =
-		coursePrerequisites.length > 0 ? `Pre: ${coursePrerequisites.join(", ")}` : "No Prerequisites";
+	// const coursePreReqString =
+	// 	coursePrerequisites.length > 0 ? `Pre: ${coursePrerequisites.join(", ")}` : "No Prerequisites";
 
 	return (
 		// base: 12, sm: 6, xl: 4
@@ -33,19 +22,19 @@ export function MyReviewCard({
 					<Group style={{ padding: "10px", borderRadius: "8px" }} bg="dark.6">
 						<Stack gap="0" className="w-full">
 							<Text span c="dimmed" inherit>
-								{courseCode}
+								{course.code}
 							</Text>
-							<Text title={courseName} component="div" truncate="end">
+							{/* <Text title={courseName} component="div" truncate="end">
 								{courseName}
-							</Text>
-							<Text truncate="end" title={coursePreReqString} c="dimmed">
+							</Text> */}
+							{/* <Text truncate="end" title="No Prerequisites" c="dimmed">
 								{coursePreReqString}
-							</Text>
+							</Text> */}
 						</Stack>
 					</Group>
 
 					<Flex gap="xs" align="center" justify="space-between">
-						<Rating value={courseRating} fractions={2} readOnly />
+						<Rating value={rating} fractions={2} readOnly />
 						<Flex gap="5px" align="center">
 							<IconArrowUp color="green" strokeWidth={3} />
 							30
@@ -54,11 +43,7 @@ export function MyReviewCard({
 						</Flex>
 					</Flex>
 
-					<Text truncate="end">
-						Lorem ipsum dolor sit amet consectetur adipisicing elit. Unde provident eos fugiat id
-						necessitatibus magni ducimus molestias. Placeat, consequatur. Quisquam, quae magnam perspiciatis
-						excepturi iste sint itaque sunt laborum. Nihil?
-					</Text>
+					<Text truncate="end">{description}</Text>
 
 					<Group className="mt-auto w-full" justify="flex-end" gap="xs">
 						<Button bg="blue.4">{"SEE MY REVIEW".toUpperCase()}</Button>
