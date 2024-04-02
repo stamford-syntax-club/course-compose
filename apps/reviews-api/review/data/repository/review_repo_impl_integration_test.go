@@ -10,6 +10,7 @@ import (
 
 	"github.com/stamford-syntax-club/course-compose/reviews/common/utils"
 	"github.com/stamford-syntax-club/course-compose/reviews/review/data/datasource/db"
+	"github.com/stamford-syntax-club/course-compose/reviews/review/domain/dto"
 	"github.com/stretchr/testify/suite"
 )
 
@@ -371,6 +372,73 @@ func (suite *ReviewRepoTestSuite) TestDeleteReview() {
 	})
 }
 
+func (suite *ReviewRepoTestSuite) TestUpdateReviewStatus() {
+	repo := NewReviewRepositoryImpl(suite.client)
+
+	const nonActiveUser = "2b84c3b5-5b87-4c9b-832d-60d0966d4f7d"
+	const activeUser = "8a7b3c2e-3e5f-4f1a-a8b7-3c2e1a4f5b6d"
+
+	suite.Run("update user active status if review is approved", func() {
+		suite.Run("first time getting their review approved", func() {
+			// user is initially inactive
+			owner, err := suite.client.Profile.FindUnique(
+				db.Profile.ID.Equals(nonActiveUser),
+			).Exec(suite.ctx)
+			suite.NoError(err)
+			suite.False(owner.IsActive)
+
+			pendingReview, err := suite.client.Review.FindFirst(
+				db.Review.UserID.Equals(nonActiveUser),
+				db.Review.Description.Contains("I will be approved soon"),
+			).Exec(suite.ctx)
+
+			reviewDecision := &dto.ReviewDecisionDTO{
+				ID:     pendingReview.ID,
+				Status: "APPROVED",
+			}
+			updatedReview, err := repo.UpdateReviewStatus(suite.ctx, reviewDecision)
+			suite.NoError(err)
+			suite.Equal("APPROVED", updatedReview.Status)
+
+			// check if user is now active after getting their review approved
+			owner, err = suite.client.Profile.FindUnique(
+				db.Profile.ID.Equals(nonActiveUser),
+			).Exec(suite.ctx)
+			suite.NoError(err)
+			suite.True(owner.IsActive)
+		})
+	})
+
+	suite.Run("should not matter if user is already active", func() {
+		// user is already active
+		owner, err := suite.client.Profile.FindUnique(
+			db.Profile.ID.Equals(activeUser),
+		).Exec(suite.ctx)
+		suite.NoError(err)
+		suite.True(owner.IsActive)
+
+		pendingReview, err := suite.client.Review.FindFirst(
+			db.Review.UserID.Equals(activeUser),
+			db.Review.Description.Contains("Another review from 8a7b3c"),
+		).Exec(suite.ctx)
+
+		reviewDecision := &dto.ReviewDecisionDTO{
+			ID:     pendingReview.ID,
+			Status: "APPROVED",
+		}
+		updatedReview, err := repo.UpdateReviewStatus(suite.ctx, reviewDecision)
+		suite.NoError(err)
+		suite.Equal("APPROVED", updatedReview.Status)
+
+		// check if user is now active after getting their review approved
+		owner, err = suite.client.Profile.FindUnique(
+			db.Profile.ID.Equals(activeUser),
+		).Exec(suite.ctx)
+		suite.NoError(err)
+		suite.True(owner.IsActive)
+	})
+}
+
 func TestReviewRepoSuite(t *testing.T) {
 	suite.Run(t, new(ReviewRepoTestSuite))
 }
@@ -467,6 +535,23 @@ func seedReviewData(client *db.PrismaClient) {
 			status:       "REJECTED",
 			courseId:     1,
 			userId:       "d5a59cb2-1f22-4e23-8ef0-7108e54f842b",
+		},
+		{
+			academicYear: 9999,
+			description:  "I will be approved soon",
+			rating:       3,
+			status:       "PENDING",
+			courseId:     1,
+			userId:       "2b84c3b5-5b87-4c9b-832d-60d0966d4f7d",
+		},
+		{
+			academicYear: 2022,
+			description:  "Another review from 8a7b3c",
+			rating:       5,
+			votes:        10,
+			status:       "PENDING",
+			courseId:     5,
+			userId:       "8a7b3c2e-3e5f-4f1a-a8b7-3c2e1a4f5b6d",
 		},
 	}
 
