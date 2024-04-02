@@ -4,7 +4,7 @@ import { MyReviewCard } from "@components/ui/cards/my-review-card";
 import SessionModal from "@components/ui/session-modal";
 import { Accordion, Badge, Center, Grid, Loader, Paper, Stack, Text } from "@mantine/core";
 import { useDisclosure } from "@mantine/hooks";
-import { APPROVED, BASE_API_ENDPOINT, PENDING, REJECTED } from "@utils/constants";
+import { APPROVED, BASE_API_ENDPOINT, ERROR, INFO, PENDING, REJECTED, SUCCESS } from "@utils/constants";
 import fetcher from "@utils/fetcher";
 import { useAuth } from "hooks/use-auth";
 import { useEffect, useState } from "react";
@@ -49,7 +49,7 @@ export default function MyReviews(): JSX.Element {
 					sessionData.access_token || ""
 				);
 
-				setMyReviewsData(results.data || []);
+				setMyReviewsData(results.data?.data || []);
 			} catch (err) {
 				console.error(err);
 				// Handle error here
@@ -74,22 +74,25 @@ export default function MyReviews(): JSX.Element {
 	const filteredCourseCards: AccordionItems[] = [
 		{
 			value: APPROVED,
-			posts: approvedPosts.length !== 0 ? approvedPosts : []
+			posts: approvedPosts.length !== 0 ? approvedPosts : [],
+			severity: SUCCESS
 		},
 		{
 			value: PENDING,
-			posts: pendingPosts.length !== 0 ? pendingPosts : []
+			posts: pendingPosts.length !== 0 ? pendingPosts : [],
+			severity: INFO
 		},
 		{
 			value: REJECTED,
-			posts: rejectedPosts.length !== 0 ? rejectedPosts : []
+			posts: rejectedPosts.length !== 0 ? rejectedPosts : [],
+			severity: ERROR
 		}
 	];
 
 	const items = filteredCourseCards.map((item) => (
 		<Accordion.Item key={item.value} value={item.value}>
 			<Accordion.Control>
-				<Badge className="min-w-fit" color="gray">
+				<Badge className="min-w-fit" color={item.severity}>
 					{item.value}
 				</Badge>
 			</Accordion.Control>

@@ -15,3 +15,7 @@ export const COURSE_API_ENDPOINT = `${BASE_API_ENDPOINT}/courses`;
 export const APPROVED = "APPROVED";
 export const REJECTED = "REJECTED";
 export const PENDING = "PENDING";
+
+export const SUCCESS = "#22bb33";
+export const ERROR = "#bb2124";
+export const INFO = "#aaaaaa";

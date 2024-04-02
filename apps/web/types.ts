@@ -28,4 +28,5 @@ export interface MyReviewsData {
 export interface AccordionItems {
 	value: string;
 	posts: MyReviewsData[];
+	severity: string;
 }
