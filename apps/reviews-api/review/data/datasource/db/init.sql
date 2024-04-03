@@ -44,4 +44,5 @@ INSERT INTO "Profile" (id, "isActive", username) VALUES
   ('d5a59cb2-1f22-4e23-8ef0-7108e54f842b', true, NULL),
   ('6c7b1dd2-aa9d-4f5e-8a98-2c7c2895a95e', true, NULL),
   ('8b84c3b5-5b87-4c9b-832d-60d0966d4f7d', true, NULL),
-  ('3f9e87a9-6d27-4a09-8a0a-20e58d609315', true, NULL);
+  ('3f9e87a9-6d27-4a09-8a0a-20e58d609315', true, NULL),
+  ('2b84c3b5-5b87-4c9b-832d-60d0966d4f7d', false, NULL);

@@ -1,5 +1,5 @@
 {
-  "name": "course-api",
+  "name": "user-api",
   "version": "1.0.0",
   "description": "",
   "main": "dist/src/index.js",
@@ -7,12 +7,11 @@
     "build": "npx tsc",
     "start": "node dist/src/index.js",
     "dev": "pnpm exec dotenv -e .env.development -- concurrently \"npx tsc --watch\" \"nodemon -q dist/src/index.js\"",
-    "unit": "jest test/unit",
     "integration": "docker compose -f docker-compose.integration.yaml down -v && docker compose -f docker-compose.integration.yaml up --build --force-recreate --abort-on-container-exit --exit-code-from app",
     "integration:jest": "jest test/integration --detectOpenHandles",
     "docker:test_build": "docker compose -f docker-compose.test-build.yaml down -v && docker compose -f docker-compose.test-build.yaml up -d --build --force-recreate",
-    "bootstrap:unix": "PRISMA_PROVIDER=prisma-client-js PRISMA_OUTPUT=../../apps/course-api/.prisma/client pnpm prisma generate --schema=../../packages/prisma/schema.prisma",
-    "bootstrap:windows": "@powershell $env:PRISMA_PROVIDER='prisma-client-js'; $env:PRISMA_OUTPUT='../../apps/course-api/.prisma/client'; pnpm prisma generate --schema=../../packages/prisma/schema.prisma"
+    "bootstrap:unix": "PRISMA_PROVIDER=prisma-client-js PRISMA_OUTPUT=../../apps/user-api/.prisma/client pnpm prisma generate --schema=../../packages/prisma/schema.prisma",
+    "bootstrap:windows": "PRISMA_PROVIDER=prisma-client-js PRISMA_OUTPUT=../../apps/user-api/.prisma/client pnpm prisma generate --schema=../../packages/prisma/schema.prisma"
   },
   "prisma": {
     "seed": "pnpm exec ts-node prisma/seed.ts"
@@ -22,10 +21,13 @@
   "license": "ISC",
   "dependencies": {
     "@prisma/client": "^5.7.1",
+    "@types/jsonwebtoken": "^9.0.6",
     "@types/morgan": "^1.9.9",
     "cors": "^2.8.5",
     "dotenv": "^16.3.1",
     "express": "^4.18.2",
+    "express-jwt": "^8.4.1",
+    "jsonwebtoken": "^9.0.2",
     "module-alias": "^2.2.3",
     "mongodb": "^6.3.0",
     "mongoose": "^8.0.3",
@@ -55,6 +57,7 @@
     "@models": "dist/src/models",
     "@routes": "dist/src/routes",
     "@utils": "dist/src/utils",
+    "@services": "dist/src/services",
     "@middlewares": "dist/src/middlewares",
     "@root": "."
   }

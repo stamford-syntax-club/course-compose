@@ -157,6 +157,16 @@ func (r *reviewRepositoryImpl) UpdateReviewStatus(ctx context.Context, reviewDec
 		return nil, fiber.ErrInternalServerError
 	}
 
+	if updatedReview.Status == "APPROVED" {
+		_, err := r.reviewDB.Profile.FindUnique(
+			review_db.Profile.ID.Equals(updatedReview.UserID),
+		).Update(review_db.Profile.IsActive.Set(true)).Exec(ctx)
+		if err != nil {
+			log.Printf("exec update profile active status for review id %d: %v", updatedReview.ID, err)
+			return nil, fiber.ErrInternalServerError
+		}
+	}
+
 	return updatedReview, nil
 }
 

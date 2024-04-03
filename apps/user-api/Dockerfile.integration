@@ -1,0 +1,20 @@
+FROM node:alpine
+
+WORKDIR /app
+
+COPY package.json .
+
+RUN npm i -g pnpm && pnpm i 
+
+COPY . .
+
+ARG DATABASE_URL
+ARG PRISMA_PROVIDER
+ARG PRISMA_OUTPUT
+
+ENV DATABASE_URL $DATABASE_URL
+ENV PRISMA_PROVIDER $PRISMA_PROVIDER
+ENV PRISMA_OUTPUT $PRISMA_OUTPUT
+ENV JWT_SECRET "jwt-test"
+
+CMD pnpm prisma db push && pnpm run integration:jest
