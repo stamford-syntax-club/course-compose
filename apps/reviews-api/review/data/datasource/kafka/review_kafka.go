@@ -44,11 +44,14 @@ func NewReviewKafka(topic string, brokerURL string) (*ReviewKafka, error) {
 	}
 
 	if exist := topicExist(conn, topic); !exist {
-		conn.CreateTopics(kafka.TopicConfig{
+		err := conn.CreateTopics(kafka.TopicConfig{
 			Topic:             topic,
 			NumPartitions:     1,
 			ReplicationFactor: 1,
 		})
+		if err != nil {
+			return nil, err
+		}
 	}
 
 	reader := kafka.NewReader(kafka.ReaderConfig{
