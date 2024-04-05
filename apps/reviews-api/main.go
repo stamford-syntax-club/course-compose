@@ -31,7 +31,8 @@ func main() {
 	}
 	defer reviewDB.Prisma.Disconnect()
 
-	reviewKafka, err := review_kafka.NewReviewProducer("Woohoo", "MrChinathai", "localhost:9092")
+	// TODO: ENV FILE!!! 
+	reviewKafka, err := review_kafka.NewReviewProducer("course-compose", "review.producer", "localhost:9092")
 	if err != nil {
 		log.Fatalf("create review producer: %v", err)
 	}
