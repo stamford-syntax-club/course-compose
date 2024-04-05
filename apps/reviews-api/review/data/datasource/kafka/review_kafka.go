@@ -29,12 +29,12 @@ func topicExist(conn *kafka.Conn, topic string) bool {
 	return false
 }
 
-type ReviewProducer struct {
-	producer *kafka.Conn
-	reader   *kafka.Reader
+type ReviewKafka struct {
+	producer *kafka.Conn   // produce message
+	reporter *kafka.Reader // prove that message has been sent to topic successfully
 }
 
-func NewReviewProducer(topic string, brokerURL string) (*ReviewProducer, error) {
+func NewReviewKafka(topic string, brokerURL string) (*ReviewKafka, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), 2*time.Second)
 	defer cancel()
 
@@ -58,10 +58,10 @@ func NewReviewProducer(topic string, brokerURL string) (*ReviewProducer, error) 
 		MaxBytes: 10e6, // 10MB
 	})
 
-	return &ReviewProducer{producer: conn, reader: reader}, nil
+	return &ReviewKafka{producer: conn, reporter: reader}, nil
 }
 
-func (r *ReviewProducer) Produce(review dto.ReviewDTO) error {
+func (r *ReviewKafka) Produce(review dto.ReviewDTO) error {
 	data, err := json.Marshal(review)
 	if err != nil {
 		log.Printf("could not marshal review: %+v\n because of %v", review, err)
@@ -78,7 +78,7 @@ func (r *ReviewProducer) Produce(review dto.ReviewDTO) error {
 	return nil
 }
 
-func (r *ReviewProducer) ReportDeliveryStatus() {
+func (r *ReviewKafka) ReportDeliveryStatus() {
 	c := make(chan os.Signal, 1)
 	signal.Notify(c, os.Interrupt)
 
@@ -89,12 +89,12 @@ func (r *ReviewProducer) ReportDeliveryStatus() {
 			if err := r.producer.Close(); err != nil {
 				log.Fatalln("failed to close kafka producer: ", err)
 			}
-			if err := r.reader.Close(); err != nil {
+			if err := r.reporter.Close(); err != nil {
 				log.Fatalln("failed to close kafka reader: ", err)
 			}
 			return
 		default:
-			message, err := r.reader.ReadMessage(context.Background())
+			message, err := r.reporter.ReadMessage(context.Background())
 			if err != nil {
 				log.Println("failed to get message: ", err)
 			}

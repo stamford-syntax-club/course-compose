@@ -14,10 +14,10 @@ import (
 
 type reviewRepositoryImpl struct {
 	reviewDB    *db.PrismaClient
-	reviewKafka *kafka.ReviewProducer
+	reviewKafka *kafka.ReviewKafka
 }
 
-func NewReviewRepositoryImpl(db *db.PrismaClient, reviewProducer *kafka.ReviewProducer) *reviewRepositoryImpl {
+func NewReviewRepositoryImpl(db *db.PrismaClient, reviewProducer *kafka.ReviewKafka) *reviewRepositoryImpl {
 	return &reviewRepositoryImpl{
 		reviewDB:    db,
 		reviewKafka: reviewProducer,

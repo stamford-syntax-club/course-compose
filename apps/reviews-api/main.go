@@ -36,7 +36,7 @@ func main() {
 	}()
 
 	// TODO: ENV FILE!!!
-	reviewKafka, err := review_kafka.NewReviewProducer("course-compose", "localhost:9092")
+	reviewKafka, err := review_kafka.NewReviewKafka("course-compose", "localhost:9092")
 	if err != nil {
 		log.Fatalf("create review producer: %v", err)
 	}
