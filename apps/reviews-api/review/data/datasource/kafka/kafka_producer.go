@@ -1,54 +1,64 @@
 package kafka
 
 import (
+	"context"
 	"encoding/json"
 	"log"
 	"os"
 	"os/signal"
+	"time"
 
-	"github.com/confluentinc/confluent-kafka-go/v2/kafka"
 	"github.com/gofiber/fiber/v2"
+	"github.com/segmentio/kafka-go"
 	"github.com/stamford-syntax-club/course-compose/reviews/review/domain/dto"
 )
 
-type ReviewProducer struct {
-	Producer       *kafka.Producer
-	TopicPartition kafka.TopicPartition
-	DeliveryCh     chan kafka.Event
-}
+func topicExist(conn *kafka.Conn, topic string) bool {
+	partitions, err := conn.ReadPartitions()
+	if err != nil {
+		log.Fatalf("read kafka partitions: %v", err)
+		return false
+	}
 
-func formatBrokerServers(brokersURL ...string) (brokers string) {
-	for i, url := range brokersURL {
-		brokers += url
-		if i < len(brokersURL)-1 {
-			brokers += ","
+	for _, p := range partitions {
+		if p.Topic == topic {
+			return true
 		}
 	}
-	return
+
+	return false
 }
 
-func NewReviewProducer(topic, clientID string, brokersURL ...string) (*ReviewProducer, error) {
-	brokers := formatBrokerServers(brokersURL...)
-	p, err := kafka.NewProducer(&kafka.ConfigMap{
-		"bootstrap.servers": brokers,
-		"client.id":         clientID,
-		"acks":              "all", // consider the msg as sent when all replicas have acknowledged the msg
-	})
+type ReviewProducer struct {
+	producer *kafka.Conn
+	reader   *kafka.Reader
+}
+
+func NewReviewProducer(topic string, brokerURL string) (*ReviewProducer, error) {
+	ctx, cancel := context.WithTimeout(context.Background(), 2*time.Second)
+	defer cancel()
+
+	conn, err := kafka.DialLeader(ctx, "tcp", brokerURL, topic, 0)
 	if err != nil {
 		return nil, err
 	}
 
-	tp := kafka.TopicPartition{
-		Topic: &topic,
+	if exist := topicExist(conn, topic); !exist {
+		conn.CreateTopics(kafka.TopicConfig{
+			Topic:             topic,
+			NumPartitions:     1,
+			ReplicationFactor: 1,
+		})
 	}
 
-	deliveryCh := make(chan kafka.Event, 10000)
+	reader := kafka.NewReader(kafka.ReaderConfig{
+		Brokers:  []string{brokerURL},
+		GroupID:  "review-reader",
+		Topic:    topic,
+		MaxBytes: 10e6, // 10MB
+	})
 
-	return &ReviewProducer{
-		Producer:       p,
-		TopicPartition: tp,
-		DeliveryCh:     deliveryCh,
-	}, nil
+	return &ReviewProducer{producer: conn, reader: reader}, nil
 }
 
 func (r *ReviewProducer) Produce(review dto.ReviewDTO) error {
@@ -58,40 +68,39 @@ func (r *ReviewProducer) Produce(review dto.ReviewDTO) error {
 		return fiber.ErrInternalServerError
 	}
 
-	err = r.Producer.Produce(&kafka.Message{
-		TopicPartition: r.TopicPartition, Value: data}, r.DeliveryCh)
+	_, err = r.producer.WriteMessages([]kafka.Message{{Value: data}}...)
 	if err != nil {
-		log.Printf("could not produce review: %+v\n because of %v", review, err)
+		log.Printf("could not write review %+v\n to kafka because of %v", review, err)
 		return fiber.ErrInternalServerError
 	}
 
+	log.Println("successfully produce to kafka")
 	return nil
 }
 
 func (r *ReviewProducer) ReportDeliveryStatus() {
 	c := make(chan os.Signal, 1)
 	signal.Notify(c, os.Interrupt)
+
 	for {
 		select {
 		case <-c:
 			log.Println("Stopping Kafka delivery report channel...")
-			close(r.DeliveryCh)
+			if err := r.producer.Close(); err != nil {
+				log.Fatalln("failed to close kafka producer: ", err)
+			}
+			if err := r.reader.Close(); err != nil {
+				log.Fatalln("failed to close kafka reader: ", err)
+			}
 			return
-		case e, ok := <-r.DeliveryCh:
-			if !ok {
-				return
+		default:
+			message, err := r.reader.ReadMessage(context.Background())
+			if err != nil {
+				log.Println("failed to get message: ", err)
 			}
-
-			switch ev := e.(type) {
-			case *kafka.Message:
-				if ev.TopicPartition.Error != nil {
-					log.Println("Failed to deliver message: ", ev.TopicPartition)
-					continue
-				}
-				log.Printf("Successfully produced record to topic %s partition [%d] @ offset %v\n",
-					*ev.TopicPartition.Topic, ev.TopicPartition.Partition, ev.TopicPartition.Offset)
-				log.Println("Value is: ", string(ev.Value))
-			}
+			log.Printf("Successfully produced record to topic %s partition [%d] @ offset %v\n",
+				message.Topic, message.Partition, message.Offset)
+			log.Println("Value is: ", string(message.Value))
 		}
 	}
 }

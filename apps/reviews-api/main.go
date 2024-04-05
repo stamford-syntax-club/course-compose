@@ -29,14 +29,17 @@ func main() {
 	if err := reviewDB.Prisma.Connect(); err != nil {
 		log.Fatalln("Prisma connect: ", err)
 	}
-	defer reviewDB.Prisma.Disconnect()
+	defer func() {
+		if err := reviewDB.Prisma.Disconnect(); err != nil {
+			log.Fatalln("failed to close postgres connection: ", err)
+		}
+	}()
 
-	// TODO: ENV FILE!!! 
-	reviewKafka, err := review_kafka.NewReviewProducer("course-compose", "review.producer", "localhost:9092")
+	// TODO: ENV FILE!!!
+	reviewKafka, err := review_kafka.NewReviewProducer("course-compose", "localhost:9092")
 	if err != nil {
 		log.Fatalf("create review producer: %v", err)
 	}
-
 	go reviewKafka.ReportDeliveryStatus()
 
 	reviewRepo := review_repo_impl.NewReviewRepositoryImpl(reviewDB, reviewKafka)
