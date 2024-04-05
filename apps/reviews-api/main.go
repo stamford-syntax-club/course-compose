@@ -49,11 +49,3 @@ func main() {
 		log.Fatalf("fiber router: %v", err)
 	}
 }
-
-//
-//	token, err := utils.GenerateNewAccessToken("8a7b3c2e-3e5f-4f1a-a8b7-3c2e1a4f5b6d", "khing@students.stamford.edu", time.Now().Add(time.Hour).Unix())
-//	if err != nil {
-//		log.Fatalf("generate new access token: %v", err)
-//	}
-//	log.Println(token)
-//

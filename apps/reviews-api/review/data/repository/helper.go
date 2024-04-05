@@ -2,19 +2,14 @@ package repository_impl
 
 import (
 	"context"
-	"encoding/json"
 	"errors"
 	"fmt"
 	"log"
 	"net/http"
 	"strconv"
-	"sync"
-	"time"
 
-	"github.com/confluentinc/confluent-kafka-go/kafka"
 	"github.com/gofiber/fiber/v2"
 	"github.com/stamford-syntax-club/course-compose/reviews/review/data/datasource/db"
-	"golang.org/x/sync/errgroup"
 )
 
 const (
@@ -110,76 +105,16 @@ func getMyReview(ctx context.Context, client *db.PrismaClient, userID string, co
 // check if user has already written a review for this course
 // returns nil if user has not written a review for this course
 // returns error if user has written a review for this course OR there is some problem with the database
-func hasExistingReview(ctx context.Context, prisma *db.PrismaClient, tp kafka.TopicPartition, courseID int, userID string) error {
-	var (
-		review *db.ReviewModel
-		mutex  sync.Mutex
-		errg   = new(errgroup.Group)
-	)
-
-	errg.Go(func() error {
-		mutex.Lock()
-		defer mutex.Unlock()
-
-		result, err := prisma.Review.FindFirst(
-			db.Review.CourseID.Equals(courseID),
-			db.Review.UserID.Equals(userID),
-		).Exec(ctx)
-		if err != nil && !errors.Is(err, db.ErrNotFound) {
-			return errors.New(fmt.Sprintf("get review from db: %v", err))
+func hasExistingReview(ctx context.Context, prisma *db.PrismaClient, courseID int, userID string) error {
+	review, err := prisma.Review.FindFirst(
+		db.Review.CourseID.Equals(courseID),
+		db.Review.UserID.Equals(userID),
+	).Exec(ctx)
+	if err != nil {
+		if errors.Is(err, db.ErrNotFound) { // user has not written a review for this course
+			return nil
 		}
-
-		if result != nil {
-			review = result
-		}
-
-		return nil
-	})
-
-	errg.Go(func() error {
-		mutex.Lock()
-		defer mutex.Unlock()
-
-		consumer, err := kafka.NewConsumer(&kafka.ConfigMap{
-			"bootstrap.servers": "localhost:9092",
-			"group.id":          "glloooo",
-			"auto.offset.reset": "earliest",
-		})
-		if err != nil {
-			return errors.New(fmt.Sprintf("create new kafka consumer: %v", err))
-		}
-
-		if err := consumer.Assign([]kafka.TopicPartition{tp}); err != nil {
-			return errors.New(fmt.Sprintf("assign topic partition: %v", err))
-		}
-
-		for {
-			msg, err := consumer.ReadMessage(time.Second * 3)
-			if err != nil {
-				if err.(kafka.Error).Code() == kafka.ErrTimedOut {
-					log.Println("Time out waiting for new event")
-				} else {
-					return errors.New(fmt.Sprintf("read kafka message: %v", err))
-				}
-				break
-			}
-
-			var message db.ReviewModel
-			if err := json.Unmarshal(msg.Value, &message); err != nil {
-				return errors.New(fmt.Sprintf("unmarshal review message: %v", err))
-			}
-
-			if message.UserID == userID {
-				review = &message
-				break
-			}
-		}
-
-		return nil
-	})
-
-	if err := errg.Wait(); err != nil {
-		log.Println(err)
+		log.Println("exec find existing review query: ", err)
 		return fiber.ErrInternalServerError
 	}
 

@@ -6,10 +6,9 @@ import (
 	"os"
 	"os/signal"
 
-	"github.com/confluentinc/confluent-kafka-go/kafka"
+	"github.com/confluentinc/confluent-kafka-go/v2/kafka"
 	"github.com/gofiber/fiber/v2"
-	"github.com/stamford-syntax-club/course-compose/reviews/common/utils"
-	"github.com/stamford-syntax-club/course-compose/reviews/review/data/datasource/db"
+	"github.com/stamford-syntax-club/course-compose/reviews/review/domain/dto"
 )
 
 type ReviewProducer struct {
@@ -18,8 +17,18 @@ type ReviewProducer struct {
 	DeliveryCh     chan kafka.Event
 }
 
+func formatBrokerServers(brokersURL ...string) (brokers string) {
+	for i, url := range brokersURL {
+		brokers += url
+		if i < len(brokersURL)-1 {
+			brokers += ","
+		}
+	}
+	return
+}
+
 func NewReviewProducer(topic, clientID string, brokersURL ...string) (*ReviewProducer, error) {
-	brokers := utils.FormatBrokerServers(brokersURL...)
+	brokers := formatBrokerServers(brokersURL...)
 	p, err := kafka.NewProducer(&kafka.ConfigMap{
 		"bootstrap.servers": brokers,
 		"client.id":         clientID,
@@ -42,17 +51,17 @@ func NewReviewProducer(topic, clientID string, brokersURL ...string) (*ReviewPro
 	}, nil
 }
 
-func (r *ReviewProducer) Produce(review *db.ReviewModel) error {
+func (r *ReviewProducer) Produce(review dto.ReviewDTO) error {
 	data, err := json.Marshal(review)
 	if err != nil {
-		log.Println("could not marshal review: ", err)
+		log.Printf("could not marshal review: %+v\n because of %v", review, err)
 		return fiber.ErrInternalServerError
 	}
 
 	err = r.Producer.Produce(&kafka.Message{
 		TopicPartition: r.TopicPartition, Value: data}, r.DeliveryCh)
 	if err != nil {
-		log.Println("could not produce review: ", err)
+		log.Printf("could not produce review: %+v\n because of %v", review, err)
 		return fiber.ErrInternalServerError
 	}
 

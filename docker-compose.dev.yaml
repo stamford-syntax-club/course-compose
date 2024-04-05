@@ -42,7 +42,7 @@ services:
     zookeeper:
         image: confluentinc/cp-zookeeper
         restart: unless-stopped
-        container_name: zookeeper
+        container_name: kafka_zookeeper
         ports:
             - "2181:2181"
         environment:
@@ -54,7 +54,7 @@ services:
     broker: # broker = server running kafka instance
         image: confluentinc/cp-kafka
         restart: unless-stopped
-        container_name: broker
+        container_name: kafka_broker
         ports:
             - "9092:9092"
         depends_on:

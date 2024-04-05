@@ -21,6 +21,7 @@ type ReviewDTO struct {
 	Course         CourseDTO `json:"course"`
 	Profile        UserDTO   `json:"profile"`
 	CreatedAt      time.Time `json:"created_at"`
+	Action         string    `json:"action,omitempty"`
 }
 
 type UserDTO struct {

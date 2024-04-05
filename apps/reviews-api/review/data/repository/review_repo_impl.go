@@ -7,23 +7,24 @@ import (
 
 	"github.com/gofiber/fiber/v2"
 	"github.com/stamford-syntax-club/course-compose/reviews/common/utils"
-	review_DB "github.com/stamford-syntax-club/course-compose/reviews/review/data/datasource/db"
-	review_kafka "github.com/stamford-syntax-club/course-compose/reviews/review/data/datasource/kafka"
+	"github.com/stamford-syntax-club/course-compose/reviews/review/data/datasource/db"
+	"github.com/stamford-syntax-club/course-compose/reviews/review/data/datasource/kafka"
+	"github.com/stamford-syntax-club/course-compose/reviews/review/domain/dto"
 )
 
 type reviewRepositoryImpl struct {
-	reviewDB    *review_DB.PrismaClient
-	reviewKafka *review_kafka.ReviewProducer
+	reviewDB    *db.PrismaClient
+	reviewKafka *kafka.ReviewProducer
 }
 
-func NewReviewRepositoryImpl(db *review_DB.PrismaClient, reviewProducer *review_kafka.ReviewProducer) *reviewRepositoryImpl {
+func NewReviewRepositoryImpl(db *db.PrismaClient, reviewProducer *kafka.ReviewProducer) *reviewRepositoryImpl {
 	return &reviewRepositoryImpl{
 		reviewDB:    db,
 		reviewKafka: reviewProducer,
 	}
 }
 
-func (rr *reviewRepositoryImpl) GetCourseReviews(ctx context.Context, courseCode string, userID string, pageInformation *utils.PageInformation) ([]review_DB.ReviewModel, int, error) {
+func (rr *reviewRepositoryImpl) GetCourseReviews(ctx context.Context, courseCode string, userID string, pageInformation *utils.PageInformation) ([]db.ReviewModel, int, error) {
 	courseID, err := getCourseID(ctx, rr.reviewDB, courseCode)
 	if err != nil {
 		return nil, 0, err
@@ -36,7 +37,7 @@ func (rr *reviewRepositoryImpl) GetCourseReviews(ctx context.Context, courseCode
 	}
 
 	// run getMyReview concurrently with getReviews
-	myReviewChan := make(chan *review_db.ReviewModel)
+	myReviewChan := make(chan *db.ReviewModel)
 	defer close(myReviewChan)
 	go getMyReview(ctx, rr.reviewDB, userID, courseID, pageInformation.Number, myReviewChan)
 
@@ -53,13 +54,13 @@ func (rr *reviewRepositoryImpl) GetCourseReviews(ctx context.Context, courseCode
 	myReview := <-myReviewChan
 	if myReview != nil {
 		// add myReview to the beginning of reviews (performance issue??)
-		rawReviews = append([]review_db.ReviewModel{*myReview}, rawReviews...)
+		rawReviews = append([]db.ReviewModel{*myReview}, rawReviews...)
 	}
 
 	return rawReviews, <-reviewsCountCh, nil
 }
 
-func (r *reviewRepositoryImpl) SubmitReview(ctx context.Context, review *review_db.ReviewModel, courseCode, userID string) (*review_db.ReviewModel, error) {
+func (r *reviewRepositoryImpl) SubmitReview(ctx context.Context, review *db.ReviewModel, courseCode, userID string) (*db.ReviewModel, error) {
 	courseID, err := getCourseID(ctx, r.reviewDB, courseCode)
 	if err != nil {
 		return nil, err
@@ -69,32 +70,42 @@ func (r *reviewRepositoryImpl) SubmitReview(ctx context.Context, review *review_
 		return nil, err
 	}
 
-	if err := r.reviewKafka.Produce(review); err != nil {
-		return err
-	}
-
 	if err := hasExistingReview(ctx, r.reviewDB, courseID, userID); err != nil {
 		return nil, err
 	}
 
 	result, err := r.reviewDB.Review.CreateOne(
-		review_db.Review.AcademicYear.Set(review.AcademicYear),
-		review_db.Review.Description.Set(review.Description),
-		review_db.Review.Rating.Set(review.Rating),
-		review_db.Review.Votes.Set(0),
-		review_db.Review.Status.Set("PENDING"),
-		review_db.Review.Course.Link(review_db.Course.ID.Equals(courseID)),
-		review_db.Review.Profile.Link(review_db.Profile.ID.Equals(userID)),
+		db.Review.AcademicYear.Set(review.AcademicYear),
+		db.Review.Description.Set(review.Description),
+		db.Review.Rating.Set(review.Rating),
+		db.Review.Votes.Set(0),
+		db.Review.Status.Set("PENDING"),
+		db.Review.Course.Link(db.Course.ID.Equals(courseID)),
+		db.Review.Profile.Link(db.Profile.ID.Equals(userID)),
 	).Exec(ctx)
 	if err != nil {
 		log.Println("exec create pending review: ", err)
 		return nil, fiber.ErrInternalServerError
 	}
 
+	msg := dto.ReviewDTO{
+		ID:           result.ID,
+		Rating:       result.Rating,
+		AcademicYear: result.AcademicYear,
+		Description:  result.Description,
+		Course: dto.CourseDTO{
+			Code: courseCode,
+		},
+		Action: "submit",
+	}
+	if err := r.reviewKafka.Produce(msg); err != nil {
+		return nil, err
+	}
+
 	return result, nil
 }
 
-func (r *reviewRepositoryImpl) EditReview(ctx context.Context, review *review_db.ReviewModel, courseCode, userID string) (*review_db.ReviewModel, error) {
+func (r *reviewRepositoryImpl) EditReview(ctx context.Context, review *db.ReviewModel, courseCode, userID string) (*db.ReviewModel, error) {
 	courseID, err := getCourseID(ctx, r.reviewDB, courseCode)
 	if err != nil {
 		return nil, err
@@ -109,16 +120,30 @@ func (r *reviewRepositoryImpl) EditReview(ctx context.Context, review *review_db
 	}
 
 	result, err := r.reviewDB.Review.FindUnique(
-		review_db.Review.ID.Equals(review.ID),
+		db.Review.ID.Equals(review.ID),
 	).Update(
-		review_db.Review.AcademicYear.SetIfPresent(&review.AcademicYear),
-		review_db.Review.Description.SetIfPresent(&review.Description),
-		review_db.Review.Rating.SetIfPresent(&review.Rating),
-		review_db.Review.Status.Set("PENDING"), // edited review must be evaluated again
+		db.Review.AcademicYear.SetIfPresent(&review.AcademicYear),
+		db.Review.Description.SetIfPresent(&review.Description),
+		db.Review.Rating.SetIfPresent(&review.Rating),
+		db.Review.Status.Set("PENDING"), // edited review must be evaluated again
 	).Exec(ctx)
 	if err != nil {
 		log.Println("exec updating review: ", err)
 		return nil, fiber.ErrInternalServerError
+	}
+
+	msg := dto.ReviewDTO{
+		ID:           result.ID,
+		Rating:       result.Rating,
+		AcademicYear: result.AcademicYear,
+		Description:  result.Description,
+		Course: dto.CourseDTO{
+			Code: courseCode,
+		},
+		Action: "edit",
+	}
+	if err := r.reviewKafka.Produce(msg); err != nil {
+		return nil, err
 	}
 
 	return result, nil
@@ -135,25 +160,38 @@ func (r *reviewRepositoryImpl) DeleteReview(ctx context.Context, reviewId int, c
 	}
 
 	deletedReview, err := r.reviewDB.Review.FindUnique(
-		review_db.Review.ID.Equals(reviewId),
+		db.Review.ID.Equals(reviewId),
 	).Delete().Exec(ctx)
 	if err != nil {
 		log.Println("exec delete review: ", err)
 		return fiber.ErrInternalServerError
 	}
 
-	log.Printf("Deleted review %+v\n", deletedReview)
+	msg := dto.ReviewDTO{
+		ID: reviewId,
+		Course: dto.CourseDTO{
+			Code: courseCode,
+		},
+		Action: "delete",
+	}
+	if err := r.reviewKafka.Produce(msg); err != nil {
+		return err
+	}
 
-func (r *reviewRepositoryImpl) UpdateReviewStatus(ctx context.Context, reviewDecision *dto.ReviewDecisionDTO) (*review_db.ReviewModel, error) {
+	log.Printf("Deleted review %+v\n", deletedReview)
+	return nil
+}
+
+func (r *reviewRepositoryImpl) UpdateReviewStatus(ctx context.Context, reviewDecision *dto.ReviewDecisionDTO) (*db.ReviewModel, error) {
 	updatedReview, err := r.reviewDB.Review.FindUnique(
-		review_db.Review.ID.Equals(reviewDecision.ID),
+		db.Review.ID.Equals(reviewDecision.ID),
 	).Update(
-		review_db.Review.Status.Set(reviewDecision.Status),
-		review_db.Review.RejectedReason.Set(reviewDecision.RejectedReason),
+		db.Review.Status.Set(reviewDecision.Status),
+		db.Review.RejectedReason.Set(reviewDecision.RejectedReason),
 	).Exec(ctx)
 
 	if err != nil {
-		if errors.Is(err, review_db.ErrNotFound) {
+		if errors.Is(err, db.ErrNotFound) {
 			return nil, fiber.ErrNotFound
 		}
 		log.Println("exec update review status:", err)
@@ -181,7 +219,7 @@ func (r *reviewRepositoryImpl) GetAllMyReviews(ctx context.Context, userID strin
 		db.Review.Profile.Fetch(),
 	).OrderBy(db.Review.Status.Order(db.SortOrderAsc)).Exec(ctx)
 	if err != nil {
-		if !errors.Is(err, review_db.ErrNotFound) {
+		if !errors.Is(err, db.ErrNotFound) {
 			log.Println("exec find my reviews query: ", err)
 		}
 
