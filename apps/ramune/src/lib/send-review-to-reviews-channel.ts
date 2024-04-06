@@ -1,12 +1,7 @@
 import { container } from "@sapphire/framework";
 import { ActionRowBuilder, ButtonBuilder, ButtonStyle, EmbedBuilder, roleMention } from "discord.js";
-
-interface ReviewType {
-	reviewId: string;
-	courseCode: string;
-	rating: number;
-	reviewDescription: string;
-}
+import { addReviewToCache } from "./review-utils";
+import { ReviewType } from "./types/ReviewType";
 
 export async function sendReviewToReviewsChannel(review: ReviewType) {
 	const reviewsChannel = await container.client.channels.fetch(process.env.REVIEW_CHANNEL_ID!);
@@ -19,12 +14,12 @@ export async function sendReviewToReviewsChannel(review: ReviewType) {
 		container.logger.warn("Reviewer role not found.");
 	}
 
-	const { reviewId, courseCode, rating, reviewDescription } = review;
+	const { reviewId, courseCode, rating, reviewDescription, submittedDate } = review;
 
 	const reviewEmbed = new EmbedBuilder()
 		.setTitle(`Review #${reviewId} (${courseCode}) [${rating}*]`)
 		.setDescription(`\`\`\`md\n${reviewDescription}\n\`\`\``)
-		.setTimestamp(new Date());
+		.setTimestamp(submittedDate);
 
 	const approveReview = new ButtonBuilder()
 		.setCustomId("approve_review_button")
@@ -38,10 +33,14 @@ export async function sendReviewToReviewsChannel(review: ReviewType) {
 
 	const row = new ActionRowBuilder<ButtonBuilder>().addComponents(approveReview, rejectReview);
 
-	reviewsChannel.send({
-		// TODO: add a util function to get role mentions
-		content: `${reviewerRole ? roleMention(reviewerRole.id) + " a" : " A"} new review has been submitted.`,
+	const boundReviewMessage = await reviewsChannel.send({
+		content: reviewerRole ? roleMention(reviewerRole.id) : "@Reviewers", // TODO: XD
 		embeds: [reviewEmbed],
 		components: [row]
+	});
+
+	addReviewToCache(reviewId, {
+		review: review,
+		boundMessage: boundReviewMessage
 	});
 }

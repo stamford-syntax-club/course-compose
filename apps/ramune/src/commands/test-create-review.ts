@@ -28,9 +28,10 @@ export class TestCreateReviewCommand extends Command {
 			reviewId: "123",
 			courseCode: "CSC123",
 			rating: 4.5,
-			reviewDescription: "This is a test review."
+			reviewDescription: "This is a test review.",
+			submittedDate: new Date()
 		});
 
-		await interaction.reply("Test review created:");
+		await interaction.reply({ content: "Sent test review", ephemeral: true });
 	}
 }

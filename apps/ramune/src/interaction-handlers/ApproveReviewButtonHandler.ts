@@ -1,6 +1,11 @@
 import { InteractionHandler, InteractionHandlerTypes, container } from "@sapphire/framework";
 import { type ButtonInteraction } from "discord.js";
-import { getMemberMention } from "../lib/review-utils";
+import {
+	approveReview,
+	deleteReviewFromCache,
+	getMemberMention,
+	getReviewObjectFromMessage
+} from "../lib/review-utils";
 
 export class ApproveReviewButtonHandler extends InteractionHandler {
 	public constructor(ctx: InteractionHandler.LoaderContext, options: InteractionHandler.Options) {
@@ -27,14 +32,38 @@ export class ApproveReviewButtonHandler extends InteractionHandler {
 			return;
 		}
 
-		const reviewId = firstEmbedTitle.split(" ")[1].replace("#", "");
-		const courseCode = firstEmbedTitle.split(" ")[2].replace("(", "").replace(")", "");
+		const { reviewId, courseCode, reviewDescription } = getReviewObjectFromMessage(originalMessage) ?? {};
+
+		if (!originalMessage || !reviewId || !courseCode) {
+			container.logger.error("originalMessage, reviewId or courseCode is missing:", interaction.toJSON());
+
+			await interaction.reply({
+				content: "reviewId or courseCode is missing.",
+				ephemeral: true
+			});
+
+			return;
+		}
+
+		const { err } = await approveReview(reviewId);
+
+		if (err) {
+			await interaction.reply({
+				content: `An error occurred while trying to approve the review: ${err.message}`,
+				ephemeral: true
+			});
+
+			return;
+		}
 
 		let memberMention = getMemberMention(interaction.member);
 
 		await originalMessage.delete();
 		await interaction.reply({
-			content: `Review \`#${reviewId}\` for course \`${courseCode}\` approved by ${memberMention}`
+			content: `Review \`#${reviewId}\` for course \`${courseCode}\` accepted by ${memberMention}\n\nReview Message: ${reviewDescription}`
 		});
+
+		deleteReviewFromCache(reviewId);
+		container.logger.info("Review approved:", reviewId);
 	}
 }
