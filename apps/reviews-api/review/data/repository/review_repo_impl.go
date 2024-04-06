@@ -96,7 +96,8 @@ func (r *reviewRepositoryImpl) SubmitReview(ctx context.Context, review *db.Revi
 		Course: dto.CourseDTO{
 			Code: courseCode,
 		},
-		Action: "submit",
+		CreatedAt: result.CreatedAt,
+		Action:    "submit",
 	}
 	if err := r.reviewKafka.Produce(msg); err != nil {
 		return nil, err
@@ -140,7 +141,8 @@ func (r *reviewRepositoryImpl) EditReview(ctx context.Context, review *db.Review
 		Course: dto.CourseDTO{
 			Code: courseCode,
 		},
-		Action: "edit",
+		CreatedAt: result.CreatedAt,
+		Action:    "edit",
 	}
 	if err := r.reviewKafka.Produce(msg); err != nil {
 		return nil, err
