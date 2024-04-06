@@ -30,8 +30,9 @@ func topicExist(conn *kafka.Conn, topic string) bool {
 }
 
 type ReviewKafka struct {
-	producer *kafka.Conn   // produce message
-	reporter *kafka.Reader // prove that message has been sent to topic successfully
+	brokerURL string
+	topic     string
+	reporter  *kafka.Reader // prove that message has been sent to topic successfully
 }
 
 func NewReviewKafka(topic string, brokerURL string) (*ReviewKafka, error) {
@@ -61,7 +62,7 @@ func NewReviewKafka(topic string, brokerURL string) (*ReviewKafka, error) {
 		MaxBytes: 10e6, // 10MB
 	})
 
-	return &ReviewKafka{producer: conn, reporter: reader}, nil
+	return &ReviewKafka{brokerURL: brokerURL, topic: topic, reporter: reader}, nil
 }
 
 func (r *ReviewKafka) Produce(review dto.ReviewDTO) error {
@@ -71,7 +72,19 @@ func (r *ReviewKafka) Produce(review dto.ReviewDTO) error {
 		return fiber.ErrInternalServerError
 	}
 
-	_, err = r.producer.WriteMessages([]kafka.Message{{Value: data}}...)
+	ctx, cancel := context.WithTimeout(context.Background(), 2*time.Second)
+	conn, err := kafka.DialLeader(ctx, "tcp", r.brokerURL, r.topic, 0)
+	defer func() {
+		cancel()
+		if err := conn.Close(); err != nil {
+			log.Fatalln("failed to close kafka producer: ", err)
+		}
+	}()
+	if err != nil {
+		return err
+	}
+
+	_, err = conn.WriteMessages([]kafka.Message{{Value: data}}...)
 	if err != nil {
 		log.Printf("could not write review %+v\n to kafka because of %v", review, err)
 		return fiber.ErrInternalServerError
@@ -89,9 +102,6 @@ func (r *ReviewKafka) ReportDeliveryStatus() {
 		select {
 		case <-c:
 			log.Println("Stopping Kafka delivery report channel...")
-			if err := r.producer.Close(); err != nil {
-				log.Fatalln("failed to close kafka producer: ", err)
-			}
 			if err := r.reporter.Close(); err != nil {
 				log.Fatalln("failed to close kafka reader: ", err)
 			}
