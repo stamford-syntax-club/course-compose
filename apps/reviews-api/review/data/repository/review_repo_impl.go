@@ -144,6 +144,9 @@ func (r *reviewRepositoryImpl) EditReview(ctx context.Context, review *db.Review
 		CreatedAt: result.CreatedAt,
 		Action:    "edit",
 	}
+	if updatedAt, ok := result.UpdatedAt(); ok {
+		msg.UpdatedAt = updatedAt
+	}
 	if err := r.reviewKafka.Produce(msg); err != nil {
 		return nil, err
 	}
