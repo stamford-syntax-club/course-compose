@@ -1,6 +1,8 @@
 // export default async function fetcher<T>(input: RequestInfo, init?: RequestInit): Promise<T> {
 // 	const response = await fetch(input, init);
 
+import type { ErrorResponse } from "types/errors";
+
 // 	if (!response.ok) {
 // 		throw new Error(`An error occurred while fetching the data: ${response.statusText}, ${await response.text()}`);
 // 	}
@@ -28,7 +30,7 @@ export const convertResponse = async (response: Response) => {
 		// If the response is not OK, return the error
 		// returns response with { data: null, error: {} }
 		if (responseBody.data === null && responseBody.error !== null) {
-			return responseBody as Response;
+			return responseBody as ErrorResponse;
 		}
 
 		// If the response is not OK and the error is not in the expected format, return the response body

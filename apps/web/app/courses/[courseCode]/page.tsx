@@ -76,7 +76,6 @@ export default function CourseReview({ params }: { params: { courseCode: string 
 
 	useEffect(() => {
 		if (sessionData === undefined) {
-			console.log(sessionData.access_token);
 			return; // prevent fetching before the session is retrieved
 		}
 		setIsLoading(true);

@@ -12,10 +12,6 @@ if (!process.env.NEXT_PUBLIC_BACKEND_URL) {
 export const BASE_API_ENDPOINT = process.env.NEXT_PUBLIC_BACKEND_URL;
 export const COURSE_API_ENDPOINT = `${BASE_API_ENDPOINT}/courses`;
 
-export const APPROVED = "APPROVED";
-export const REJECTED = "REJECTED";
-export const PENDING = "PENDING";
-
-export const SUCCESS = "#22bb33";
-export const ERROR = "#bb2124";
-export const INFO = "#aaaaaa";
+export const REVIEW_STATUS_APPROVED = "APPROVED";
+export const REVIEW_STATUS_REJECTED = "REJECTED";
+export const REVIEW_STATUS_PENDING = "PENDING";

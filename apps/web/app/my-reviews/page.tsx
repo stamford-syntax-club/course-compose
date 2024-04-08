@@ -4,19 +4,22 @@ import { MyReviewCard } from "@components/ui/cards/my-review-card";
 import SessionModal from "@components/ui/session-modal";
 import { Accordion, Badge, Center, Grid, Loader, Paper, Stack, Text } from "@mantine/core";
 import { useDisclosure } from "@mantine/hooks";
-import { APPROVED, BASE_API_ENDPOINT, ERROR, INFO, PENDING, REJECTED, SUCCESS } from "@utils/constants";
+import {
+	BASE_API_ENDPOINT,
+	REVIEW_STATUS_APPROVED,
+	REVIEW_STATUS_PENDING,
+	REVIEW_STATUS_REJECTED
+} from "@utils/constants";
 import fetcher from "@utils/fetcher";
 import { useAuth } from "hooks/use-auth";
 import { useEffect, useState } from "react";
 import type { AccordionItems, MyReviewsData } from "types";
 import type { Session } from "@supabase/supabase-js";
 
-const initialEmptyPosts: MyReviewsData[] = [];
-
 export default function MyReviews(): JSX.Element {
 	const [sessionData, setSessionData] = useState<Session | null>();
 	const [isLoading, setIsLoading] = useState<boolean>(true);
-	const [myReviewsData, setMyReviewsData] = useState<MyReviewsData[] | null>([]);
+	const [myReviewsData, setMyReviewsData] = useState<MyReviewsData[] | []>([]);
 
 	const { getSession } = useAuth();
 	const [opened, { open: openSessionModal, close: closeSessionModal }] = useDisclosure(false);
@@ -61,31 +64,21 @@ export default function MyReviews(): JSX.Element {
 		fetchMyReviews().catch(console.error);
 	}, [sessionData]);
 
-	const approvedPosts: MyReviewsData[] = myReviewsData
-		? myReviewsData.filter((item) => item.status === APPROVED)
-		: initialEmptyPosts;
-	const pendingPosts: MyReviewsData[] = myReviewsData
-		? myReviewsData.filter((item) => item.status === PENDING)
-		: initialEmptyPosts;
-	const rejectedPosts: MyReviewsData[] = myReviewsData
-		? myReviewsData.filter((item) => item.status === REJECTED)
-		: initialEmptyPosts;
-
 	const filteredCourseCards: AccordionItems[] = [
 		{
-			value: APPROVED,
-			posts: approvedPosts.length !== 0 ? approvedPosts : [],
-			severity: SUCCESS
+			value: REVIEW_STATUS_APPROVED,
+			posts: myReviewsData.filter((item) => item.status === REVIEW_STATUS_APPROVED),
+			severity: "green"
 		},
 		{
-			value: PENDING,
-			posts: pendingPosts.length !== 0 ? pendingPosts : [],
-			severity: INFO
+			value: REVIEW_STATUS_PENDING,
+			posts: myReviewsData.filter((item) => item.status === REVIEW_STATUS_PENDING),
+			severity: "gray"
 		},
 		{
-			value: REJECTED,
-			posts: rejectedPosts.length !== 0 ? rejectedPosts : [],
-			severity: ERROR
+			value: REVIEW_STATUS_REJECTED,
+			posts: myReviewsData.filter((item) => item.status === REVIEW_STATUS_REJECTED),
+			severity: "red"
 		}
 	];
 
@@ -132,7 +125,11 @@ export default function MyReviews(): JSX.Element {
 					</Center>
 				) : null}
 
-				<Accordion multiple radius="xs" defaultValue={[APPROVED, PENDING, REJECTED]}>
+				<Accordion
+					multiple
+					radius="xs"
+					defaultValue={[REVIEW_STATUS_APPROVED, REVIEW_STATUS_PENDING, REVIEW_STATUS_REJECTED]}
+				>
 					{items}
 				</Accordion>
 			</Grid.Col>
