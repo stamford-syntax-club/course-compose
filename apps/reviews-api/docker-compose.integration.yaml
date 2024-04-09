@@ -21,6 +21,33 @@ services:
         networks:
             - reviews-test
 
+    zookeeper-integration:
+        image: confluentinc/cp-zookeeper
+        restart: unless-stopped
+        container_name: kafka_zookeeper_integration
+        environment:
+            ZOOKEEPER_CLIENT_PORT: 2181
+            ZOOKEEPER_TICK_TIME: 2000
+        networks:
+            - reviews-test
+
+    broker-integration:
+        image: confluentinc/cp-kafka
+        restart: unless-stopped
+        container_name: kafka_broker_integration
+        depends_on:
+            - zookeeper-integration
+        environment:
+            KAFKA_BROKER_ID: 1
+            KAFKA_ZOOKEEPER_CONNECT: "zookeeper-integration:2181"
+            KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT, PLAINTEXT_INTERNAL:PLAINTEXT
+            KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://broker-integration:9092,PLAINTEXT_INTERNAL://broker-integration:29092
+            KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+            KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 1
+            KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 1
+        networks:
+            - reviews-test
+
     integration-test:
         build:
             context: ../../
@@ -32,5 +59,6 @@ services:
             - JWT_SECRET=test-jwt-token
         depends_on:
             - postgres-integration
+            - broker-integration
         networks:
             - reviews-test

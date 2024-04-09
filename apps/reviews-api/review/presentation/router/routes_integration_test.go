@@ -20,16 +20,24 @@ import (
 	"github.com/stamford-syntax-club/course-compose/reviews/common/presentation/router"
 	"github.com/stamford-syntax-club/course-compose/reviews/common/utils"
 	"github.com/stamford-syntax-club/course-compose/reviews/review/data/datasource/db"
+	review_kafka "github.com/stamford-syntax-club/course-compose/reviews/review/data/datasource/kafka"
 	repository_impl "github.com/stamford-syntax-club/course-compose/reviews/review/data/repository"
 	review_controller "github.com/stamford-syntax-club/course-compose/reviews/review/domain/controller"
 	"github.com/stretchr/testify/assert"
 )
 
 func setupTestRouter() (*fiber.App, *db.PrismaClient) {
-	client := db.NewClient()
-	client.Prisma.Connect()
+	prismaClient := db.NewClient()
+	if err := prismaClient.Prisma.Connect(); err != nil {
+		log.Fatalf("could not initialize prisma client: %v", err)
+	}
 
-	reviewRepo := repository_impl.NewReviewRepositoryImpl(client)
+	kafkaClient, err := review_kafka.NewReviewKafka("compose_integration", "broker-integration:9092")
+	if err != nil {
+		log.Fatalf("could not initialize kafka client: %v", err)
+	}
+
+	reviewRepo := repository_impl.NewReviewRepositoryImpl(prismaClient, kafkaClient)
 	reviewController := review_controller.NewReviewController(reviewRepo)
 
 	router := router.NewFiberRouter()
@@ -37,7 +45,7 @@ func setupTestRouter() (*fiber.App, *db.PrismaClient) {
 
 	reviewRouter.RegisterRoutes()
 
-	return router.App, client
+	return router.App, prismaClient
 }
 
 func TestPrivateRoutes(t *testing.T) {
@@ -213,7 +221,7 @@ func TestAdminRoutes(t *testing.T) {
 				respBody, _ := io.ReadAll(resp.Body)
 				defer resp.Body.Close()
 
-                log.Println(string(respBody))
+				log.Println(string(respBody))
 				assert.NoError(t, err)
 				assert.Equal(t, test.expectedResponseCode, resp.StatusCode)
 				if test.expectedResponseCode == http.StatusOK {

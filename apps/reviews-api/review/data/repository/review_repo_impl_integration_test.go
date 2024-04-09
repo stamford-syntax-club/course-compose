@@ -10,6 +10,7 @@ import (
 
 	"github.com/stamford-syntax-club/course-compose/reviews/common/utils"
 	"github.com/stamford-syntax-club/course-compose/reviews/review/data/datasource/db"
+	"github.com/stamford-syntax-club/course-compose/reviews/review/data/datasource/kafka"
 	"github.com/stamford-syntax-club/course-compose/reviews/review/domain/dto"
 	"github.com/stretchr/testify/suite"
 )
@@ -18,27 +19,33 @@ type ReviewRepoTestSuite struct {
 	ctx       context.Context
 	ctxCancel context.CancelFunc
 	suite.Suite
-	client *db.PrismaClient
+	prismaClient *db.PrismaClient
+	kafkaClient  *kafka.ReviewKafka
 }
 
 func (suite *ReviewRepoTestSuite) SetupSuite() {
-	suite.client = db.NewClient()
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	suite.prismaClient = db.NewClient()
+	err := suite.prismaClient.Prisma.Connect()
+	suite.NoError(err)
+
+	reviewKafka, err := kafka.NewReviewKafka("compose_integration", "broker-integration:9092")	
+    suite.NoError(err)
+	suite.kafkaClient = reviewKafka
+
 	suite.ctx = ctx
 	suite.ctxCancel = cancel
-	err := suite.client.Prisma.Connect()
-	suite.NoError(err)
-	seedReviewData(suite.client)
+	seedReviewData(suite.prismaClient)
 }
 
 func (suite *ReviewRepoTestSuite) TearDownSuite() {
-	err := suite.client.Prisma.Disconnect()
+	err := suite.prismaClient.Prisma.Disconnect()
 	suite.NoError(err)
 	suite.ctxCancel()
 }
 
 func (suite *ReviewRepoTestSuite) TestGetCourseReview() {
-	repo := NewReviewRepositoryImpl(suite.client)
+	repo := NewReviewRepositoryImpl(suite.prismaClient, suite.kafkaClient)
 
 	const (
 		activeUserID    = "8a7b3c2e-3e5f-4f1a-a8b7-3c2e1a4f5b6d"
@@ -170,7 +177,7 @@ func (suite *ReviewRepoTestSuite) TestGetCourseReview() {
 }
 
 func (suite *ReviewRepoTestSuite) TestEditReview() {
-	repo := NewReviewRepositoryImpl(suite.client)
+	repo := NewReviewRepositoryImpl(suite.prismaClient, suite.kafkaClient)
 
 	const (
 		validCourseCode   = "MATH201"
@@ -192,7 +199,7 @@ func (suite *ReviewRepoTestSuite) TestEditReview() {
 					userId:       "2d1f3c4e-5a6b-7c8d-9e0f-1a2b3c4d5e6f",
 				},
 	*/
-	targetReview, err := suite.client.Review.FindFirst(db.Review.CourseID.Equals(2), db.Review.UserID.Equals(ownerID)).Exec(suite.ctx)
+	targetReview, err := suite.prismaClient.Review.FindFirst(db.Review.CourseID.Equals(2), db.Review.UserID.Equals(ownerID)).Exec(suite.ctx)
 	suite.NoError(err)
 	newReview := &db.ReviewModel{
 		InnerReview: db.InnerReview{
@@ -252,7 +259,7 @@ func (suite *ReviewRepoTestSuite) TestEditReview() {
 }
 
 func (suite *ReviewRepoTestSuite) TestSubmitReview() {
-	repo := NewReviewRepositoryImpl(suite.client)
+	repo := NewReviewRepositoryImpl(suite.prismaClient, suite.kafkaClient)
 
 	const (
 		validCourseCode   = "MATH201"
@@ -346,10 +353,10 @@ func (suite *ReviewRepoTestSuite) TestSubmitReview() {
 }
 
 func (suite *ReviewRepoTestSuite) TestDeleteReview() {
-	repo := NewReviewRepositoryImpl(suite.client)
+	repo := NewReviewRepositoryImpl(suite.prismaClient, suite.kafkaClient)
 	ownerId := "3f9e87a9-6d27-4a09-8a0a-20e58d609315"
 	nonOwnerId := "d5a59cb2-1f22-4e23-8ef0-7108e54f842b"
-	testReview, err := suite.client.Review.CreateOne(
+	testReview, err := suite.prismaClient.Review.CreateOne(
 		db.Review.AcademicYear.Set(2099),
 		db.Review.Description.Set("To be deleted"),
 		db.Review.Rating.Set(2.0),
@@ -373,7 +380,7 @@ func (suite *ReviewRepoTestSuite) TestDeleteReview() {
 }
 
 func (suite *ReviewRepoTestSuite) TestUpdateReviewStatus() {
-	repo := NewReviewRepositoryImpl(suite.client)
+	repo := NewReviewRepositoryImpl(suite.prismaClient, suite.kafkaClient)
 
 	const nonActiveUser = "2b84c3b5-5b87-4c9b-832d-60d0966d4f7d"
 	const activeUser = "8a7b3c2e-3e5f-4f1a-a8b7-3c2e1a4f5b6d"
@@ -381,13 +388,13 @@ func (suite *ReviewRepoTestSuite) TestUpdateReviewStatus() {
 	suite.Run("update user active status if review is approved", func() {
 		suite.Run("first time getting their review approved", func() {
 			// user is initially inactive
-			owner, err := suite.client.Profile.FindUnique(
+			owner, err := suite.prismaClient.Profile.FindUnique(
 				db.Profile.ID.Equals(nonActiveUser),
 			).Exec(suite.ctx)
 			suite.NoError(err)
 			suite.False(owner.IsActive)
 
-			pendingReview, err := suite.client.Review.FindFirst(
+			pendingReview, err := suite.prismaClient.Review.FindFirst(
 				db.Review.UserID.Equals(nonActiveUser),
 				db.Review.Description.Contains("I will be approved soon"),
 			).Exec(suite.ctx)
@@ -401,7 +408,7 @@ func (suite *ReviewRepoTestSuite) TestUpdateReviewStatus() {
 			suite.Equal("APPROVED", updatedReview.Status)
 
 			// check if user is now active after getting their review approved
-			owner, err = suite.client.Profile.FindUnique(
+			owner, err = suite.prismaClient.Profile.FindUnique(
 				db.Profile.ID.Equals(nonActiveUser),
 			).Exec(suite.ctx)
 			suite.NoError(err)
@@ -411,13 +418,13 @@ func (suite *ReviewRepoTestSuite) TestUpdateReviewStatus() {
 
 	suite.Run("should not matter if user is already active", func() {
 		// user is already active
-		owner, err := suite.client.Profile.FindUnique(
+		owner, err := suite.prismaClient.Profile.FindUnique(
 			db.Profile.ID.Equals(activeUser),
 		).Exec(suite.ctx)
 		suite.NoError(err)
 		suite.True(owner.IsActive)
 
-		pendingReview, err := suite.client.Review.FindFirst(
+		pendingReview, err := suite.prismaClient.Review.FindFirst(
 			db.Review.UserID.Equals(activeUser),
 			db.Review.Description.Contains("Another review from 8a7b3c"),
 		).Exec(suite.ctx)
@@ -431,7 +438,7 @@ func (suite *ReviewRepoTestSuite) TestUpdateReviewStatus() {
 		suite.Equal("APPROVED", updatedReview.Status)
 
 		// check if user is now active after getting their review approved
-		owner, err = suite.client.Profile.FindUnique(
+		owner, err = suite.prismaClient.Profile.FindUnique(
 			db.Profile.ID.Equals(activeUser),
 		).Exec(suite.ctx)
 		suite.NoError(err)
