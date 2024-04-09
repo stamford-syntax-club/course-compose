@@ -4,7 +4,8 @@ import {
 	approveReview,
 	deleteReviewFromCache,
 	getMemberMention,
-	getReviewObjectFromMessage
+	getReviewObjectFromMessage,
+	processReviewDescription
 } from "../lib/review-utils";
 
 export class ApproveReviewButtonHandler extends InteractionHandler {
@@ -58,9 +59,24 @@ export class ApproveReviewButtonHandler extends InteractionHandler {
 
 		let memberMention = getMemberMention(interaction.member);
 
+		let contentToReplyWith: string | null =
+			`Review \`#${reviewId}\` for course \`${courseCode}\` accepted by ${memberMention}\n\nReview Message: %%REVIEW_MESSAGE_PLACEHOLDER%%`;
+		contentToReplyWith = processReviewDescription(contentToReplyWith, reviewDescription, 1000);
+
+		if (!contentToReplyWith) {
+			container.logger.error("contentToReplyWith is missing:", originalMessage.toJSON());
+
+			await interaction.reply({
+				content: "contentToReplyWith is missing.",
+				ephemeral: true
+			});
+
+			return;
+		}
+
 		await originalMessage.delete();
 		await interaction.reply({
-			content: `Review \`#${reviewId}\` for course \`${courseCode}\` accepted by ${memberMention}\n\nReview Message: ${reviewDescription}`
+			content: contentToReplyWith
 		});
 
 		deleteReviewFromCache(reviewId);

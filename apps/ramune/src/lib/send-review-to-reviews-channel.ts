@@ -1,6 +1,6 @@
 import { container } from "@sapphire/framework";
 import { ActionRowBuilder, ButtonBuilder, ButtonStyle, EmbedBuilder, roleMention } from "discord.js";
-import { addReviewToCache } from "./review-utils";
+import { addReviewToCache, processReviewDescription } from "./review-utils";
 import { ReviewType } from "./types/ReviewType";
 
 export async function sendReviewToReviewsChannel(review: ReviewType) {
@@ -16,9 +16,17 @@ export async function sendReviewToReviewsChannel(review: ReviewType) {
 
 	const { reviewId, courseCode, rating, reviewDescription, submittedDate } = review;
 
+	let descriptionContent: string | null = "%%REVIEW_MESSAGE_PLACEHOLDER%%";
+	descriptionContent = processReviewDescription(descriptionContent, reviewDescription, 4000);
+
+	if (!descriptionContent) {
+		container.logger.error("Review description is missing:", review);
+		descriptionContent = "Review description is missing.";
+	}
+
 	const reviewEmbed = new EmbedBuilder()
 		.setTitle(`Review #${reviewId} (${courseCode}) [${rating}*]`)
-		.setDescription(`\`\`\`md\n${reviewDescription}\n\`\`\``)
+		.setDescription(descriptionContent)
 		.setTimestamp(submittedDate);
 
 	const approveReview = new ButtonBuilder()

@@ -1,6 +1,12 @@
 import { InteractionHandler, InteractionHandlerTypes, container } from "@sapphire/framework";
 import { type ModalSubmitInteraction } from "discord.js";
-import { deleteReviewFromCache, getMemberMention, getReviewObjectFromMessage, rejectReview } from "../lib/review-utils";
+import {
+	deleteReviewFromCache,
+	getMemberMention,
+	getReviewObjectFromMessage,
+	processReviewDescription,
+	rejectReview
+} from "../lib/review-utils";
 
 export class ModalHandler extends InteractionHandler {
 	public constructor(ctx: InteractionHandler.LoaderContext, options: InteractionHandler.Options) {
@@ -57,10 +63,24 @@ export class ModalHandler extends InteractionHandler {
 			return;
 		}
 
-		// TODO: truncate reviewDescription if it's too long
+		let contentToReplyWith: string | null =
+			`Review \`#${reviewId}\` for course \`${courseCode}\` rejected by ${memberMention} for reason: \`\`\`${cleanedRejectReason}\`\`\`\nReview Message: %%REVIEW_MESSAGE_PLACEHOLDER%%`;
+		contentToReplyWith = processReviewDescription(contentToReplyWith, reviewDescription, 1000);
+
+		if (!contentToReplyWith) {
+			container.logger.error("Review description is missing:", originalMessage.toJSON());
+
+			await interaction.reply({
+				content: "Review description is missing.",
+				ephemeral: true
+			});
+
+			return;
+		}
+
 		await originalMessage.delete();
 		await interaction.reply({
-			content: `Review \`#${reviewId}\` for course \`${courseCode}\` rejected by ${memberMention} for reason: \`\`\`${cleanedRejectReason}\`\`\`\nReview Message: ${reviewDescription}`
+			content: contentToReplyWith
 		});
 
 		deleteReviewFromCache(reviewId);

@@ -52,6 +52,55 @@ export function deleteReviewFromCache(reviewId: string) {
 	}
 }
 
+const truncateSuffix = "…";
+export function processReviewDescription(
+	contentString: string,
+	reviewDescription: string | undefined,
+	maxLength: number
+): string | null {
+	if (reviewDescription === undefined) {
+		return null;
+	}
+
+	// Detect and remove code block markdown if present
+	const codeBlockRegex = /^```[\s\S]*?\n([\s\S]*?)```$/;
+	const hasCodeBlock = codeBlockRegex.test(reviewDescription);
+	let codeBlockContent = "";
+	if (hasCodeBlock) {
+		const match = reviewDescription.match(codeBlockRegex);
+		if (match && match[1]) {
+			codeBlockContent = match[1];
+		}
+	} else {
+		codeBlockContent = reviewDescription;
+	}
+
+	// Calculate the length of the content string without the placeholder
+	const placeholder = "%%REVIEW_MESSAGE_PLACEHOLDER%%";
+	const contentLengthWithoutPlaceholder = contentString.replace(placeholder, "").length;
+
+	// Calculate how much space is left for the review description
+	const availableDescriptionLength = maxLength - truncateSuffix.length - contentLengthWithoutPlaceholder - 12; // this accounts for ```md\n, \n, and ``` at the start and end
+
+	// If the review description (or code block content) is too long, truncate it
+	let finalReviewDescription = codeBlockContent;
+	if (codeBlockContent.length > availableDescriptionLength) {
+		finalReviewDescription = codeBlockContent.substring(0, availableDescriptionLength) + truncateSuffix;
+	}
+
+	// Apply the final code block markdown regardless of the original presence
+	// Escape unescaped backticks without affecting already escaped backticks
+	// Use a negative lookbehind to only match backticks not preceded by a backslash
+	finalReviewDescription = "```md\n" + finalReviewDescription.replaceAll(/(?<!\\)`/g, "\\`") + "\n```";
+
+	// Replace the placeholder with the (possibly truncated) review description
+	const finalContent = contentString.replace(placeholder, finalReviewDescription);
+
+	// Logging for debugging purposes
+	container.logger.info("Truncated review description length:", finalContent.length);
+	return finalContent;
+}
+
 function createBasicAuthHeader(username: string, password: string) {
 	return `Basic ${Buffer.from(`${username}:${password}`).toString("base64")}`;
 }

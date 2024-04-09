@@ -1,6 +1,7 @@
 import { container } from "@sapphire/framework";
 import { EmbedBuilder } from "discord.js";
 import { Kafka } from "kafkajs";
+import { processReviewDescription } from "./review-utils";
 import { sendReviewToReviewsChannel } from "./send-review-to-reviews-channel";
 
 // {"id":9,"academicYear":2020,"description":"this is a test review, ramune gogo!","rating":2,"status":"","votes":0,"course":{"code":"PHYS101"},"profile":{"id":""},"created_at":"0001-01-01T00:00:00Z","action":"submit"}
@@ -79,9 +80,21 @@ export async function startKafkaConsumer() {
 									return;
 								}
 
+								let descriptionContent: string | null = "%%REVIEW_MESSAGE_PLACEHOLDER%%";
+								descriptionContent = processReviewDescription(
+									descriptionContent,
+									reviewDescription,
+									4000
+								);
+
+								if (!descriptionContent) {
+									container.logger.error("Review description is missing:", foundReview);
+									descriptionContent = "Review description is missing.";
+								}
+
 								const reviewEmbed = new EmbedBuilder()
 									.setTitle(`Review #${reviewId} (${courseCode}) [${rating}*]`)
-									.setDescription(`\`\`\`md\n${reviewDescription}\n\`\`\``)
+									.setDescription(descriptionContent)
 									.setTimestamp(submittedDate);
 
 								await boundMessage.edit({
