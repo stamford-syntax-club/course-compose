@@ -3,6 +3,7 @@ package main
 import (
 	"flag"
 	"log"
+	"os"
 
 	"github.com/stamford-syntax-club/course-compose/reviews/common/config"
 	"github.com/stamford-syntax-club/course-compose/reviews/common/presentation/router"
@@ -35,8 +36,7 @@ func main() {
 		}
 	}()
 
-	// TODO: ENV FILE!!!
-	reviewKafka, err := review_kafka.NewReviewKafka("course-compose", "localhost:9092")
+	reviewKafka, err := review_kafka.NewReviewKafka(os.Getenv("KAFKA_TOPIC"), os.Getenv("KAFKA_BROKER_URL"))
 	if err != nil {
 		log.Fatalf("create review producer: %v", err)
 	}
