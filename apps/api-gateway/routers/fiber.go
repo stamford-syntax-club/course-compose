@@ -37,6 +37,7 @@ func NewFiberRouter(port string, routes []config.Route) *FiberRouter {
 
 			return nil
 		},
+		ReadBufferSize: 1024 * 8,
 	})
 
 	app.Use(cors.New())
