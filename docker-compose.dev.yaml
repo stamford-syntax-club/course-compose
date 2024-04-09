@@ -7,6 +7,7 @@ networks:
 services:
     # ================================
     # Postgres Database
+    # ================================
     postgres:
         image: postgres
         container_name: coursecompose_db
@@ -39,6 +40,7 @@ services:
 
     # ================================
     # Kafka Message Queue
+    # ================================
     zookeeper:
         image: confluentinc/cp-zookeeper
         restart: unless-stopped
