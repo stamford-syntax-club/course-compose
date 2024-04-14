@@ -2,11 +2,14 @@ package main
 
 import (
 	"flag"
+	"fmt"
 	"log"
 	"os"
+	"time"
 
 	"github.com/stamford-syntax-club/course-compose/reviews/common/config"
 	"github.com/stamford-syntax-club/course-compose/reviews/common/presentation/router"
+	"github.com/stamford-syntax-club/course-compose/reviews/common/utils"
 	review_db "github.com/stamford-syntax-club/course-compose/reviews/review/data/datasource/db"
 	review_kafka "github.com/stamford-syntax-club/course-compose/reviews/review/data/datasource/kafka"
 	review_repo_impl "github.com/stamford-syntax-club/course-compose/reviews/review/data/repository"
@@ -41,6 +44,12 @@ func main() {
 		log.Fatalf("create review producer: %v", err)
 	}
 	go reviewKafka.ReportDeliveryStatus()
+
+	accessToken, err := utils.GenerateNewAccessToken("8a7b3c2e-3e5f-4f1a-a8b7-3c2e1a4f5b6d", "naris@students.stamford.edu", time.Now().Add(time.Hour*4).Unix())
+	if err != nil {
+		log.Fatalln("cannot create token: ", err)
+	}
+	fmt.Println(accessToken)
 
 	reviewRepo := review_repo_impl.NewReviewRepositoryImpl(reviewDB, reviewKafka)
 	reviewController := review_controller.NewReviewController(reviewRepo)
