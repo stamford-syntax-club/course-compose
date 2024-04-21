@@ -1,18 +1,17 @@
+/* eslint-disable camelcase -- incoming data might be in snake_case */
 import { Badge, Button, Card, Group, Rating, Stack, Text } from "@mantine/core";
-import type { CourseCardProps } from "types";
+import type { Course } from "types/course";
 
 export function CourseCard({
-	courseName,
-	courseCode,
-	coursePrerequisites = [],
-	courseRating,
-	courseReviewCount
-}: CourseCardProps): JSX.Element {
-	const coursePreReqString =
-		coursePrerequisites.length > 0 ? `Pre: ${coursePrerequisites.join(", ")}` : "No Prerequisites";
+	full_name,
+	code,
+	prerequisites = [],
+	overall_ratings,
+	reviews_count
+}: Course): JSX.Element {
+	const coursePreReqString = prerequisites.length > 0 ? `Pre: ${prerequisites.join(", ")}` : "No Prerequisites";
 
 	return (
-		// base: 12, sm: 6, xl: 4
 		<div className="col-span-12 sm:col-span-6 xl:col-span-4">
 			<Card
 				className="h-52 shadow-sm transition-colors duration-150 hover:border-white"
@@ -26,8 +25,8 @@ export function CourseCard({
 							IT
 						</Badge>
 
-						<Text title={courseName} component="div" truncate="end">
-							{courseName}
+						<Text title={full_name} component="div" truncate="end">
+							{full_name}
 						</Text>
 
 						<Text
@@ -37,7 +36,7 @@ export function CourseCard({
 							}}
 						>
 							<Text span c="dimmed" inherit>
-								({courseCode})
+								({code})
 							</Text>
 						</Text>
 					</Group>
@@ -47,9 +46,9 @@ export function CourseCard({
 					</Text>
 
 					<Group gap="xs">
-						<Rating value={courseRating} fractions={2} readOnly />
+						<Rating value={overall_ratings} fractions={2} readOnly />
 						<Text>
-							{courseRating} ({courseReviewCount})
+							{overall_ratings} ({reviews_count})
 						</Text>
 					</Group>
 

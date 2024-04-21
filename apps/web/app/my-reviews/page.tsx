@@ -13,13 +13,19 @@ import {
 import fetcher from "@utils/fetcher";
 import { useAuth } from "hooks/use-auth";
 import { useEffect, useState } from "react";
-import type { AccordionItems, MyReviewsData } from "types";
+import type { Review } from "types/reviews";
 import type { Session } from "@supabase/supabase-js";
+
+export interface AccordionItems {
+	value: string;
+	posts: Review[];
+	severity: string;
+}
 
 export default function MyReviews(): JSX.Element {
 	const [sessionData, setSessionData] = useState<Session | null>();
 	const [isLoading, setIsLoading] = useState<boolean>(true);
-	const [myReviewsData, setMyReviewsData] = useState<MyReviewsData[] | []>([]);
+	const [myReviewsData, setMyReviewsData] = useState<Review[] | []>([]);
 
 	const { getSession } = useAuth();
 	const [opened, { open: openSessionModal, close: closeSessionModal }] = useDisclosure(false);
@@ -47,7 +53,7 @@ export default function MyReviews(): JSX.Element {
 
 		const fetchMyReviews = async (): Promise<void> => {
 			try {
-				const results = await fetcher<{ data: MyReviewsData[] }>(
+				const results = await fetcher<{ data: Review[] }>(
 					`${BASE_API_ENDPOINT}/myreviews`,
 					sessionData.access_token || ""
 				);
@@ -55,7 +61,6 @@ export default function MyReviews(): JSX.Element {
 				setMyReviewsData(results.data?.data || []);
 			} catch (err) {
 				console.error(err);
-				// Handle error here
 			} finally {
 				setIsLoading(false);
 			}
@@ -111,7 +116,7 @@ export default function MyReviews(): JSX.Element {
 
 	return (
 		<Grid
-			className="mx-auto h-full w-[1000px]"
+			className="h-full"
 			classNames={{
 				inner: "h-full"
 			}}

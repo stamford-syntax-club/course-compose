@@ -8,9 +8,11 @@ import {
 	ERR_USER_NOT_EXIST,
 	ERR_MISSING_TOKEN,
 	ERR_USER_NOT_OWNER,
-	COURSE_API_ENDPOINT
+	COURSE_API_ENDPOINT,
+	BASE_API_ENDPOINT
 } from "@utils/constants";
 import type { NotificationData } from "@mantine/notifications";
+import fetcher, { FetcherResult } from "@utils/fetcher";
 
 export default class CourseComposeAPIClient {
 	private courseEndpoint: string;

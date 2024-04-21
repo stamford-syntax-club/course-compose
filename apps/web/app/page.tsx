@@ -16,53 +16,53 @@ import { useState } from "react";
 
 const COURSE_LIST = [
 	{
-		courseName: "Basic Mathematics",
-		courseCode: "MAT101",
-		coursePrerequisites: [],
-		courseRating: 4.0,
-		courseReviewCount: 20
+		full_name: "Basic Mathematics",
+		code: "MAT101",
+		prerequisites: [],
+		overall_ratings: 4.0,
+		reviews_count: 20
 	},
 	{
-		courseName: "Advanced Programming",
-		courseCode: "CSE302",
-		coursePrerequisites: ["CSE201", "CSE202"],
-		courseRating: 4.5,
-		courseReviewCount: 50
+		full_name: "Advanced Programming",
+		code: "CSE302",
+		prerequisites: ["CSE201", "CSE202"],
+		overall_ratings: 4.5,
+		reviews_count: 50
 	},
 	{
-		courseName: "Modern Web Development",
-		courseCode: "WEB403",
-		coursePrerequisites: ["WEB301", "WEB302"],
-		courseRating: 5.0,
-		courseReviewCount: 150
+		full_name: "Modern Web Development",
+		code: "WEB403",
+		prerequisites: ["WEB301", "WEB302"],
+		overall_ratings: 5.0,
+		reviews_count: 150
 	},
 	{
-		courseName: "Emerging Technologies",
-		courseCode: "TECH110",
-		coursePrerequisites: ["TECH100"],
-		courseRating: 0,
-		courseReviewCount: 0
+		full_name: "Emerging Technologies",
+		code: "TECH110",
+		prerequisites: ["TECH100"],
+		overall_ratings: 0,
+		reviews_count: 0
 	},
 	{
-		courseName: "Comprehensive Study of Theoretical and Applied Quantum Computing",
-		courseCode: "QTCMP999",
-		coursePrerequisites: ["QTCMP500", "PHY400"],
-		courseRating: 3.8,
-		courseReviewCount: 30
+		full_name: "Comprehensive Study of Theoretical and Applied Quantum Computing",
+		code: "QTCMP999",
+		prerequisites: ["QTCMP500", "PHY400"],
+		overall_ratings: 3.8,
+		reviews_count: 30
 	},
 	{
-		courseName: "Introduction to Philosophy",
-		courseCode: "PHI101",
-		coursePrerequisites: ["PHI100"],
-		courseRating: 2.0,
-		courseReviewCount: 5
+		full_name: "Introduction to Philosophy",
+		code: "PHI101",
+		prerequisites: ["PHI100"],
+		overall_ratings: 2.0,
+		reviews_count: 5
 	},
 	{
-		courseName: "History & Culture: 1900's",
-		courseCode: "HIS200",
-		coursePrerequisites: ["HIS100"],
-		courseRating: 3.5,
-		courseReviewCount: 25
+		full_name: "History & Culture: 1900's",
+		code: "HIS200",
+		prerequisites: ["HIS100"],
+		overall_ratings: 3.5,
+		reviews_count: 25
 	}
 ];
 
@@ -71,8 +71,8 @@ export default function HomePage(): JSX.Element {
 
 	const filteredCourses = currentSearch
 		? COURSE_LIST.filter((course) => {
-				return course.courseName.toLowerCase().includes(currentSearch.toLowerCase());
-		  })
+				return course.full_name.toLowerCase().includes(currentSearch.toLowerCase());
+			})
 		: COURSE_LIST;
 
 	return (
@@ -173,12 +173,12 @@ export default function HomePage(): JSX.Element {
 									return (
 										<CourseCard
 											// Ensure that the key is unique, otherwise same keys will cause a lot of issues.
-											key={`CourseCard_${course.courseCode}`}
-											courseName={course.courseName}
-											courseCode={course.courseCode}
-											coursePrerequisites={course.coursePrerequisites}
-											courseRating={course.courseRating}
-											courseReviewCount={course.courseReviewCount}
+											key={`CourseCard_${course.code}`}
+											full_name={course.full_name}
+											code={course.code}
+											prerequisites={course.prerequisites}
+											overall_ratings={course.overall_ratings}
+											reviews_count={course.reviews_count}
 										/>
 									);
 								})}

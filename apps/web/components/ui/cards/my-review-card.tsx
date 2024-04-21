@@ -1,9 +1,9 @@
 import { Button, Card, Flex, Group, Rating, Stack, Text } from "@mantine/core";
 import { IconArrowDown, IconArrowUp } from "@tabler/icons-react";
-import type { MyReviewsData } from "types";
+import type { Review } from "types/reviews";
 
-export function MyReviewCard({ cardData }: { cardData: MyReviewsData }): JSX.Element {
-	const { course, description, rating, status, votes } = cardData;
+export function MyReviewCard({ cardData }: { cardData: Review }): JSX.Element {
+	const { course, description, rating } = cardData;
 
 	// const coursePreReqString =
 	// 	coursePrerequisites.length > 0 ? `Pre: ${coursePrerequisites.join(", ")}` : "No Prerequisites";
