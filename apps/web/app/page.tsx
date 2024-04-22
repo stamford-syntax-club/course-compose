@@ -24,80 +24,42 @@ import {
 	IconSortDescending,
 	IconStarFilled
 } from "@tabler/icons-react";
-import { useState } from "react";
-
-const COURSE_LIST = [
-	{
-		full_name: "Basic Mathematics",
-		code: "MAT101",
-		prerequisites: [],
-		overall_ratings: 4.0,
-		reviews_count: 20
-	},
-	{
-		full_name: "Advanced Programming",
-		code: "CSE302",
-		prerequisites: ["CSE201", "CSE202"],
-		overall_ratings: 4.5,
-		reviews_count: 50
-	},
-	{
-		full_name: "Modern Web Development",
-		code: "WEB403",
-		prerequisites: ["WEB301", "WEB302"],
-		overall_ratings: 5.0,
-		reviews_count: 150
-	},
-	{
-		full_name: "Emerging Technologies",
-		code: "TECH110",
-		prerequisites: ["TECH100"],
-		overall_ratings: 0,
-		reviews_count: 0
-	},
-	{
-		full_name: "Comprehensive Study of Theoretical and Applied Quantum Computing",
-		code: "QTCMP999",
-		prerequisites: ["QTCMP500", "PHY400"],
-		overall_ratings: 3.8,
-		reviews_count: 30
-	},
-	{
-		full_name: "Introduction to Philosophy",
-		code: "PHI101",
-		prerequisites: ["PHI100"],
-		overall_ratings: 2.0,
-		reviews_count: 5
-	},
-	{
-		full_name: "History & Culture: 1900's",
-		code: "HIS200",
-		prerequisites: ["HIS100"],
-		overall_ratings: 3.5,
-		reviews_count: 25
-	}
-];
+import CourseComposeAPIClient from "lib/api/api";
+import { useEffect, useState } from "react";
+import { Course } from "types/course";
+import { PaginatedResponse } from "types/pagination";
+import { useDebouncedValue } from "@mantine/hooks";
+import { useMemo } from "react";
 
 export default function HomePage(): JSX.Element {
 	const [currentSearch, setCurrentSearch] = useState("");
 	const [value, setValue] = useState(0);
 	const [endValue, setEndValue] = useState(200);
+	const [COURSE_LIST, setCOURSE_LIST] = useState<PaginatedResponse<Course>>();
+	const [pageNumber, setPageNumber] = useState(1);
+	const [debounceSearchValue] = useDebouncedValue(currentSearch, 200);
 
-	const filteredCourses = currentSearch
-		? COURSE_LIST.filter((course) => {
-				const COURSE_NAME_MATCH = course.courseName.toLowerCase().includes(currentSearch.toLowerCase());
-				const COURSE_CODE_MATCH = course.courseCode.toLowerCase().includes(currentSearch.toLowerCase());
-				const COURSE_PREREQUISITES_MATCH = course.coursePrerequisites.some((prerequisite) =>
-					prerequisite.toLowerCase().includes(currentSearch.toLowerCase())
-				);
-
-				return COURSE_NAME_MATCH || COURSE_CODE_MATCH || COURSE_PREREQUISITES_MATCH;
-				// return course.courseName.toLowerCase().includes(currentSearch.toLowerCase());
+	const apiClient = useMemo(() => new CourseComposeAPIClient(""), []);
+	useEffect(() => {
+			apiClient
+			.fetchCourse(debounceSearchValue, pageNumber)
+			.then((data) => {
+				setCOURSE_LIST(data);
+				console.log("Course list: ", data);
 			})
-		: COURSE_LIST;
+			.catch((error) => {
+				console.error("Error fetching course list: ", error);
+			});
+	}, [pageNumber, apiClient, debounceSearchValue]);
 
+	const handleSearchValueChange = (event: { target: { value: any; }; }) => {
+		const searchValue = event.target.value;
+		setCurrentSearch(searchValue);
+		setPageNumber(1);
+	}
+	
 	return (
-		<Container fluid>
+		<Container fluid className="h-full">
 			{/*	<Grid.Col span={{ base: 12, xl: 10 }}> */}
 			<Stack className="h-full" gap="md">
 				{/* Searchbar Container */}
@@ -115,9 +77,7 @@ export default function HomePage(): JSX.Element {
 							className="w-full"
 							placeholder="Search"
 							onChange={(e) => {
-								if (e.target.value === "") {
-									setCurrentSearch("");
-								}
+								handleSearchValueChange(e);
 							}}
 						/>
 
@@ -191,35 +151,33 @@ export default function HomePage(): JSX.Element {
 				<Paper bg="dark.8" p="sm" withBorder className="h-full">
 					<div className="relative flex size-full flex-col">
 						<div className="grid grid-cols-12 grid-rows-3 gap-x-2 gap-y-2">
-							{filteredCourses.map((course) => {
-								return (
-									<CourseCard
-										// Ensure that the key is unique, otherwise same keys will cause a lot of issues.
-										key={`CourseCard_${(course.courseCode, course.courseName)}`}
-										courseName={course.courseName}
-										courseCode={course.courseCode}
-										coursePrerequisites={course.coursePrerequisites}
-										courseRating={course.courseRating}
-										courseReviewCount={course.courseReviewCount}
-									/>
-								);
-							})}
+							{COURSE_LIST &&
+								COURSE_LIST.data.map((course) => {
+									return (
+										<CourseCard
+											// Ensure that the key is unique, otherwise same keys will cause a lot of issues.
+											key={`CourseCard_${(course.code, course.full_name)}`}
+											courseName={course.full_name}
+											courseCode={course.code}
+											coursePrerequisites={course.prerequisites}
+											courseRating={course.overall_ratings}
+											courseReviewCount={course.reviews_count}
+										/>
+									);
+								})}
 						</div>
 
 						<div className="mt-auto flex items-center justify-center">
-							<Pagination withEdges total={10} />
+							<Pagination
+								withEdges
+								total={COURSE_LIST?.totalPages ?? 1}
+								value={pageNumber}
+								onChange={setPageNumber}
+							/>
 						</div>
 					</div>
 				</Paper>
 			</Stack>
-			{/* </Grid.Col> */}
-
-			{/* Review Feed */}
-			{/*<Grid.Col visibleFrom="xl" span={2}>
-          <Paper bg="dark.8" p="sm" withBorder className="h-full">
-            Lol
-          </Paper>
-        </Grid.Col>*/}
 		</Container>
 	);
 }

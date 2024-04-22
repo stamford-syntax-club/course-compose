@@ -23,6 +23,18 @@ export default class CourseComposeAPIClient {
 		this.reviewEndpoint = `${this.courseEndpoint}/reviews`;
 	}
 
+	async fetchCourse( searchValue: string, pageNumber: number): Promise<PaginatedResponse<Course>> {
+		const data = await fetch(`${COURSE_API_ENDPOINT}?pageNumber=${pageNumber}&pageSize=9&search=${searchValue}`);
+
+		if (!data.ok) {
+			const err = (await data.json()) as ErrorResponse;
+			throw new Error(err.message);
+		}
+
+		return data.json() as Promise<PaginatedResponse<Course>>;
+	}
+	
+	
 	async fetchCourseDetails(): Promise<Course> {
 		const data = await fetch(this.courseEndpoint);
 
