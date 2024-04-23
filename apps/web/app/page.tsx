@@ -13,9 +13,15 @@ import {
 	TextInput,
 	Container,
 	rem,
-	Slider
+	Slider,
+	Title
 } from "@mantine/core";
-import { IconSortAscending, IconSortAscendingNumbers, IconSortDescendingNumbers } from "@tabler/icons-react";
+import {
+	IconMoodSad,
+	IconSortAscending,
+	IconSortAscendingNumbers,
+	IconSortDescendingNumbers
+} from "@tabler/icons-react";
 import {
 	IconFileDescription,
 	IconFilter,
@@ -41,7 +47,7 @@ export default function HomePage(): JSX.Element {
 
 	const apiClient = useMemo(() => new CourseComposeAPIClient(""), []);
 	useEffect(() => {
-			apiClient
+		apiClient
 			.fetchCourse(debounceSearchValue, pageNumber)
 			.then((data) => {
 				setCOURSE_LIST(data);
@@ -52,15 +58,14 @@ export default function HomePage(): JSX.Element {
 			});
 	}, [pageNumber, apiClient, debounceSearchValue]);
 
-	const handleSearchValueChange = (event: { target: { value: any; }; }) => {
+	const handleSearchValueChange = (event: { target: { value: any } }) => {
 		const searchValue = event.target.value;
 		setCurrentSearch(searchValue);
 		setPageNumber(1);
-	}
-	
+	};
+
 	return (
 		<Container fluid className="h-full">
-			{/*	<Grid.Col span={{ base: 12, xl: 10 }}> */}
 			<Stack className="h-full" gap="md">
 				{/* Searchbar Container */}
 				<form
@@ -147,35 +152,46 @@ export default function HomePage(): JSX.Element {
 					</Group>
 				</form>
 
-				{/* Courses List Body */}
 				<Paper bg="dark.8" p="sm" withBorder className="h-full">
-					<div className="relative flex size-full flex-col">
-						<div className="grid grid-cols-12 grid-rows-3 gap-x-2 gap-y-2">
-							{COURSE_LIST &&
-								COURSE_LIST.data.map((course) => {
-									return (
-										<CourseCard
-											// Ensure that the key is unique, otherwise same keys will cause a lot of issues.
-											key={`CourseCard_${(course.code, course.full_name)}`}
-											courseName={course.full_name}
-											courseCode={course.code}
-											coursePrerequisites={course.prerequisites}
-											courseRating={course.overall_ratings}
-											courseReviewCount={course.reviews_count}
-										/>
-									);
-								})}
-						</div>
+					{/* Courses List Body */}
+					{COURSE_LIST && COURSE_LIST.data.length > 0 ? (
+						//course state with results
+						<div className="relative flex size-full flex-col">
+							<div className="grid grid-cols-12 grid-rows-3 gap-x-2 gap-y-2">
+								{COURSE_LIST &&
+									COURSE_LIST.data.map((course) => {
+										return (
+											<CourseCard
+												// Ensure that the key is unique, otherwise same keys will cause a lot of issues.
+												key={`CourseCard_${(course.code, course.full_name)}`}
+												courseName={course.full_name}
+												courseCode={course.code}
+												coursePrerequisites={course.prerequisites}
+												courseRating={course.overall_ratings}
+												courseReviewCount={course.reviews_count}
+											/>
+										);
+									})}
+							</div>
 
-						<div className="mt-auto flex items-center justify-center">
-							<Pagination
-								withEdges
-								total={COURSE_LIST?.totalPages ?? 1}
-								value={pageNumber}
-								onChange={setPageNumber}
-							/>
+							<div className="mt-auto flex items-center justify-center">
+								<Pagination
+									withEdges
+									total={COURSE_LIST?.totalPages ?? 1}
+									value={pageNumber}
+									onChange={setPageNumber}
+								/>
+							</div>
 						</div>
-					</div>
+					) : (
+						//Empty state of the course list
+						<div className="p-sm flex h-full flex-col items-center justify-center text-center">
+							<IconMoodSad size={50} />
+							<Title order={2} textWrap="wrap" c={"gray"}>
+								No course result found for your search!
+							</Title>
+						</div>
+					)}
 				</Paper>
 			</Stack>
 		</Container>
