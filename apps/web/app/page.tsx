@@ -100,12 +100,12 @@ export default function HomePage(): JSX.Element {
 		setSortCourse({ ...sortCourse, order: order });
 	};
 
-	const handleSearchValueChange = (event: { target: { value: any; }; }) => {
+	const handleSearchValueChange = (event: { target: { value: any } }) => {
 		const searchValue = event.target.value;
 		setCurrentSearch(searchValue);
 		setPageNumber(1);
-	}
-	
+	};
+
 	return (
 		<Container fluid className="min-h-full">
 			<Stack className="h-full" gap="md">
