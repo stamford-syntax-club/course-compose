@@ -1,5 +1,14 @@
 /* eslint-disable camelcase -- incoming data might be in snake_case */
 import { Badge, Button, Card, Group, Rating, Stack, Text } from "@mantine/core";
+import Link from "next/link";
+
+interface CourseCardProps {
+	courseName: string;
+	courseCode: string;
+	coursePrerequisites?: string[];
+	courseRating: number;
+	courseReviewCount: number;
+}
 import type { Course } from "types/course";
 
 export function CourseCard({
@@ -54,7 +63,9 @@ export function CourseCard({
 
 					<Group className="mt-auto" justify="flex-end" gap="xs">
 						<Button variant="outline">View</Button>
-						<Button>Review</Button>
+						<Link href={`/courses/${courseCode}`} passHref>
+							<Button>Review</Button>
+						</Link>
 					</Group>
 				</Stack>
 			</Card>

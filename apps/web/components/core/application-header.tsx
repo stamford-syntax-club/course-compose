@@ -72,7 +72,7 @@ export default function ApplicationHeader({ opened, toggle }: ApplicationHeaderP
 			<Group h="100%" px="md">
 				<Burger onClick={toggle} opened={opened} size="lg" />
 				<Link href="/">
-					<span className="cursor-pointer select-none text-3xl font-bold uppercase">Course Compose</span>
+					<span className="text-lg lg:text-3xl font-bold uppercase cursor-pointer select-none">Course Compose</span>
 				</Link>
 				<div className="ml-auto">
 					{isLoggedIn ? (
