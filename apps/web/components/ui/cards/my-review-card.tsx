@@ -35,15 +35,16 @@ export function MyReviewCard({ cardData }: { cardData: Review }): JSX.Element {
 
 					<Flex gap="xs" align="center" justify="space-between">
 						<Rating value={rating} fractions={2} readOnly />
-						<Flex gap="5px" align="center">
+						{/* <Flex gap="5px" align="center">
 							<IconArrowUp color="green" strokeWidth={3} />
 							30
 							<IconArrowDown opacity={0.7} color="red" strokeWidth={3} />
 							40
-						</Flex>
+						</Flex> */}
+						{/* Temporally removed due to unsupported voting system */}
 					</Flex>
 
-					<Text truncate="end">{description}</Text>
+					<Text lineClamp={3}>{description}</Text>
 
 					<Group className="mt-auto w-full" justify="flex-end" gap="xs">
 						<Button bg="blue.4">{"SEE MY REVIEW".toUpperCase()}</Button>
