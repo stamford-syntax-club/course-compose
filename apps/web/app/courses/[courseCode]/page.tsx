@@ -94,7 +94,11 @@ export default function CourseReview({ params }: { params: { courseCode: string 
 				setReviewsData(reviews);
 			} catch (err) {
 				console.error(err);
-				notifications.show({ title: "Error!", message: "Something went wrong, please try again later", color:"red" });
+				notifications.show({
+					title: "Error!",
+					message: "Something went wrong, please try again later",
+					color: "red"
+				});
 			} finally {
 				setIsLoading(false);
 			}

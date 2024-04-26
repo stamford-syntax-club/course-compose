@@ -3,7 +3,7 @@ FROM --platform=linux/amd64 node:20.9.0-alpine AS base
 ENV PNPM_HOME="/root/.local/share/pnpm"
 ENV PATH="${PATH}:${PNPM_HOME}"
 
-RUN npm i -g pnpm 
+RUN npm i -g pnpm@8.9.0 
 
 # Check https://github.com/nodejs/docker-node/tree/b4117f9333da4138b03a546ec926ef50a31506c3#nodealpine to understand why libc6-compat might be needed.
 RUN apk add --no-cache libc6-compat
