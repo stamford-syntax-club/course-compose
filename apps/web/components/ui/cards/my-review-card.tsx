@@ -1,11 +1,10 @@
 import { Button, Card, Flex, Group, Rating, Stack, Text } from "@mantine/core";
 import { IconArrowDown, IconArrowUp } from "@tabler/icons-react";
-import { useRouter } from "next/navigation";
+import Link from "next/link";
 import type { Review } from "types/reviews";
 
 export function MyReviewCard({ cardData }: { cardData: Review }): JSX.Element {
 	const { course, description, rating } = cardData;
-	const router = useRouter();
 
 	// const coursePreReqString =
 	// 	coursePrerequisites.length > 0 ? `Pre: ${coursePrerequisites.join(", ")}` : "No Prerequisites";
@@ -49,14 +48,9 @@ export function MyReviewCard({ cardData }: { cardData: Review }): JSX.Element {
 					<Text lineClamp={3}>{description}</Text>
 
 					<Group className="mt-auto w-full" justify="flex-end" gap="xs">
-						<Button
-							onClick={() => {
-								router.push(`/courses/${course.code.toUpperCase()}`);
-							}}
-							bg="blue.4"
-						>
-							{"SEE MY REVIEW".toUpperCase()}
-						</Button>
+						<Link href={`courses/${course.code.toUpperCase()}`}>
+							<Button bg="blue.4">{"SEE MY REVIEW".toUpperCase()}</Button>
+						</Link>
 					</Group>
 				</Stack>
 			</Card>

@@ -1,7 +1,6 @@
 "use client";
 
-import { MyReviewCard } from "@components/ui/cards/my-review-card";
-import { CourseCard } from "@components/ui/course-card";
+import { CourseCard } from "@components/ui/cards/course-card";
 import { Button, Grid, Group, Menu, Pagination, Paper, Stack, Text, TextInput, rem } from "@mantine/core";
 import {
 	IconArrowsLeftRight,
