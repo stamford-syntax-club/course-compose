@@ -51,7 +51,7 @@ export function MyReviewCard({ cardData }: { cardData: Review }): JSX.Element {
 					<Group className="mt-auto w-full" justify="flex-end" gap="xs">
 						<Button
 							onClick={() => {
-								router.push(`/courses/${course.code.toLowerCase()}`);
+								router.push(`/courses/${course.code.toUpperCase()}`);
 							}}
 							bg="blue.4"
 						>
