@@ -12,14 +12,12 @@ import {
 	Container,
 	Slider,
 	Title,
-	LoadingOverlay
+	LoadingOverlay,
+	Select,
+	Box,
+	Tooltip
 } from "@mantine/core";
-import {
-	IconMoodSad,
-	IconSortAscending,
-	IconSortAscendingNumbers,
-	IconSortDescendingNumbers
-} from "@tabler/icons-react";
+import { IconMoodSad, IconSortAscending } from "@tabler/icons-react";
 import { IconFilter, IconSearch, IconSortDescending } from "@tabler/icons-react";
 import CourseComposeAPIClient from "lib/api/api";
 import { useEffect, useState } from "react";
@@ -36,6 +34,7 @@ export default function HomePage(): JSX.Element {
 	const [pageNumber, setPageNumber] = useState(1);
 	const [debounceSearchValue] = useDebouncedValue(currentSearch, 300);
 	const [isLoading, setIsLoading] = useState(false);
+	const [sortCourse, setSortCourse] = useState({ field: "rating", order: "ascending" });
 
 	const apiClient = useMemo(() => new CourseComposeAPIClient(""), []);
 	useEffect(() => {
@@ -43,19 +42,62 @@ export default function HomePage(): JSX.Element {
 		apiClient
 			.fetchCourse(debounceSearchValue, pageNumber)
 			.then((data) => {
-				setCOURSE_LIST(data);
+				//sorting the course list with rating, name and review count
+				let sortedCourseList = [...data.data];
+
+				sortedCourseList.sort((a, b) => {
+					let comparison;
+					switch (sortCourse.field) {
+						case "rating":
+							comparison =
+								sortCourse.order === "asc"
+									? a.overall_ratings - b.overall_ratings
+									: b.overall_ratings - a.overall_ratings;
+							break;
+						case "name":
+							comparison =
+								sortCourse.order === "asc"
+									? a.full_name.localeCompare(b.full_name)
+									: b.full_name.localeCompare(a.full_name);
+							break;
+						case "review_count":
+							comparison =
+								sortCourse.order === "asc"
+									? a.reviews_count - b.reviews_count
+									: b.reviews_count - a.reviews_count;
+							break;
+						default:
+							comparison = 0;
+					}
+					return comparison;
+				});
+
+				//filter the course list with the rating and review count
+				const filteredCourse = sortedCourseList.filter((course) => {
+					return (
+						course.overall_ratings >= value && course.reviews_count >= 0 && course.reviews_count <= endValue
+					);
+				});
+
+				setCOURSE_LIST({ ...data, data: filteredCourse });
 				console.log("Course list: ", data);
 				setIsLoading(false);
 			})
 			.catch((error) => {
 				console.error("Error fetching course list: ", error);
 			});
-	}, [pageNumber, apiClient, debounceSearchValue]);
+	}, [pageNumber, apiClient, debounceSearchValue, value, endValue]);
 
+	//handle the search result to always set at page 1
 	const handleSearchValueChange = (event: { target: { value: any } }) => {
 		const searchValue = event.target.value;
 		setCurrentSearch(searchValue);
 		setPageNumber(1);
+	};
+
+	//handle the sort order of the course list
+	const handleSortOrder = (order: string) => {
+		setSortCourse({ ...sortCourse, order: order });
 	};
 
 	return (
@@ -89,9 +131,10 @@ export default function HomePage(): JSX.Element {
 							</Menu.Target>
 
 							<Menu.Dropdown>
+								<Title order={6}>Ratings</Title>
 								<Menu.Item mb="md">
 									{/* Rating Filter */}
-									<Title order={6}>Ratings</Title>
+
 									<Slider
 										value={value}
 										onChange={setValue}
@@ -109,9 +152,10 @@ export default function HomePage(): JSX.Element {
 									/>
 								</Menu.Item>
 
+								<Title order={6}>Review Count</Title>
 								<Menu.Item mb="md">
 									{/* Review Count Filter */}
-									<Title order={6}>Review Count</Title>
+
 									<Slider
 										value={endValue}
 										onChange={setEndValue}
@@ -128,18 +172,43 @@ export default function HomePage(): JSX.Element {
 									/>
 								</Menu.Item>
 
-								<Menu.Item>
-									{/* Sort Options */}
-									<Title order={6}>Sort by</Title>
-									<Menu.Item leftSection={<IconSortAscendingNumbers size={14} />}>
-										Rating (Asc)
-									</Menu.Item>
-									<Menu.Item leftSection={<IconSortDescendingNumbers size={14} />}>
-										Rating (Desc)
-									</Menu.Item>
-									<Menu.Item leftSection={<IconSortAscending size={14} />}>Name (Asc)</Menu.Item>
-									<Menu.Item leftSection={<IconSortDescending size={14} />}>Name (Desc)</Menu.Item>
-								</Menu.Item>
+								<Title order={6}>Sort By</Title>
+								<Box mb="md">
+									<Select
+										value={sortCourse.field}
+										onChange={(value) =>
+											setSortCourse({ field: value || "rating", order: sortCourse.order })
+										}
+										placeholder="Sort by"
+										data={[
+											{ value: "rating", label: "Rating" },
+											{ value: "name", label: "Name" },
+											{ value: "review_count", label: "Review Count" }
+										]}
+									/>
+								</Box>
+
+								<Box className="flex items-center justify-center">
+									<Group gap="xs">
+										<Tooltip label="Sort Ascending" position="top">
+											<Button
+												variant={sortCourse.order === "desc" ? "filled" : "outline"}
+												onClick={() => handleSortOrder("desc")}
+											>
+												<IconSortAscending size={14} />
+											</Button>
+										</Tooltip>
+
+										<Tooltip label="Sort Descending" position="top">
+											<Button
+												variant={sortCourse.order === "asc" ? "filled" : "outline"}
+												onClick={() => handleSortOrder("asc")}
+											>
+												<IconSortDescending size={14} />
+											</Button>
+										</Tooltip>
+									</Group>
+								</Box>
 							</Menu.Dropdown>
 						</Menu>
 
