@@ -1,6 +1,6 @@
 "use client";
 
-import { CourseCard } from "@components/ui/course-card";
+import { CourseCard } from "@components/ui/cards/course-card";
 import {
 	Button,
 	Group,
@@ -236,12 +236,12 @@ export default function HomePage(): JSX.Element {
 										return (
 											<CourseCard
 												// Ensure that the key is unique, otherwise same keys will cause a lot of issues.
-												key={`CourseCard_${(course.code, course.full_name)}`}
-												courseName={course.full_name}
-												courseCode={course.code}
-												coursePrerequisites={course.prerequisites}
-												courseRating={course.overall_ratings}
-												courseReviewCount={course.reviews_count}
+												key={`CourseCard_${course.code}`}
+												full_name={course.full_name}
+												code={course.code}
+												prerequisites={course.prerequisites}
+												overall_ratings={course.overall_ratings}
+												reviews_count={course.reviews_count}
 											/>
 										);
 									})}
