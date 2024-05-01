@@ -86,7 +86,7 @@ export default function HomePage(): JSX.Element {
 			.catch((error) => {
 				console.error("Error fetching course list: ", error);
 			});
-	}, [pageNumber, apiClient, debounceSearchValue, value, endValue]);
+	}, [pageNumber, apiClient, debounceSearchValue, value, endValue, sortCourse]);
 
 	//handle the search result to always set at page 1
 	const handleSearchValueChange = (event: { target: { value: any } }) => {
