@@ -16,8 +16,8 @@ import {
 	Select,
 	Box,
 	Tooltip,
-	Badge,
-	Divider
+	Divider,
+	VisuallyHidden
 } from "@mantine/core";
 import { IconMoodSad, IconSortAscending } from "@tabler/icons-react";
 import { IconFilter, IconSearch, IconSortDescending } from "@tabler/icons-react";
@@ -86,7 +86,6 @@ export default function HomePage(): JSX.Element {
 				});
 
 				setCOURSE_LIST({ ...data, data: filteredCourse });
-				console.log("Course list: ", data);
 				setIsLoading(false);
 			})
 			.catch((error) => {
@@ -138,7 +137,7 @@ export default function HomePage(): JSX.Element {
 							</Menu.Target>
 
 							<Menu.Dropdown>
-								<Title order={6}>Ratings</Title>
+								<Title order={6}>Minimum Ratings</Title>
 								<Menu.Item mb="md">
 									{/* Rating Filter */}
 
@@ -159,7 +158,7 @@ export default function HomePage(): JSX.Element {
 									/>
 								</Menu.Item>
 
-								<Title order={6}>Review Count</Title>
+								<Title order={6}>Minimum Review Count</Title>
 								<Menu.Item mb="md">
 									{/* Review Count Filter */}
 
@@ -167,14 +166,14 @@ export default function HomePage(): JSX.Element {
 										value={endValue}
 										onChange={setEndValue}
 										min={0}
-										max={200}
+										max={40}
 										step={10}
 										marks={[
 											{ value: 0, label: "0" },
-											{ value: 50, label: "50" },
-											{ value: 100, label: "100" },
-											{ value: 150, label: "150" },
-											{ value: 200, label: "200" }
+											{ value: 10, label: "10" },
+											{ value: 20, label: "20" },
+											{ value: 30, label: "30" },
+											{ value: 40, label: "40" }
 										]}
 									/>
 								</Menu.Item>
@@ -227,14 +226,22 @@ export default function HomePage(): JSX.Element {
 				</form>
 
 				{/* Popular Searches */}
-				<Group>
-					<Title order={4}>Quick searches :</Title>
+				<Group gap="xs" preventGrowOverflow={false} wrap="nowrap" className="w-full overflow-x-auto">
+					<Title  className="min-w-max" order={4}>Quick searches :</Title>
 					{popularSearches.map((quickCourseCode) => (
-						<Button radius={45} size="xs" onClick={() => {if (quickSearchInputRef.current) {
-							quickSearchInputRef.current.value = quickCourseCode;
-							handleSearchValueChange({ target: { value: quickCourseCode } });
-							setPageNumber(1);
-						}}}>
+						<Button
+							key={`popularSearch_${quickCourseCode}`}
+							radius={45}
+							className="min-w-min"
+							size="xs"
+							onClick={() => {
+								if (quickSearchInputRef.current) {
+									quickSearchInputRef.current.value = quickCourseCode;
+									handleSearchValueChange({ target: { value: quickCourseCode } });
+									setPageNumber(1);
+								}
+							}}
+						>
 							{quickCourseCode}
 						</Button>
 					))}
