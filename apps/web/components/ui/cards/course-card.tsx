@@ -1,14 +1,9 @@
 /* eslint-disable camelcase -- incoming data might be in snake_case */
 import { Badge, Button, Card, Group, Rating, Stack, Text } from "@mantine/core";
+import { IconBook } from "@tabler/icons-react";
 import Link from "next/link";
 
-interface CourseCardProps {
-	courseName: string;
-	courseCode: string;
-	coursePrerequisites?: string[];
-	courseRating: number;
-	courseReviewCount: number;
-}
+
 import type { Course } from "types/course";
 
 export function CourseCard({
@@ -30,9 +25,10 @@ export function CourseCard({
 			>
 				<Stack className="h-full" gap="xs">
 					<Group wrap="nowrap">
-						<Badge className="min-w-fit" color="blue">
+						{/* <Badge className="min-w-fit" color="blue">
 							IT
-						</Badge>
+						</Badge> */}
+						<IconBook/>
 
 						<Text title={full_name} component="div" truncate="end">
 							{full_name}
@@ -63,7 +59,7 @@ export function CourseCard({
 
 					<Group className="mt-auto" justify="flex-end" gap="xs">
 						<Button variant="outline">View</Button>
-						<Link href={`/courses/${courseCode}`} passHref>
+						<Link href={`/courses/${code}`} passHref>
 							<Button>Review</Button>
 						</Link>
 					</Group>

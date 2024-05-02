@@ -12,10 +12,12 @@ import {
 	Container,
 	Slider,
 	Title,
-	LoadingOverlay,
+	Loader,
 	Select,
 	Box,
-	Tooltip
+	Tooltip,
+	Badge,
+	Divider
 } from "@mantine/core";
 import { IconMoodSad, IconSortAscending } from "@tabler/icons-react";
 import { IconFilter, IconSearch, IconSortDescending } from "@tabler/icons-react";
@@ -24,7 +26,10 @@ import { useEffect, useState } from "react";
 import { Course } from "types/course";
 import { PaginatedResponse } from "types/pagination";
 import { useDebouncedValue } from "@mantine/hooks";
-import { useMemo } from "react";
+import { useMemo, useRef } from "react";
+
+// Popular searches in course code
+const popularSearches = ["ITE", "MKT", "ENT", "CMD", "BUS", "IHM", "ABM"];
 
 export default function HomePage(): JSX.Element {
 	const [currentSearch, setCurrentSearch] = useState("");
@@ -35,6 +40,7 @@ export default function HomePage(): JSX.Element {
 	const [debounceSearchValue] = useDebouncedValue(currentSearch, 300);
 	const [isLoading, setIsLoading] = useState(false);
 	const [sortCourse, setSortCourse] = useState({ field: "rating", order: "ascending" });
+	const popularSearchInputRef = useRef<HTMLInputElement>(null);
 
 	const apiClient = useMemo(() => new CourseComposeAPIClient(""), []);
 	useEffect(() => {
@@ -120,6 +126,7 @@ export default function HomePage(): JSX.Element {
 							onChange={(e) => {
 								handleSearchValueChange(e);
 							}}
+							ref={popularSearchInputRef}
 						/>
 
 						{/* Dropdown Menu for Filter */}
@@ -219,17 +226,34 @@ export default function HomePage(): JSX.Element {
 					</Group>
 				</form>
 
+				{/* Popular Searches */}
+				<Group>
+					<Title order={4}>Popular searches :</Title>
+					{popularSearches.map((popularCourseCode) => (
+						<Button radius={45} size="xs" onClick={() => {if (popularSearchInputRef.current) {
+							popularSearchInputRef.current.value = popularCourseCode;
+							handleSearchValueChange({ target: { value: popularCourseCode } });
+							setPageNumber(1);
+						}}}>
+							{popularCourseCode}
+						</Button>
+					))}
+				</Group>
+
+				<Divider />
+
+				<Title order={2} className="text-start">
+					Course Reviews
+				</Title>
+
 				{/* Courses List Body */}
-				<LoadingOverlay
-					visible={isLoading}
-					zIndex={1000}
-					overlayProps={{ radius: "sm", blur: 2 }}
-					loaderProps={{ color: "blue", type: "bars" }}
-				/>
 				<Paper bg="dark.8" p="sm" withBorder className="h-full">
 					{COURSE_LIST && COURSE_LIST.data.length > 0 ? (
 						//course state with results
 						<div className="relative flex size-full flex-col">
+							{isLoading && (
+								<Loader color="blue" type="bars" className="my-2 flex content-center self-center" />
+							)}
 							<div className="grid grid-cols-12 grid-rows-3 gap-x-2 gap-y-2">
 								{COURSE_LIST &&
 									COURSE_LIST.data.map((course) => {
