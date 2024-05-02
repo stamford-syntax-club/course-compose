@@ -40,7 +40,7 @@ export default function HomePage(): JSX.Element {
 	const [debounceSearchValue] = useDebouncedValue(currentSearch, 300);
 	const [isLoading, setIsLoading] = useState(false);
 	const [sortCourse, setSortCourse] = useState({ field: "rating", order: "ascending" });
-	const popularSearchInputRef = useRef<HTMLInputElement>(null);
+	const quickSearchInputRef = useRef<HTMLInputElement>(null);
 
 	const apiClient = useMemo(() => new CourseComposeAPIClient(""), []);
 	useEffect(() => {
@@ -126,7 +126,7 @@ export default function HomePage(): JSX.Element {
 							onChange={(e) => {
 								handleSearchValueChange(e);
 							}}
-							ref={popularSearchInputRef}
+							ref={quickSearchInputRef}
 						/>
 
 						{/* Dropdown Menu for Filter */}
@@ -228,14 +228,14 @@ export default function HomePage(): JSX.Element {
 
 				{/* Popular Searches */}
 				<Group>
-					<Title order={4}>Popular searches :</Title>
-					{popularSearches.map((popularCourseCode) => (
-						<Button radius={45} size="xs" onClick={() => {if (popularSearchInputRef.current) {
-							popularSearchInputRef.current.value = popularCourseCode;
-							handleSearchValueChange({ target: { value: popularCourseCode } });
+					<Title order={4}>Quick searches :</Title>
+					{popularSearches.map((quickCourseCode) => (
+						<Button radius={45} size="xs" onClick={() => {if (quickSearchInputRef.current) {
+							quickSearchInputRef.current.value = quickCourseCode;
+							handleSearchValueChange({ target: { value: quickCourseCode } });
 							setPageNumber(1);
 						}}}>
-							{popularCourseCode}
+							{quickCourseCode}
 						</Button>
 					))}
 				</Group>
