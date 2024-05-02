@@ -63,8 +63,8 @@ export default function HomePage(): JSX.Element {
 						case "name":
 							comparison =
 								sortCourse.order === "asc"
-									? a.full_name.localeCompare(b.full_name)
-									: b.full_name.localeCompare(a.full_name);
+									? b.full_name.localeCompare(a.full_name)
+									: a.full_name.localeCompare(b.full_name);
 							break;
 						case "review_count":
 							comparison =
