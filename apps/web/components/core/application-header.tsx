@@ -3,6 +3,7 @@ import { useSupabaseStore } from "@stores/supabase-store";
 import { useAuth } from "hooks/use-auth";
 import Link from "next/link";
 import { useEffect, useState } from "react";
+import { navItems } from "./application-navbar";
 
 import type { Session } from "@supabase/supabase-js";
 
@@ -72,8 +73,21 @@ export default function ApplicationHeader({ opened, toggle }: ApplicationHeaderP
 			<Group h="100%" px="md">
 				<Burger onClick={toggle} opened={opened} size="lg" />
 				<Link href="/">
-					<span className="cursor-pointer select-none text-lg lg:text-3xl font-bold uppercase cursor-pointer select-none">Course Compose</span>
+					<span className="hidden cursor-pointer select-none text-2xl font-bold uppercase sm:block">
+						Course Compose
+					</span>
 				</Link>
+
+				<div className="hidden cursor-pointer select-none flex-row gap-x-4 sm:flex">
+					{navItems.map((item, index) => {
+						return (
+							<Link href={item.href} key={`navitem-${item.label}`}>
+								{item.label.toUpperCase()}
+							</Link>
+						);
+					})}
+				</div>
+
 				<div className="ml-auto">
 					{isLoggedIn ? (
 						<Menu shadow="md" withArrow arrowPosition="center" position="left-start">
