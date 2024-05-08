@@ -4,9 +4,17 @@ import "./lib/setup";
 import { ApplicationCommandRegistries, LogLevel, SapphireClient } from "@sapphire/framework";
 import { GatewayIntentBits } from "discord.js";
 
-const missing_env_vars = ["DISCORD_TOKEN", "APP_ID", "DEV_GUILD_ID", "REVIEW_CHANNEL_ID"].filter(
-	(env_var) => !process.env[env_var]
-);
+const missing_env_vars = [
+	"DISCORD_TOKEN",
+	"APP_ID",
+	"DEV_GUILD_ID",
+	"REVIEW_CHANNEL_ID",
+	"REVIEWS_API_ADMIN_USERNAME",
+	"REVIEWS_API_ADMIN_PASSWORD",
+	"KAFKA_BROKER_URL",
+	"KAFKA_TOPIC",
+	"REVIEWS_SERVICE"
+].filter((env_var) => !process.env[env_var]);
 
 const client = new SapphireClient({
 	defaultPrefix: "!",

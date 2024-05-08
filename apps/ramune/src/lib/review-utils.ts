@@ -117,8 +117,8 @@ export async function approveReview(reviewId: string): Promise<{ result: Respons
 	// REVIEWS_API_ADMIN_USERNAME=USERNAME
 	// REVIEWS_API_ADMIN_PASSWORD=PASSWORD
 
-	// TODO: dynamic host based on env, reviews-api:8003
-	const result = await fetch("http://localhost:8003/api/admin/reviews", {
+	// dynamic host based on env, reviews-api:8003 or localhost:8003
+	const result = await fetch(`http://${process.env.REVIEWS_SERVICE}/api/admin/reviews`, {
 		method: "PUT",
 		headers: {
 			"Content-Type": "application/json",
@@ -155,8 +155,8 @@ export async function rejectReview(
 	// REVIEWS_API_ADMIN_USERNAME=USERNAME
 	// REVIEWS_API_ADMIN_PASSWORD=PASSWORD
 
-	// TODO: dynamic host based on env, reviews-api:8003
-	const result = await fetch("http://localhost:8003/api/admin/reviews", {
+	// dynamic host based on env, reviews-api:8003 or localhost:8003
+	const result = await fetch(`http://${process.env.REVIEWS_SERVICE}/api/admin/reviews`, {
 		method: "PUT",
 		headers: {
 			"Content-Type": "application/json",

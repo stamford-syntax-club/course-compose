@@ -24,8 +24,8 @@ interface ReviewKafkaMessage {
 
 const kafka = new Kafka({
 	clientId: "ramune-kafka-reader",
-	// TODO: broker:9092 should be based on an environment variable if running in docker
-	brokers: ["localhost:9092"]
+	// broker:9092 or localhost:9092 should be based on an environment variable if running in docker
+	brokers: [process.env.KAFKA_BROKER_URL || ""]
 	// retry: {
 	// 	maxRetryTime: 10000,
 	// 	retries: 10
@@ -38,7 +38,7 @@ export async function startKafkaConsumer() {
 	container.logger.info("Starting Kafka consumer");
 
 	await consumer.connect();
-	await consumer.subscribe({ topic: "course-compose", fromBeginning: true });
+	await consumer.subscribe({ topic: process.env.KAFKA_TOPIC || "", fromBeginning: true });
 
 	await consumer.run({
 		eachMessage: async ({ topic, partition, message }) => {
