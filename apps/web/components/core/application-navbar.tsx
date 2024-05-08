@@ -1,13 +1,25 @@
 "use client";
 import { AppShell, Button, Flex, NavLink, Stack } from "@mantine/core";
-import { navItems } from "@utils/navitems";
 import { useAuth } from "hooks/use-auth";
 import Link from "next/link";
 import { useEffect, useState } from "react";
 
-export default function ApplicationNavbar(): JSX.Element {
-	const { signIn, signOut, getSession } = useAuth();
+import { IconHistory, IconHome } from "@tabler/icons-react";
+export const navItems = [
+	{
+		label: "Home",
+		href: "/",
+		icon: <IconHome />
+	},
+	{
+		label: "My Reviews",
+		href: "/my-reviews",
+		icon: <IconHistory />
+	}
+];
 
+export default function ApplicationNavbar({ opened, toggle }: { opened: boolean; toggle: () => void }): JSX.Element {
+	const { signIn, signOut, getSession } = useAuth();
 	const [working, setWorking] = useState(false);
 	const [signedIn, setSignedIn] = useState(false);
 
@@ -45,17 +57,21 @@ export default function ApplicationNavbar(): JSX.Element {
 	};
 
 	return (
-		<AppShell.Navbar p="md">
+		<AppShell.Navbar p="md" hidden={!opened}>
 			<Stack h="100%" gap="xs">
 				{navItems.map((item, index) => {
 					return (
-						<NavLink
-							className="rounded-md"
-							label={item.label.toUpperCase()}
-							href={item.href}
-							key={`navitem-${item.label}`}
-							component={Link}
-						/>
+						<Flex direction="row" align="center">
+							{item.icon}
+							<NavLink
+								className="rounded-md"
+								label={item.label.toUpperCase()}
+                                onClick={toggle}
+								href={item.href}
+								key={`navitem-${item.label}`}
+								component={Link}
+							/>
+						</Flex>
 					);
 				})}
 
@@ -69,7 +85,7 @@ export default function ApplicationNavbar(): JSX.Element {
 							disabled={working}
 							variant="default"
 							onClick={handleSignInWithAzure}
-							className="hidden w-full select-none text-lg font-bold uppercase md:block"
+							className="w-full select-none text-lg font-bold uppercase"
 						>
 							Sign In
 						</Button>

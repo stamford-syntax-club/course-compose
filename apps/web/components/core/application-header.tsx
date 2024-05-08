@@ -3,9 +3,9 @@ import { useSupabaseStore } from "@stores/supabase-store";
 import { useAuth } from "hooks/use-auth";
 import Link from "next/link";
 import { useEffect, useState } from "react";
+import { navItems } from "./application-navbar";
 
 import type { Session } from "@supabase/supabase-js";
-import { IconHome } from "@tabler/icons-react";
 
 interface ApplicationHeaderProps {
 	opened: boolean;
@@ -73,15 +73,12 @@ export default function ApplicationHeader({ opened, toggle }: ApplicationHeaderP
 			<Group h="100%" px="md">
 				<Burger onClick={toggle} opened={opened} size="lg" />
 				<Link href="/">
-					<span className="hidden cursor-pointer select-none text-3xl font-bold uppercase md:block">
+					<span className="hidden cursor-pointer select-none text-2xl font-bold uppercase sm:block">
 						Course Compose
-					</span>
-					<span className="flex cursor-pointer select-none items-center justify-center text-3xl font-bold uppercase md:hidden">
-						<IconHome size={32} />
 					</span>
 				</Link>
 
-				{/* <div className="flex flex-row gap-x-4">
+				<div className="hidden cursor-pointer select-none flex-row gap-x-4 sm:flex">
 					{navItems.map((item, index) => {
 						return (
 							<Link href={item.href} key={`navitem-${item.label}`}>
@@ -89,7 +86,7 @@ export default function ApplicationHeader({ opened, toggle }: ApplicationHeaderP
 							</Link>
 						);
 					})}
-				</div> */}
+				</div>
 
 				<div className="ml-auto">
 					{isLoggedIn ? (
@@ -113,7 +110,7 @@ export default function ApplicationHeader({ opened, toggle }: ApplicationHeaderP
 							disabled={working}
 							variant="default"
 							onClick={handleSignInWithAzure}
-							className="hidden select-none text-lg font-bold uppercase md:block"
+							className="select-none text-lg font-bold uppercase"
 						>
 							Sign In
 						</Button>
