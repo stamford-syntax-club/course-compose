@@ -9,12 +9,12 @@ export const navItems = [
 	{
 		label: "Home",
 		href: "/",
-		icon: <IconHome />
+		icon: <IconHome  />
 	},
 	{
 		label: "My Reviews",
 		href: "/my-reviews",
-		icon: <IconHistory />
+		icon: <IconHistory  />
 	}
 ];
 
@@ -61,14 +61,13 @@ export default function ApplicationNavbar({ opened, toggle }: { opened: boolean;
 			<Stack h="100%" gap="xs">
 				{navItems.map((item, index) => {
 					return (
-						<Flex direction="row" align="center">
+						<Flex key={`navitem-${item.label}`} direction="row" align="center">
 							{item.icon}
 							<NavLink
 								className="rounded-md"
 								label={item.label.toUpperCase()}
-                                onClick={toggle}
+								onClick={toggle}
 								href={item.href}
-								key={`navitem-${item.label}`}
 								component={Link}
 							/>
 						</Flex>
