@@ -11,6 +11,7 @@ import {
 	TextInput,
 	Container,
 	Slider,
+	Text,
 	Title,
 	Loader,
 	Select,
@@ -56,7 +57,7 @@ export default function HomePage(): JSX.Element {
 	}, [pageNumber, apiClient, debounceSearchValue, sortField, sortOrder]);
 
 	//handle the search result to always set at page 1
-	const handleSearchValueChange = (event: { target: { value: any } }) => {
+	const handleSearchValueChange = (event: { target: { value: any } }): void => {
 		const searchValue = event.target.value;
 		setCurrentSearch(searchValue);
 		setPageNumber(1);
@@ -216,47 +217,44 @@ export default function HomePage(): JSX.Element {
 
 				{/* Courses List Body */}
 				<Paper bg="dark.8" p="sm" withBorder className="h-full">
-					{courseList && courseList.data.length > 0 ? (
-						//course state with results
+					{isLoading ? (
+						<div className="flex w-full flex-col items-center gap-y-4">
+							<Loader color="blue" type="bars" />
+							<Text>Loading</Text>
+						</div>
+					) : null}
+					{!isLoading && courseList && courseList.data.length > 0 ? (
 						<div className="relative flex size-full flex-col">
-							{isLoading ? (
-								<Loader color="blue" type="bars" className="my-2 flex content-center self-center" />
-							) : null}
 							<div className="grid grid-cols-12 grid-rows-3 gap-x-2 gap-y-2">
-								{courseList
-									? courseList.data.map((course) => {
-											return (
-												<CourseCard
-													// Ensure that the key is unique, otherwise same keys will cause a lot of issues.
-													key={`CourseCard_${course.code}`}
-													full_name={course.full_name}
-													code={course.code}
-													prerequisites={course.prerequisites}
-													overall_ratings={course.overall_ratings}
-													reviews_count={course.reviews_count}
-												/>
-											);
-										})
-									: null}
+								{courseList.data.map((course) => (
+									<CourseCard
+										key={`CourseCard_${course.code}`}
+										full_name={course.full_name}
+										code={course.code}
+										prerequisites={course.prerequisites}
+										overall_ratings={course.overall_ratings}
+										reviews_count={course.reviews_count}
+									/>
+								))}
 							</div>
 							<div className="mt-6 flex items-center justify-center">
 								<Pagination
 									withEdges
-									total={courseList.totalPages ?? 1}
+									total={courseList.totalPages}
 									value={pageNumber}
 									onChange={setPageNumber}
 								/>
 							</div>
 						</div>
-					) : isLoading ? null : (
-						//Empty state of the course list
+					) : null}
+					{!isLoading && courseList && courseList.data.length === 0 ? (
 						<div className="p-sm flex h-full flex-col items-center justify-center text-center">
 							<IconMoodSad size={50} />
 							<Title order={2} textWrap="wrap" c="gray">
 								No course result found for your search!
 							</Title>
 						</div>
-					)}
+					) : null}
 				</Paper>
 			</Stack>
 		</Container>
