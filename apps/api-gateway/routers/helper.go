@@ -8,6 +8,7 @@ import (
 	"io"
 	"log"
 	"net/http"
+	"net/url"
 	"strings"
 
 	"github.com/gofiber/fiber/v2"
@@ -62,7 +63,8 @@ func appendQueryParams(queries map[string]string, endpoint *string) {
 	}
 
 	for key, value := range queries {
-		*endpoint += fmt.Sprintf("%s=%s&", key, value)
+		encodedValue := url.QueryEscape(value)
+		*endpoint += fmt.Sprintf("%s=%s&", key, encodedValue)
 	}
 }
 

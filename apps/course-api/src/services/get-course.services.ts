@@ -24,7 +24,13 @@ const getCourseByCode = async (code: string) => {
 	}
 };
 
-const getAllCourses = async (search: string, pageSize: number, pageNumber: number) => {
+const getAllCourses = async (
+	sortBy: "name" | "reviewCount",
+	sortOrder: "asc" | "desc",
+	search: string,
+	pageSize: number,
+	pageNumber: number
+) => {
 	const query: Prisma.CourseFindManyArgs = {
 		where: {
 			OR: [
@@ -43,7 +49,6 @@ const getAllCourses = async (search: string, pageSize: number, pageNumber: numbe
 			]
 		}
 	};
-
 	const [courses, count] = await prismaClient.$transaction([
 		prismaClient.course.findMany({
 			...query,
@@ -58,7 +63,21 @@ const getAllCourses = async (search: string, pageSize: number, pageNumber: numbe
 						status: "APPROVED"
 					}
 				}
-			}
+			},
+			orderBy: (() => {
+				if (sortBy === "reviewCount") {
+					return {
+						reviews: {
+							_count: sortOrder
+						}
+					};
+				}
+				if (sortBy === "name") {
+					return {
+						full_name: sortOrder
+					};
+				}
+			})()
 		}),
 		prismaClient.course.count({ where: query.where })
 	]);

@@ -8,11 +8,9 @@ import {
 	ERR_USER_NOT_EXIST,
 	ERR_MISSING_TOKEN,
 	ERR_USER_NOT_OWNER,
-	COURSE_API_ENDPOINT,
-	BASE_API_ENDPOINT
+	COURSE_API_ENDPOINT
 } from "@utils/constants";
 import type { NotificationData } from "@mantine/notifications";
-import fetcher, { FetcherResult } from "@utils/fetcher";
 
 export default class CourseComposeAPIClient {
 	private courseEndpoint: string;
@@ -23,8 +21,15 @@ export default class CourseComposeAPIClient {
 		this.reviewEndpoint = `${this.courseEndpoint}/reviews`;
 	}
 
-	async fetchCourse(searchValue: string, pageNumber: number): Promise<PaginatedResponse<Course>> {
-		const data = await fetch(`${COURSE_API_ENDPOINT}?pageNumber=${pageNumber}&pageSize=9&search=${searchValue}`);
+	async fetchCourse(
+		sortBy: string,
+		sortOrder: string,
+		searchValue: string,
+		pageNumber: number
+	): Promise<PaginatedResponse<Course>> {
+		const data = await fetch(
+			`${COURSE_API_ENDPOINT}?pageNumber=${pageNumber}&pageSize=9&search=${searchValue}&sortBy=${sortBy}&order=${sortOrder}`
+		);
 
 		if (!data.ok) {
 			const err = (await data.json()) as ErrorResponse;
