@@ -39,8 +39,8 @@ jobs:
             - name: Unit test
               run: pnpm run unit
 
-            - name: Integration test
-              run: pnpm run integration
-
             - name: Test
               run: pnpm run test
+
+            - name: Integration test
+              run: pnpm run integration
