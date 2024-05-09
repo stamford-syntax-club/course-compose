@@ -89,6 +89,13 @@ func TestAppendQueryParams(t *testing.T) {
 			},
 			expectedEndpoint: "http://test-endpoint.com?userId=9&hello=world&foo=bar&",
 		},
+		{
+			name: "should escape string so it can be safely passed on the URL",
+			queries: map[string]string{
+				"search": "Course Closed",
+			},
+			expectedEndpoint: "http://test-endpoint.com?search=Course+Closed&",
+		},
 	}
 
 	for _, test := range tests {
