@@ -10,6 +10,7 @@
 			"@routes/*": ["src/routes/*"],
 			"@utils/*": ["src/utils/*"],
 			"@middlewares/*": ["src/middlewares/*"],
+			"@services/*": ["src/services/*"],
 			"@root/*": ["./*"]
 		},
 		"esModuleInterop": true,

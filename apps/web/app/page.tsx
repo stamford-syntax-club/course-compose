@@ -16,93 +16,50 @@ import {
 	Select,
 	Box,
 	Tooltip,
-	Divider,
-	VisuallyHidden
+	Divider
 } from "@mantine/core";
-import { IconMoodSad, IconSortAscending } from "@tabler/icons-react";
-import { IconFilter, IconSearch, IconSortDescending } from "@tabler/icons-react";
+import { IconMoodSad, IconSortAscending, IconFilter, IconSearch, IconSortDescending } from "@tabler/icons-react";
 import CourseComposeAPIClient from "lib/api/api";
-import { useEffect, useState } from "react";
-import { Course } from "types/course";
-import { PaginatedResponse } from "types/pagination";
+import { useEffect, useState, useMemo, useRef } from "react";
+import type { Course } from "types/course";
+import type { PaginatedResponse } from "types/pagination";
 import { useDebouncedValue } from "@mantine/hooks";
-import { useMemo, useRef } from "react";
 
 // Popular searches in course code
 const popularSearches = ["ITE", "MKT", "ENT", "CMD", "BUS", "IHM", "ABM"];
 
 export default function HomePage(): JSX.Element {
 	const [currentSearch, setCurrentSearch] = useState("");
-	const [value, setValue] = useState(0);
-	const [endValue, setEndValue] = useState(200);
-	const [COURSE_LIST, setCOURSE_LIST] = useState<PaginatedResponse<Course>>();
+	// TODO: wait for backend to implement filter based on aggregated values
+	//	const [minimumRating, setMinimumRating] = useState(0);
+	//	const [minimumReviews, setMinimumReviews] = useState(0);
+	const [courseList, setCourseList] = useState<PaginatedResponse<Course>>();
 	const [pageNumber, setPageNumber] = useState(1);
 	const [debounceSearchValue] = useDebouncedValue(currentSearch, 300);
 	const [isLoading, setIsLoading] = useState(false);
-	const [sortCourse, setSortCourse] = useState({ field: "rating", order: "ascending" });
+	const [sortField, setSortField] = useState("reviewCount");
+	const [sortOrder, setSortOrder] = useState("desc");
 	const quickSearchInputRef = useRef<HTMLInputElement>(null);
 
 	const apiClient = useMemo(() => new CourseComposeAPIClient(""), []);
 	useEffect(() => {
 		setIsLoading(true);
 		apiClient
-			.fetchCourse(debounceSearchValue, pageNumber)
+			.fetchCourse(sortField, sortOrder, debounceSearchValue, pageNumber)
 			.then((data) => {
-				//sorting the course list with rating, name and review count
-				let sortedCourseList = [...data.data];
-
-				sortedCourseList.sort((a, b) => {
-					let comparison;
-					switch (sortCourse.field) {
-						case "rating":
-							comparison =
-								sortCourse.order === "asc"
-									? a.overall_ratings - b.overall_ratings
-									: b.overall_ratings - a.overall_ratings;
-							break;
-						case "name":
-							comparison =
-								sortCourse.order === "asc"
-									? b.full_name.localeCompare(a.full_name)
-									: a.full_name.localeCompare(b.full_name);
-							break;
-						case "review_count":
-							comparison =
-								sortCourse.order === "asc"
-									? a.reviews_count - b.reviews_count
-									: b.reviews_count - a.reviews_count;
-							break;
-						default:
-							comparison = 0;
-					}
-					return comparison;
-				});
-
-				//filter the course list with the rating and review count
-				const filteredCourse = sortedCourseList.filter((course) => {
-					return (
-						course.overall_ratings >= value && course.reviews_count >= 0 && course.reviews_count <= endValue
-					);
-				});
-
-				setCOURSE_LIST({ ...data, data: filteredCourse });
+				setCourseList(data);
 				setIsLoading(false);
 			})
 			.catch((error) => {
 				console.error("Error fetching course list: ", error);
 			});
-	}, [pageNumber, apiClient, debounceSearchValue, value, endValue, sortCourse]);
+	}, [pageNumber, apiClient, debounceSearchValue, sortField, sortOrder]);
 
 	//handle the search result to always set at page 1
 	const handleSearchValueChange = (event: { target: { value: any } }) => {
 		const searchValue = event.target.value;
 		setCurrentSearch(searchValue);
 		setPageNumber(1);
-	};
-
-	//handle the sort order of the course list
-	const handleSortOrder = (order: string) => {
-		setSortCourse({ ...sortCourse, order: order });
 	};
 
 	return (
@@ -137,13 +94,12 @@ export default function HomePage(): JSX.Element {
 							</Menu.Target>
 
 							<Menu.Dropdown>
-								<Title order={6}>Minimum Ratings</Title>
-								<Menu.Item mb="md">
-									{/* Rating Filter */}
-
-									<Slider
-										value={value}
-										onChange={setValue}
+								{/* <Title order={6}>Minimum Ratings</Title> */}
+								{/* <Menu.Item mb="md"> */}
+								{/* Rating Filter */}
+								{/* <Slider
+										value={minimumRating}
+										onChange={setMinimumRating}
 										min={0}
 										max={5}
 										step={0.5}
@@ -155,16 +111,15 @@ export default function HomePage(): JSX.Element {
 											{ value: 4, label: "4" },
 											{ value: 5, label: "5" }
 										]}
-									/>
-								</Menu.Item>
+									/> */}
+								{/* </Menu.Item> */}
 
-								<Title order={6}>Minimum Review Count</Title>
-								<Menu.Item mb="md">
-									{/* Review Count Filter */}
-
-									<Slider
-										value={endValue}
-										onChange={setEndValue}
+								{/* <Title order={6}>Minimum Review Count</Title> */}
+								{/* <Menu.Item mb="md"> */}
+								{/* Review Count Filter */}
+								{/* <Slider
+										value={minimumReviews}
+										onChange={setMinimumReviews}
 										min={0}
 										max={40}
 										step={10}
@@ -175,21 +130,21 @@ export default function HomePage(): JSX.Element {
 											{ value: 30, label: "30" },
 											{ value: 40, label: "40" }
 										]}
-									/>
-								</Menu.Item>
+									/> */}
+								{/* </Menu.Item> */}
 
 								<Title order={6}>Sort By</Title>
 								<Box mb="md">
 									<Select
-										value={sortCourse.field}
-										onChange={(value) =>
-											setSortCourse({ field: value || "rating", order: sortCourse.order })
-										}
+										value={sortField}
+										onChange={(value) => {
+											setSortField(value || "rating");
+										}}
 										placeholder="Sort by"
 										data={[
-											{ value: "rating", label: "Rating" },
+											// { value: "rating", label: "Rating" },
 											{ value: "name", label: "Name" },
-											{ value: "review_count", label: "Review Count" }
+											{ value: "reviewCount", label: "Review Count" }
 										]}
 									/>
 								</Box>
@@ -198,8 +153,10 @@ export default function HomePage(): JSX.Element {
 									<Group gap="xs">
 										<Tooltip label="Sort Ascending" position="top">
 											<Button
-												variant={sortCourse.order === "desc" ? "filled" : "outline"}
-												onClick={() => handleSortOrder("desc")}
+												variant={sortOrder === "asc" ? "filled" : "outline"}
+												onClick={() => {
+													setSortOrder("asc");
+												}}
 											>
 												<IconSortAscending size={14} />
 											</Button>
@@ -207,8 +164,10 @@ export default function HomePage(): JSX.Element {
 
 										<Tooltip label="Sort Descending" position="top">
 											<Button
-												variant={sortCourse.order === "asc" ? "filled" : "outline"}
-												onClick={() => handleSortOrder("asc")}
+												variant={sortOrder === "desc" ? "filled" : "outline"}
+												onClick={() => {
+													setSortOrder("desc");
+												}}
 											>
 												<IconSortDescending size={14} />
 											</Button>
@@ -227,7 +186,9 @@ export default function HomePage(): JSX.Element {
 
 				{/* Popular Searches */}
 				<Group gap="xs" preventGrowOverflow={false} wrap="nowrap" className="w-full overflow-x-auto">
-					<Title  className="min-w-max" order={4}>Quick searches :</Title>
+					<Title className="min-w-max" order={4}>
+						Quick searches :
+					</Title>
 					{popularSearches.map((quickCourseCode) => (
 						<Button
 							key={`popularSearch_${quickCourseCode}`}
@@ -255,32 +216,33 @@ export default function HomePage(): JSX.Element {
 
 				{/* Courses List Body */}
 				<Paper bg="dark.8" p="sm" withBorder className="h-full">
-					{COURSE_LIST && COURSE_LIST.data.length > 0 ? (
+					{courseList && courseList.data.length > 0 ? (
 						//course state with results
 						<div className="relative flex size-full flex-col">
-							{isLoading && (
+							{isLoading ? (
 								<Loader color="blue" type="bars" className="my-2 flex content-center self-center" />
-							)}
+							) : null}
 							<div className="grid grid-cols-12 grid-rows-3 gap-x-2 gap-y-2">
-								{COURSE_LIST &&
-									COURSE_LIST.data.map((course) => {
-										return (
-											<CourseCard
-												// Ensure that the key is unique, otherwise same keys will cause a lot of issues.
-												key={`CourseCard_${course.code}`}
-												full_name={course.full_name}
-												code={course.code}
-												prerequisites={course.prerequisites}
-												overall_ratings={course.overall_ratings}
-												reviews_count={course.reviews_count}
-											/>
-										);
-									})}
+								{courseList
+									? courseList.data.map((course) => {
+											return (
+												<CourseCard
+													// Ensure that the key is unique, otherwise same keys will cause a lot of issues.
+													key={`CourseCard_${course.code}`}
+													full_name={course.full_name}
+													code={course.code}
+													prerequisites={course.prerequisites}
+													overall_ratings={course.overall_ratings}
+													reviews_count={course.reviews_count}
+												/>
+											);
+										})
+									: null}
 							</div>
 							<div className="mt-6 flex items-center justify-center">
 								<Pagination
 									withEdges
-									total={COURSE_LIST?.totalPages ?? 1}
+									total={courseList.totalPages ?? 1}
 									value={pageNumber}
 									onChange={setPageNumber}
 								/>
@@ -290,7 +252,7 @@ export default function HomePage(): JSX.Element {
 						//Empty state of the course list
 						<div className="p-sm flex h-full flex-col items-center justify-center text-center">
 							<IconMoodSad size={50} />
-							<Title order={2} textWrap="wrap" c={"gray"}>
+							<Title order={2} textWrap="wrap" c="gray">
 								No course result found for your search!
 							</Title>
 						</div>
