@@ -27,13 +27,13 @@ beforeAll(async () => {
 		]
 	});
 
-    await prismaClient.profile.createMany({
-        data: [
+	await prismaClient.profile.createMany({
+		data: [
 			{ id: "6c7b1dd2-aa9d-4f5e-8a98-2c7c2895a95e", isActive: true },
 			{ id: "2d1f3c4e-5a6b-7c8d-9e0f-1a2b3c4d5e6f", isActive: true },
-			{ id: "8a7b3c2e-3e5f-4f1a-a8b7-3c2e1a4f5b6d", isActive: true },
-        ]
-    })
+			{ id: "8a7b3c2e-3e5f-4f1a-a8b7-3c2e1a4f5b6d", isActive: true }
+		]
+	});
 	await prismaClient.review.createMany({
 		data: [
 			{
@@ -92,7 +92,7 @@ describe("Get course by code", () => {
 			expect(code).toBe("ITE221");
 			expect(full_name).toBe("Programming 1");
 			expect(prerequisites).toEqual(["ITE103"]);
-			expect(overall_ratings).toEqual(2.25); // (3+1.5)/2
+			expect(overall_ratings).toEqual(2.3); // (3+1.5)/2 = 2.25 then round to 1 decimal point
 			expect(reviews_count).toEqual(2);
 		});
 	});
@@ -119,7 +119,7 @@ describe("Get all courses", () => {
 			expect(number).toBe(1);
 			expect(totalNumberOfItems).toBe(4);
 			expect(totalPages).toBe(1);
-			expect(courses[0].overall_ratings).toBe(2.25);
+			expect(courses[0].overall_ratings).toBe(2.3);
 			expect(courses[0].reviews_count).toBe(2);
 		});
 	});
