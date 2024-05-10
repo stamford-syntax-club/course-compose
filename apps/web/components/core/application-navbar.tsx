@@ -4,17 +4,23 @@ import { useAuth } from "hooks/use-auth";
 import Link from "next/link";
 import { useEffect, useState } from "react";
 
-import { IconHistory, IconHome } from "@tabler/icons-react";
+import { IconBooks, IconHistory, IconHome } from "@tabler/icons-react";
 export const navItems = [
 	{
 		label: "Home",
 		href: "/",
-		icon: <IconHome  />
+		icon: <IconHome />
 	},
 	{
 		label: "My Reviews",
 		href: "/my-reviews",
-		icon: <IconHistory  />
+		icon: <IconHistory />
+	},
+	{
+		label: "Resource Hub",
+		href: "https://center.stamford.dev/resources",
+		newTab: true,
+		icon: <IconBooks />
 	}
 ];
 
@@ -62,13 +68,14 @@ export default function ApplicationNavbar({ opened, toggle }: { opened: boolean;
 				{navItems.map((item, index) => {
 					return (
 						<Flex key={`navitem-${item.label}`} direction="row" align="center">
-							{item.icon}
 							<NavLink
 								className="rounded-md"
 								label={item.label.toUpperCase()}
 								onClick={toggle}
 								href={item.href}
+								target={item.newTab ? "_blank" : undefined}
 								component={Link}
+								leftSection={item.icon}
 							/>
 						</Flex>
 					);
