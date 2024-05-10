@@ -60,3 +60,13 @@ jobs:
         with:
             packages_deployment: ${{ needs.pre-release.outputs.packages_deployment }}
             environment: beta
+
+    gitops-dev:
+        needs: [pre-release, deploy-ghcr]
+        if: ${{ needs.pre-release.outputs.packages_deployment != '[]' }}
+        uses: ./.github/workflows/gitops.yaml
+        with:
+            packages_deployment: ${{ needs.pre-release.outputs.packages_deployment }}
+            environment: beta
+        secrets:
+            workflow_token: ${{ secrets.WORKFLOW_TOKEN }}

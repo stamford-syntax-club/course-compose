@@ -1,0 +1,47 @@
+name: Deploy to Dev/Production server
+
+on:
+    workflow_call:
+        secrets:
+            workflow_token:
+                required: true
+        inputs:
+            packages_deployment:
+                description: packages to build and deploy
+                required: true
+                type: string
+            environment:
+                description: environment to deploy (beta or production)
+                required: true
+                type: string
+
+jobs:
+    gitops-dev:
+        environment: ${{ inputs.environment }}
+        runs-on: ubuntu-latest
+        strategy:
+            matrix:
+                packages: ${{ fromJson(inputs.packages_deployment) }}
+
+        steps:
+            - name: checkout
+              uses: actions/checkout@v3
+              with:
+                  repository: stamford-syntax-club/infra
+                  fetch-depth: 0
+                  token: ${{ secrets.workflow_token }}
+
+            - name: create and checkout new branch
+              run: |
+                  git checkout -b deploy/${{ inputs.environment }}/coursecompose/${{ matrix.packages.name }}/${{ github.sha }}
+            - name: change image tag
+              run: |
+                  git config user.name "${{ github.actor }}"
+                  git config user.email "${{ github.actor }}@stamford.dev"
+                  sed -i -E "s#ghcr\.io/stamford-syntax-club/course-compose/${{ matrix.packages.name }}.*\$#${{ env.IMAGE_TAG }}#g" coursecompose/${{ vars.DOCKER_COMPOSE_FILE }}
+                  git add coursecompose/${{ vars.DOCKER_COMPOSE_FILE }}
+                  git commit -m "🤖 [COURSECOMPOSE-${{ matrix.packages.name }}-${{ inputs.environment }}] change docker image version to ${{ matrix.packages.imageTag }}"
+                  git push origin deploy/${{ inputs.environment }}/coursecompose/${{ matrix.packages.name }}/${{ github.sha }}
+              env:
+                  IMAGE_TAG: ${{ matrix.packages.imageTag }}
+                  DOCKER_COMPOSE_FILE: ${{ vars.DOCKER_COMPOSE_FILE }}
