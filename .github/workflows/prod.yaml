@@ -35,7 +35,7 @@ jobs:
             environment: production
 
     gitops-prod:
-        needs: [pre-relase, deploy-ghcr]
+        needs: [pre-release, deploy-ghcr]
         if: ${{ needs.pre-release.outputs.packages_deployment != '[]' }}
         uses: ./.github/workflows/gitops.yaml
         with:
