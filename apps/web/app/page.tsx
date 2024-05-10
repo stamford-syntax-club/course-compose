@@ -134,12 +134,13 @@ export default function HomePage(): JSX.Element {
 									/> */}
 								{/* </Menu.Item> */}
 
-								<Title order={6}>Sort By</Title>
+								<Title order={6} mb="xs">Sort By</Title>
 								<Box mb="md">
 									<Select
 										value={sortField}
 										onChange={(value) => {
-											setSortField(value || "rating");
+											setSortField(value || "name")
+											setSortOrder(value === "reviewCount" ? "desc" : "asc")
 										}}
 										placeholder="Sort by"
 										data={[
@@ -186,7 +187,7 @@ export default function HomePage(): JSX.Element {
 				</form>
 
 				{/* Popular Searches */}
-				<Group gap="xs" preventGrowOverflow={false} wrap="nowrap" className="w-full overflow-x-auto">
+				<Group gap="xs" preventGrowOverflow={false} wrap="nowrap" className="w-full overflow-y-hidden">
 					<Title className="min-w-max" order={4}>
 						Quick searches :
 					</Title>
