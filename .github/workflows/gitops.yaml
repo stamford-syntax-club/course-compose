@@ -38,7 +38,7 @@ jobs:
               run: |
                   git config user.name "${{ github.actor }}"
                   git config user.email "${{ github.actor }}@stamford.dev"
-                  sed -i -E "s#ghcr\.io/stamford-syntax-club/course-compose/${{ matrix.packages.name }}.*\$#${{ env.IMAGE_TAG }}#g" coursecompose/docker-compose.dev.yaml
+                  sed -i -E "s#ghcr\.io/stamford-syntax-club/course-compose/${{ matrix.packages.name }}.*\$#${{ env.IMAGE_TAG }}#g" coursecompose/${{ vars.DOCKER_COMPOSE_FILE }}
                   git add coursecompose/${{ vars.DOCKER_COMPOSE_FILE }}
                   git commit -m "🤖 [COURSECOMPOSE-${{ matrix.packages.name }}-${{ inputs.environment }}] change docker image version to ${{ matrix.packages.imageTag }}"
                   git push origin deploy/${{ inputs.environment }}/coursecompose/${{ matrix.packages.name }}/${{ github.sha }}
