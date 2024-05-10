@@ -6,7 +6,7 @@ export function calcOverallRating(reviews: { rating: number }[]): number {
 		sum += reviews[i].rating;
 	}
 
-	return sum / reviews.length || 0;
+	return +(sum / reviews.length || 0).toFixed(1);
 }
 
 export function mapCourseToCourseResponse(course: RawCourse): CourseResponse {
