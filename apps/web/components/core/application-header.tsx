@@ -81,7 +81,11 @@ export default function ApplicationHeader({ opened, toggle }: ApplicationHeaderP
 				<div className="hidden cursor-pointer select-none flex-row gap-x-4 sm:flex">
 					{navItems.map((item, index) => {
 						return (
-							<Link href={item.href} key={`navitem-${item.label}`}>
+							<Link
+								target={item.newTab ? "_blank" : undefined}
+								href={item.href}
+								key={`navitem-${item.label}`}
+							>
 								{item.label.toUpperCase()}
 							</Link>
 						);
