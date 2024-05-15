@@ -1,5 +1,5 @@
 /* eslint-disable camelcase -- incoming data might be in snake_case */
-import {  Button, Card, Group, Rating, Stack, Text } from "@mantine/core";
+import { Button, Card, Group, Rating, Stack, Text } from "@mantine/core";
 import { IconBook } from "@tabler/icons-react";
 import Link from "next/link";
 
@@ -39,7 +39,7 @@ export function CourseCard({
 								sm: "md"
 							}}
 						>
-							<Text span c="dimmed" inherit>
+							<Text fw={500} span c="dimmed" inherit>
 								({code})
 							</Text>
 						</Text>
@@ -50,7 +50,7 @@ export function CourseCard({
 					</Text>
 
 					<Group gap="xs">
-						<Rating value={overall_ratings} fractions={2} readOnly />
+						<Rating value={overall_ratings} fractions={2} readOnly color="#01a1e4" />
 						<Text>
 							{overall_ratings} ({reviews_count})
 						</Text>

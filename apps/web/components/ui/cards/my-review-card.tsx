@@ -35,7 +35,7 @@ export function MyReviewCard({ cardData }: { cardData: Review }): JSX.Element {
 					</Group>
 
 					<Flex gap="xs" align="center" justify="space-between">
-						<Rating value={rating} fractions={2} readOnly />
+						<Rating value={rating} fractions={2} readOnly color="#01a1e4" />
 						{/* <Flex gap="5px" align="center">
 							<IconArrowUp color="green" strokeWidth={3} />
 							30

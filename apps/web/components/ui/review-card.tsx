@@ -54,7 +54,7 @@ export function ReviewCard({ review }: ReviewCardProps): JSX.Element {
 
 				{/* review and ratings */}
 				<Flex direction="column" justify="flex-start" ml="3" gap="4" w="100%">
-					<Rating size="md" value={review.rating} fractions={2} defaultValue={0} readOnly />
+					<Rating size="md" value={review.rating} fractions={2} defaultValue={0} readOnly color="#01a1e4" />
 					<Text fw={800} size="sm">
 						Academic Year: {review.academicYear}
 					</Text>

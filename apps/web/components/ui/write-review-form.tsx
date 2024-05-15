@@ -87,7 +87,14 @@ export default function WriteReviewForm({ onSubmit, previousReview }: WriteRevie
 						onChange={setAcademicYear}
 						placeholder="Academic year"
 					/>
-					<Rating size="lg" defaultValue={0} fractions={2} value={rating} onChange={setRating} />
+					<Rating
+						size="lg"
+						defaultValue={0}
+						fractions={2}
+						value={rating}
+						onChange={setRating}
+						color="#01a1e4"
+					/>
 				</Flex>
 
 				<MarkdownEditor editor={markdownEditor} />
