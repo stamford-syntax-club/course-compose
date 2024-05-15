@@ -148,8 +148,8 @@ export default function CourseReview({ params }: { params: { courseCode: string 
 			<Stack gap="sm">
 				{showReviewLimitAlert ? (
 					<Alert color="yellow" icon={<IconLock />}>
-						Explore up to 2 reviews per course. Share your thoughts by writing your first review to discover
-						more reviews and insights!
+						Explore up to 2 reviews per course. Unlock this by submitting your first review in any course
+						you have taken.
 					</Alert>
 				) : null}
 				{reviewsData?.data && reviewsData.data.length > 0
