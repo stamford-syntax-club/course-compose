@@ -94,11 +94,6 @@ export default function CourseReview({ params }: { params: { courseCode: string 
 				setReviewsData(reviews);
 			} catch (err) {
 				console.error(err);
-				notifications.show({
-					title: "Error!",
-					message: "Something went wrong, please try again later",
-					color: "red"
-				});
 			} finally {
 				setIsLoading(false);
 			}
@@ -148,7 +143,7 @@ export default function CourseReview({ params }: { params: { courseCode: string 
 			<Stack gap="sm">
 				{showReviewLimitAlert ? (
 					<Alert color="yellow" icon={<IconLock />}>
-						Explore up to 2 reviews per course. Unlock this by submitting your first review in any course
+						Explore up to 2 reviews per course. Unlock this by submitting your first review in any courses
 						you have taken.
 					</Alert>
 				) : null}
