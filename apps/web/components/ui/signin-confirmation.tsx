@@ -3,9 +3,15 @@ import { IconAlertCircle } from "@tabler/icons-react";
 import { useAuth } from "hooks/use-auth";
 import { useRouter } from "next/navigation";
 
-export default function SigninConfirmationModal({ opened, close }: { opened: boolean; close: () => void }) {
+export default function SigninConfirmationModal({
+	opened,
+	close
+}: {
+	opened: boolean;
+	close: () => void;
+}): JSX.Element {
 	const { signIn, working } = useAuth();
-	const { push } = useRouter();
+	const router = useRouter();
 
 	return (
 		<Modal opened={opened} onClose={close} title="Signing in to Course Compose" size="auto">
@@ -25,9 +31,9 @@ export default function SigninConfirmationModal({ opened, close }: { opened: boo
 					<Button
 						disabled={working}
 						onClick={() => {
-							if (process.env.NEXT_PUBLIC_APP_ENV === "production") signIn();
+							if (process.env.NEXT_PUBLIC_APP_ENV === "production") signIn().catch(console.error);
 							else {
-								push("/sign-in");
+								router.push("/sign-in");
 								close();
 							}
 						}}

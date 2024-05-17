@@ -81,7 +81,14 @@ export default function ApplicationHeader({ opened, toggle }: ApplicationHeaderP
 									{sessionData.user.email ? sessionData.user.email.split("@")[0] : "No email"}
 								</Menu.Item>
 								<Menu.Label>Actions</Menu.Label>
-								<Button disabled={working} className="w-full" color="red" onClick={signOut}>
+								<Button
+									disabled={working}
+									className="w-full"
+									color="red"
+									onClick={() => {
+										signOut().catch(console.error);
+									}}
+								>
 									Sign Out
 								</Button>
 							</Menu.Dropdown>

@@ -7,13 +7,13 @@ import { useAuth } from "hooks/use-auth";
 import { useRouter } from "next/navigation";
 import { IconInfoCircle } from "@tabler/icons-react";
 
-enum mode {
+enum MODE {
 	LOGIN,
 	REGISTER
 }
 
-export default function SigninPage() {
-	const [authMode, switchAuthMode] = useToggle([mode.LOGIN, mode.REGISTER]);
+export default function SigninPage(): JSX.Element {
+	const [authMode, switchAuthMode] = useToggle([MODE.LOGIN, MODE.REGISTER]);
 	const { signIn, signUp } = useAuth();
 	const form = useForm({
 		mode: "uncontrolled",
@@ -26,29 +26,29 @@ export default function SigninPage() {
 			password: (val) => (val.length < 6 ? "Password should include at least 6 characters" : null)
 		}
 	});
-	const { push } = useRouter();
+	const router = useRouter();
 
 	return (
 		<div className="flex h-full items-center justify-center">
 			<Paper p="lg" withBorder className=" w-full max-w-xl">
 				<Text size="xl" ta="center" fw={500} mb="lg">
-					{authMode === mode.REGISTER ? "Create new account" : "Welcome to Course Compose"}
+					{authMode === MODE.REGISTER ? "Create new account" : "Welcome to Course Compose"}
 				</Text>
 
 				<Divider labelPosition="center" my="lg" />
 
 				<form
 					onSubmit={form.onSubmit((values) => {
-						if (authMode === mode.REGISTER) {
-							signUp(values.email, values.password);
-						} else if (authMode === mode.LOGIN) {
-							signIn(values.email, values.password);
-							push("/");
+						if (authMode === MODE.REGISTER) {
+							signUp(values.email, values.password).catch(console.error);
+						} else {
+							signIn(values.email, values.password).catch(console.error);
+							router.push("/");
 						}
 					})}
 				>
 					<Stack>
-						{authMode === mode.REGISTER && (
+						{authMode === MODE.REGISTER && (
 							<Alert icon={<IconInfoCircle />}>Check your mail inbox to confirm your registration</Alert>
 						)}
 
@@ -83,11 +83,11 @@ export default function SigninPage() {
 							}}
 							size="md"
 						>
-							{authMode === mode.REGISTER
+							{authMode === MODE.REGISTER
 								? "Already have an account? Login"
 								: "Don't have an account? Register"}
 						</Anchor>
-						<Button type="submit">{authMode === mode.REGISTER ? "Sign Up" : "Sign In"}</Button>
+						<Button type="submit">{authMode === MODE.REGISTER ? "Sign Up" : "Sign In"}</Button>
 					</Group>
 				</form>
 			</Paper>
