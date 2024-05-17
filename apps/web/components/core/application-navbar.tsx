@@ -62,7 +62,13 @@ export default function ApplicationNavbar({ opened, toggle }: { opened: boolean;
 
 				<Flex className="mt-auto">
 					{signedIn ? (
-						<Button color="red" className="w-full" onClick={signOut}>
+						<Button
+							color="red"
+							className="w-full"
+							onClick={() => {
+								signOut().catch(console.error);
+							}}
+						>
 							Sign Out
 						</Button>
 					) : (

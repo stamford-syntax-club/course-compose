@@ -1,5 +1,7 @@
 import { Text, Title, Modal, Button } from "@mantine/core";
 import { useAuth } from "hooks/use-auth";
+import SigninConfirmationModal from "./signin-confirmation";
+import { useDisclosure } from "@mantine/hooks";
 
 interface SessionModalProps {
 	opened: boolean;
@@ -8,7 +10,7 @@ interface SessionModalProps {
 }
 
 export default function SessionModal({ opened, close }: SessionModalProps): JSX.Element {
-	const { signIn } = useAuth();
+	const [openedSignInConfirmation, { open: openConfirmation, close: closeConfirmation }] = useDisclosure(false);
 
 	return (
 		<Modal
@@ -29,7 +31,7 @@ export default function SessionModal({ opened, close }: SessionModalProps): JSX.
 				<Button
 					my="md"
 					onClick={() => {
-						signIn().catch(console.error);
+						openConfirmation();
 					}}
 				>
 					Login with your Stamford account
@@ -39,6 +41,8 @@ export default function SessionModal({ opened, close }: SessionModalProps): JSX.
 					Continue as guest
 				</Button>
 			</div>
+
+			<SigninConfirmationModal opened={openedSignInConfirmation} close={closeConfirmation} />
 		</Modal>
 	);
 }
