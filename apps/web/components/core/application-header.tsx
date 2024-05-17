@@ -4,8 +4,9 @@ import { useAuth } from "hooks/use-auth";
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { navItems } from "./application-navbar";
-
+import { useDisclosure } from "@mantine/hooks";
 import type { Session } from "@supabase/supabase-js";
+import SigninConfirmationModal from "@components/ui/signin-confirmation";
 
 interface ApplicationHeaderProps {
 	opened: boolean;
@@ -14,11 +15,10 @@ interface ApplicationHeaderProps {
 
 // Assuming proper typing for SupabaseClient is completed outside this snippet
 export default function ApplicationHeader({ opened, toggle }: ApplicationHeaderProps): JSX.Element {
-	const { signIn, signOut, getSession } = useAuth();
+	const { signOut, getSession, working } = useAuth();
 	const { supabase } = useSupabaseStore();
 	const [sessionData, setSessionData] = useState<Session>();
-
-	const [working, setWorking] = useState(false);
+	const [openedSignInConfirmation, { open: openConfirmation, close: closeConfirmation }] = useDisclosure(false);
 
 	useEffect(() => {
 		getSession()
@@ -44,29 +44,6 @@ export default function ApplicationHeader({ opened, toggle }: ApplicationHeaderP
 	}, [getSession, supabase]);
 
 	const isLoggedIn = sessionData?.user !== undefined;
-
-	const handleSignOut = (): void => {
-		if (working) return;
-		setWorking(true);
-
-		signOut()
-			.catch(console.error)
-			.finally(() => {
-				setWorking(false);
-			});
-	};
-
-	// TODO: better anti-spam functionality. signInWithOAuth resolves very quickly and can be spammed.. for some reason.
-	const handleSignInWithAzure = (): void => {
-		if (working) return;
-		setWorking(true);
-
-		signIn()
-			.catch(console.error)
-			.finally(() => {
-				setWorking(false);
-			});
-	};
 
 	return (
 		<AppShell.Header>
@@ -104,7 +81,7 @@ export default function ApplicationHeader({ opened, toggle }: ApplicationHeaderP
 									{sessionData.user.email ? sessionData.user.email.split("@")[0] : "No email"}
 								</Menu.Item>
 								<Menu.Label>Actions</Menu.Label>
-								<Button disabled={working} className="w-full" color="red" onClick={handleSignOut}>
+								<Button disabled={working} className="w-full" color="red" onClick={signOut}>
 									Sign Out
 								</Button>
 							</Menu.Dropdown>
@@ -113,12 +90,16 @@ export default function ApplicationHeader({ opened, toggle }: ApplicationHeaderP
 						<Button
 							disabled={working}
 							variant="default"
-							onClick={handleSignInWithAzure}
+							onClick={openConfirmation}
 							className="select-none text-lg font-bold uppercase"
 						>
 							Sign In
 						</Button>
 					)}
+					<SigninConfirmationModal
+						opened={openedSignInConfirmation}
+						close={closeConfirmation}
+					/>
 				</div>
 			</Group>
 		</AppShell.Header>

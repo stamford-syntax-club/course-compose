@@ -8,9 +8,10 @@ import {
 	ERR_USER_NOT_EXIST,
 	ERR_MISSING_TOKEN,
 	ERR_USER_NOT_OWNER,
-	COURSE_API_ENDPOINT
+	COURSE_API_ENDPOINT,
+	ERR_USER_NOT_STUDENT
 } from "@utils/constants";
-import type { NotificationData } from "@mantine/notifications";
+import { notifications, type NotificationData } from "@mantine/notifications";
 
 export default class CourseComposeAPIClient {
 	private courseEndpoint: string;
@@ -38,8 +39,7 @@ export default class CourseComposeAPIClient {
 
 		return data.json() as Promise<PaginatedResponse<Course>>;
 	}
-	
-	
+
 	async fetchCourseDetails(): Promise<Course> {
 		const data = await fetch(this.courseEndpoint);
 
@@ -60,6 +60,21 @@ export default class CourseComposeAPIClient {
 
 		if (!data.ok) {
 			const err = (await data.json()) as ErrorResponse;
+			if (err.message === ERR_USER_NOT_STUDENT) {
+				notifications.show({
+					title: err.message,
+					message: "Please sign out as guests to continue using the site",
+					color: "red",
+					autoClose: 5000
+				});
+			} else {
+				notifications.show({
+					title: "Something is wrong on our end",
+					message: "We could not retrieve reviews for this course at the moment, please try again later",
+					color: "red",
+					autoClose: 5000
+				});
+			}
 			throw new Error(err.message);
 		}
 
@@ -106,6 +121,13 @@ export default class CourseComposeAPIClient {
 				return {
 					title: errMsg,
 					message: "You can either edit or delete your existing review",
+					color: "red",
+					autoClose: 5000
+				};
+			case ERR_USER_NOT_STUDENT:
+				return {
+					title: errMsg,
+					message: "Please sign out as guests to continue using the site",
 					color: "red",
 					autoClose: 5000
 				};

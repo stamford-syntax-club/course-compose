@@ -3,8 +3,10 @@ import { AppShell, Button, Flex, NavLink, Stack } from "@mantine/core";
 import { useAuth } from "hooks/use-auth";
 import Link from "next/link";
 import { useEffect, useState } from "react";
-
+import { useDisclosure } from "@mantine/hooks";
 import { IconBooks, IconHistory, IconHome } from "@tabler/icons-react";
+import SigninConfirmationModal from "@components/ui/signin-confirmation";
+
 export const navItems = [
 	{
 		label: "Home",
@@ -25,9 +27,9 @@ export const navItems = [
 ];
 
 export default function ApplicationNavbar({ opened, toggle }: { opened: boolean; toggle: () => void }): JSX.Element {
-	const { signIn, signOut, getSession } = useAuth();
-	const [working, setWorking] = useState(false);
+	const { signOut, working, getSession } = useAuth();
 	const [signedIn, setSignedIn] = useState(false);
+	const [openedSignInConfirmation, { open: openConfirmation, close: closeConfirmation }] = useDisclosure(false);
 
 	useEffect(() => {
 		getSession()
@@ -38,29 +40,6 @@ export default function ApplicationNavbar({ opened, toggle }: { opened: boolean;
 			})
 			.catch(console.error);
 	}, [getSession]);
-
-	// TODO: This is code duplicated with application-header.tsx, should be refactored into a hook
-	const handleSignInWithAzure = (): void => {
-		if (working) return;
-		setWorking(true);
-
-		signIn()
-			.catch(console.error)
-			.finally(() => {
-				setWorking(false);
-			});
-	};
-
-	const handleSignOut = (): void => {
-		if (working) return;
-		setWorking(true);
-
-		signOut()
-			.catch(console.error)
-			.finally(() => {
-				setWorking(false);
-			});
-	};
 
 	return (
 		<AppShell.Navbar p="md" hidden={!opened}>
@@ -83,19 +62,20 @@ export default function ApplicationNavbar({ opened, toggle }: { opened: boolean;
 
 				<Flex className="mt-auto">
 					{signedIn ? (
-						<Button color="red" className="w-full" onClick={handleSignOut}>
+						<Button color="red" className="w-full" onClick={signOut}>
 							Sign Out
 						</Button>
 					) : (
 						<Button
 							disabled={working}
 							variant="default"
-							onClick={handleSignInWithAzure}
+							onClick={openConfirmation}
 							className="w-full select-none text-lg font-bold uppercase"
 						>
 							Sign In
 						</Button>
 					)}
+					<SigninConfirmationModal opened={openedSignInConfirmation} close={closeConfirmation} />
 				</Flex>
 			</Stack>
 		</AppShell.Navbar>
