@@ -24,7 +24,8 @@ async function emailPasswordSignIn(supabase: SupabaseClient, email: string, pass
 }
 
 interface UseAuthReturnType {
-	signIn: () => Promise<void>;
+	signIn: (email?: string, password?: string) => Promise<void>;
+	signUp: (email: string, password: string) => Promise<void>;
 	signOut: () => Promise<void>;
 	working: boolean;
 	getSession: () => Promise<Session | null>;
@@ -35,34 +36,52 @@ export const useAuth = (): UseAuthReturnType => {
 
 	const [working, setWorking] = useState(false);
 
-	const signIn = useCallback(async (): Promise<void> => {
-		if (!supabase) return;
-		if (working) return;
+	const signIn = useCallback(
+		async (email?: string, password?: string): Promise<void> => {
+			if (!supabase) return;
+			if (working) return;
 
-		try {
-			// TODO: Implement a proper way to use email/password in beta
-			// const env = process.env.NEXT_PUBLIC_APP_ENV;
+			try {
+				setWorking(true);
+				const env = process.env.NEXT_PUBLIC_APP_ENV;
+				if (env === "production") {
+					await signInWithAzure(supabase);
+					return;
+				}
 
-			// if (env === "production") {
-			//     // Use OAuth for production
-			//     await signInWithAzure(supabase);
-			// } else {
-			//     // Use email/password for development
-			//     // Ideally, fetch these from environment variables
-			//     const email = "example@example.com";
-			//     const password = "password";
+				if (!email || !password) {
+					throw new Error("email or password is missing to login");
+				}
 
-			//     await emailPasswordSignIn(supabase, email, password);
-			// }
+				await emailPasswordSignIn(supabase, email, password);
+			} catch (error) {
+				console.error("Error during the sign-in process:", error);
+			} finally {
+				setWorking(false);
+			}
+		},
+		[supabase]
+	);
 
-			setWorking(true);
-			await signInWithAzure(supabase);
-		} catch (error) {
-			console.error("Error during the sign-in process:", error);
-		} finally {
-			setWorking(false);
-		}
-	}, [supabase]);
+	const signUp = useCallback(
+		async (email: string, password: string): Promise<void> => {
+			if (!supabase) return;
+			if (working) return;
+
+			try {
+				setWorking(true);
+				await supabase.auth.signUp({
+					email,
+					password
+				});
+			} catch (error) {
+				console.error("Error during sign-up process:", error);
+			} finally {
+				setWorking(false);
+			}
+		},
+		[supabase]
+	);
 
 	const signOut = useCallback(async (): Promise<void> => {
 		if (!supabase) return;
@@ -101,5 +120,5 @@ export const useAuth = (): UseAuthReturnType => {
 	}, [supabase]);
 
 	// Returning the signIn function and any error that might have occurred
-	return { signIn, signOut, working, getSession };
+	return { signIn, signUp, signOut, working, getSession };
 };

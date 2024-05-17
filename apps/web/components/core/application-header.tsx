@@ -96,10 +96,7 @@ export default function ApplicationHeader({ opened, toggle }: ApplicationHeaderP
 							Sign In
 						</Button>
 					)}
-					<SigninConfirmationModal
-						opened={openedSignInConfirmation}
-						close={closeConfirmation}
-					/>
+					<SigninConfirmationModal opened={openedSignInConfirmation} close={closeConfirmation} />
 				</div>
 			</Group>
 		</AppShell.Header>
