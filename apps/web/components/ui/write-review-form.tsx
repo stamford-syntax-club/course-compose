@@ -1,7 +1,7 @@
 import { Box, Blockquote, Button, Flex, Rating, Paper, Select, Text } from "@mantine/core";
 import { MarkdownEditor } from "@components/ui/markdown-editor";
 import { IconAlertCircle, IconAlertTriangle } from "@tabler/icons-react";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useEditor } from "@tiptap/react";
 import { Placeholder } from "@tiptap/extension-placeholder";
 import { StarterKit } from "@tiptap/starter-kit";
@@ -50,23 +50,76 @@ export default function WriteReviewForm({ onSubmit, previousReview }: WriteRevie
 		content: previousReview?.description || ""
 	});
 
+	useEffect(() => {
+		if (!previousReview) {
+			const savedAcademicYear = localStorage.getItem("reviewFormAcademicYear");
+			const savedRating = localStorage.getItem("reviewFormRating");
+			const savedDescription = localStorage.getItem("reviewFormDescription");
+
+			if (savedAcademicYear) setAcademicYear(savedAcademicYear);
+			if (savedRating) setRating(parseFloat(savedRating));
+			if (savedDescription && markdownEditor) markdownEditor.commands.setContent(savedDescription);
+		}
+	}, [previousReview, markdownEditor]);
+
+	//to save into localstorage
+	useEffect(() => {
+		if (!previousReview) {
+			const savedAcademicYear = localStorage.getItem("reviewFormAcademicYear");
+			const savedRating = localStorage.getItem("reviewFormRating");
+			const savedDescription = localStorage.getItem("reviewFormDescription");
+
+			if (savedAcademicYear) setAcademicYear(savedAcademicYear);
+			if (savedRating) setRating(parseFloat(savedRating));
+			if (savedDescription && markdownEditor) markdownEditor.commands.setContent(savedDescription);
+		}
+	}, [previousReview, markdownEditor]);
+
+	//to save localStorage when state changes
+	useEffect(() => {
+		localStorage.setItem("reviewFormRating", rating.toString());
+	}, [rating]);
+
+	useEffect(() => {
+		if (academicYear) localStorage.setItem("reviewFormAcademicYear", academicYear);
+		if (markdownEditor) {
+			const saveMarkdown = () => {
+				localStorage.setItem("reviewFormDescription", markdownEditor.storage.markdown.getMarkdown());
+			};
+			markdownEditor.on("update", saveMarkdown);
+			return () => {
+				markdownEditor.off("update", saveMarkdown);
+			};
+		}
+	}, [markdownEditor, academicYear]);
+
+	const handleSubmit = (e: React.FormEvent) => {
+		e.preventDefault();
+		const currentDescription = markdownEditor?.storage.markdown.getMarkdown() || "";
+		if (!academicYear || !currentDescription || !rating) {
+			notifications.show({
+				title: "Hold on! Your review still contains some missing fields",
+				color: "red",
+				message:
+					"Make sure you have filled all the fields such as academic year, ratings, and review descriptions",
+				autoClose: 5000
+			});
+			return;
+		}
+
+		onSubmit(academicYear, currentDescription, rating);
+
+		// to remove the local storage
+		localStorage.removeItem("reviewFormAcademicYear");
+		localStorage.removeItem("reviewFormRating");
+		localStorage.removeItem("reviewFormDescription");
+	};
 	return (
 		<Box
 			component="form"
 			onSubmit={(e) => {
 				e.preventDefault();
-				if (!academicYear || !markdownEditor?.storage.markdown.getMarkdown() || !rating) {
-					notifications.show({
-						title: "Hold on! Your review still contains some missing fields",
-						color: "red",
-						message:
-							"Make sure you have filled all the fields such as academic year, ratings, and review descriptions",
-						autoClose: 5000
-					});
-					return;
-				}
-
-				onSubmit(academicYear, markdownEditor.storage.markdown.getMarkdown(), rating);
+				handleSubmit(e);
 			}}
 		>
 			{reviewGuidelines.map((guide) => (

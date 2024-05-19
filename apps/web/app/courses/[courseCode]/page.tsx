@@ -37,6 +37,11 @@ export default function CourseReview({ params }: { params: { courseCode: string 
 			return;
 		}
 
+		if(result.title === "Success!") {
+			window.scrollTo({ top: 0, behavior: 'smooth' });
+			setPageNumber(1);
+		}
+
 		notifications.show(result);
 		apiClient
 			.fetchCourseReviews(pageNumber, sessionData?.access_token || "")
@@ -49,6 +54,9 @@ export default function CourseReview({ params }: { params: { courseCode: string 
 				}
 
 				setReviewsData(reviews);
+				localStorage.removeItem("reviewFormAcademicYear");
+				localStorage.removeItem("reviewFormDescription");
+				localStorage.removeItem("reviewFormRating");
 			})
 			.catch(console.error);
 	};
