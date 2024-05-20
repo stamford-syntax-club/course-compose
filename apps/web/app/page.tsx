@@ -26,7 +26,7 @@ import type { PaginatedResponse } from "types/pagination";
 import { useDebouncedValue } from "@mantine/hooks";
 
 // Popular searches in course code
-const popularSearches = ["ITE", "MKT", "ENT", "CMD", "BUS", "IHM", "ABM", "MAS"];
+const popularSearches = ["ITE", "MAS", "MKT", "ENT", "CMD", "BUS", "IHM", "ABM"];
 
 export default function HomePage(): JSX.Element {
 	const [currentSearch, setCurrentSearch] = useState("");
