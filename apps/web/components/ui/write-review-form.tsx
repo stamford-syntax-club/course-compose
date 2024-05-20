@@ -62,19 +62,6 @@ export default function WriteReviewForm({ onSubmit, previousReview }: WriteRevie
 		}
 	}, [previousReview, markdownEditor]);
 
-	//to save into localstorage
-	useEffect(() => {
-		if (!previousReview) {
-			const savedAcademicYear = localStorage.getItem("reviewFormAcademicYear");
-			const savedRating = localStorage.getItem("reviewFormRating");
-			const savedDescription = localStorage.getItem("reviewFormDescription");
-
-			if (savedAcademicYear) setAcademicYear(savedAcademicYear);
-			if (savedRating) setRating(parseFloat(savedRating));
-			if (savedDescription && markdownEditor) markdownEditor.commands.setContent(savedDescription);
-		}
-	}, [previousReview, markdownEditor]);
-
 	//to save localStorage when state changes
 	useEffect(() => {
 		localStorage.setItem("reviewFormRating", rating.toString());

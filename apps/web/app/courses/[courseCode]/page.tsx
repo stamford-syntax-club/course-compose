@@ -6,7 +6,7 @@ import { useEffect, useMemo, useState } from "react";
 import type { PaginatedResponse } from "types/pagination";
 import type { Course } from "types/course";
 import type { Review } from "types/reviews";
-import { useDisclosure } from "@mantine/hooks";
+import { useDisclosure, useWindowScroll } from "@mantine/hooks";
 import Link from "next/link";
 import type { NotificationData } from "@mantine/notifications";
 import { notifications } from "@mantine/notifications";
@@ -24,6 +24,7 @@ export default function CourseReview({ params }: { params: { courseCode: string 
 	const [showReviewLimitAlert, setShowReviewLimitAlert] = useState(false);
 	const [isLoading, setIsLoading] = useState(true);
 	const [pageNumber, setPageNumber] = useState(1);
+	const [scroll, scrollTo] = useWindowScroll();
 	const apiClient = useMemo(() => new CourseComposeAPIClient(params.courseCode), [params.courseCode]);
 
 	const { getSession } = useAuth();
@@ -37,9 +38,12 @@ export default function CourseReview({ params }: { params: { courseCode: string 
 			return;
 		}
 
-		if(result.title === "Success!") {
-			window.scrollTo({ top: 0, behavior: 'smooth' });
+		if (result.title === "Success!") {
+			scrollTo({ y: 0 });
 			setPageNumber(1);
+			localStorage.removeItem("reviewFormAcademicYear");
+			localStorage.removeItem("reviewFormDescription");
+			localStorage.removeItem("reviewFormRating");
 		}
 
 		notifications.show(result);
@@ -54,9 +58,6 @@ export default function CourseReview({ params }: { params: { courseCode: string 
 				}
 
 				setReviewsData(reviews);
-				localStorage.removeItem("reviewFormAcademicYear");
-				localStorage.removeItem("reviewFormDescription");
-				localStorage.removeItem("reviewFormRating");
 			})
 			.catch(console.error);
 	};
