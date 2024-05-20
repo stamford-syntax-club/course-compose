@@ -30,12 +30,14 @@ const reviewGuidelines = [
 	}
 ];
 
+
 interface WriteReviewFormProps {
+	courseCode: string;
 	onSubmit: (academicYear: string, description: string, rating: number) => void;
 	previousReview?: Review;
 }
 
-export default function WriteReviewForm({ onSubmit, previousReview }: WriteReviewFormProps): JSX.Element {
+export default function WriteReviewForm({ courseCode, onSubmit, previousReview }: WriteReviewFormProps): JSX.Element {
 	const [academicYear, setAcademicYear] = useState<string | null>(previousReview?.academicYear || null);
 	const [rating, setRating] = useState(previousReview?.rating || 0);
 	const markdownEditor = useEditor({
@@ -50,11 +52,12 @@ export default function WriteReviewForm({ onSubmit, previousReview }: WriteRevie
 		content: previousReview?.description || ""
 	});
 
+	//to save localStorage when state changes
 	useEffect(() => {
 		if (!previousReview) {
-			const savedAcademicYear = localStorage.getItem("reviewFormAcademicYear");
-			const savedRating = localStorage.getItem("reviewFormRating");
-			const savedDescription = localStorage.getItem("reviewFormDescription");
+			const savedAcademicYear = localStorage.getItem(`reviewFormAcademicYear_${courseCode}`);
+			const savedRating = localStorage.getItem(`reviewFormRating_${courseCode}`);
+			const savedDescription = localStorage.getItem(`reviewFormDescription_${courseCode}`);
 
 			if (savedAcademicYear) setAcademicYear(savedAcademicYear);
 			if (savedRating) setRating(parseFloat(savedRating));
@@ -62,23 +65,23 @@ export default function WriteReviewForm({ onSubmit, previousReview }: WriteRevie
 		}
 	}, [previousReview, markdownEditor]);
 
-	//to save localStorage when state changes
+	
 	useEffect(() => {
-		localStorage.setItem("reviewFormRating", rating.toString());
+		localStorage.setItem(`reviewFormRating_${courseCode}`, rating.toString());
 	}, [rating]);
 
 	useEffect(() => {
-		if (academicYear) localStorage.setItem("reviewFormAcademicYear", academicYear);
+		if (academicYear) localStorage.setItem(`reviewFormAcademicYear_${courseCode}`, academicYear);
 		if (markdownEditor) {
 			const saveMarkdown = () => {
-				localStorage.setItem("reviewFormDescription", markdownEditor.storage.markdown.getMarkdown());
+				localStorage.setItem(`reviewFormDescription_${courseCode}`, markdownEditor.storage.markdown.getMarkdown());
 			};
 			markdownEditor.on("update", saveMarkdown);
 			return () => {
 				markdownEditor.off("update", saveMarkdown);
 			};
 		}
-	}, [markdownEditor, academicYear]);
+	}, [markdownEditor, academicYear, ]);
 
 	const handleSubmit = (e: React.FormEvent) => {
 		e.preventDefault();
@@ -97,9 +100,9 @@ export default function WriteReviewForm({ onSubmit, previousReview }: WriteRevie
 		onSubmit(academicYear, currentDescription, rating);
 
 		// to remove the local storage
-		localStorage.removeItem("reviewFormAcademicYear");
-		localStorage.removeItem("reviewFormRating");
-		localStorage.removeItem("reviewFormDescription");
+		localStorage.removeItem(`reviewFormAcademicYear_${	courseCode}`);
+		localStorage.removeItem(`reviewFormRating_${courseCode}`);
+		localStorage.removeItem(`reviewFormDescription${courseCode}`);
 	};
 	return (
 		<Box

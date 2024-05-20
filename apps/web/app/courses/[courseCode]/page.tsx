@@ -39,11 +39,11 @@ export default function CourseReview({ params }: { params: { courseCode: string 
 		}
 
 		if (result.title === "Success!") {
+			localStorage.removeItem(`reviewFormAcademicYear_${params.courseCode}`);
+			localStorage.removeItem(`reviewFormDescription_${params.courseCode}`);
+			localStorage.removeItem(`reviewFormRating_${params.courseCode}`);
 			scrollTo({ y: 0 });
 			setPageNumber(1);
-			localStorage.removeItem("reviewFormAcademicYear");
-			localStorage.removeItem("reviewFormDescription");
-			localStorage.removeItem("reviewFormRating");
 		}
 
 		notifications.show(result);
@@ -60,6 +60,14 @@ export default function CourseReview({ params }: { params: { courseCode: string 
 				setReviewsData(reviews);
 			})
 			.catch(console.error);
+
+		useEffect(() => {
+			return () => {
+				localStorage.removeItem("reviewFormAcademicYear");
+				localStorage.removeItem("reviewFormDescription");
+				localStorage.removeItem("reviewFormRating");
+			};
+		}, [params.courseCode]);
 	};
 
 	useEffect(() => {
@@ -208,6 +216,7 @@ export default function CourseReview({ params }: { params: { courseCode: string 
 				Write a Review
 			</Title>
 			<WriteReviewForm
+				courseCode={params.courseCode}
 				onSubmit={(academicYear, description, rating) => {
 					apiClient
 						.submitNewReview(academicYear, description, rating, sessionData?.access_token || "")
