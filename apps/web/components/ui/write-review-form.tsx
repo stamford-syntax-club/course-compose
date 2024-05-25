@@ -110,6 +110,9 @@ export default function WriteReviewForm({ courseCode, onSubmit, previousReview }
 			return;
 		} else {
 			resetForm();
+			localStorage.removeItem(reviewKeys.academicYearKey);
+			localStorage.removeItem(reviewKeys.ratingKey);
+			localStorage.removeItem(reviewKeys.descriptionKey);
 		}
 
 		onSubmit(academicYear, currentDescription, rating);
