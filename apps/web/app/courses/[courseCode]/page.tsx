@@ -17,7 +17,14 @@ import CourseComposeAPIClient from "lib/api/api";
 import { useAuth } from "hooks/use-auth";
 import { IconLock } from "@tabler/icons-react";
 
-export default function CourseReview({ params }: { params: { courseCode: string } }): JSX.Element {
+interface CourseReviewProps {
+	params: {
+		courseCode: string;
+	};
+}
+
+export default function CourseReview({ params }: CourseReviewProps): JSX.Element {
+	const courseCode = params.courseCode;
 	const [courseData, setCourseData] = useState<Course>();
 	const [reviewsData, setReviewsData] = useState<PaginatedResponse<Review>>();
 	const [sessionData, setSessionData] = useState<Session | null>();
@@ -26,9 +33,7 @@ export default function CourseReview({ params }: { params: { courseCode: string 
 	const [pageNumber, setPageNumber] = useState(1);
 	const [scroll, scrollTo] = useWindowScroll();
 	const apiClient = useMemo(() => new CourseComposeAPIClient(params.courseCode), [params.courseCode]);
-
 	const { getSession } = useAuth();
-
 	const [opened, { open: openSessionModal, close: closeSessionModal }] = useDisclosure(false);
 
 	const handleSubmitResponse = (result: NotificationData): void => {
@@ -36,14 +41,6 @@ export default function CourseReview({ params }: { params: { courseCode: string 
 			// inform user to re-login when submit with missing or expired token
 			openSessionModal();
 			return;
-		}
-
-		if (result.title === "Success!") {
-			localStorage.removeItem(`reviewFormAcademicYear_${params.courseCode}`);
-			localStorage.removeItem(`reviewFormDescription_${params.courseCode}`);
-			localStorage.removeItem(`reviewFormRating_${params.courseCode}`);
-			scrollTo({ y: 0 });
-			setPageNumber(1);
 		}
 
 		notifications.show(result);
@@ -60,14 +57,6 @@ export default function CourseReview({ params }: { params: { courseCode: string 
 				setReviewsData(reviews);
 			})
 			.catch(console.error);
-
-		useEffect(() => {
-			return () => {
-				localStorage.removeItem("reviewFormAcademicYear");
-				localStorage.removeItem("reviewFormDescription");
-				localStorage.removeItem("reviewFormRating");
-			};
-		}, [params.courseCode]);
 	};
 
 	useEffect(() => {
