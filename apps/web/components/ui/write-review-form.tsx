@@ -17,7 +17,7 @@ const academicYearOptions = [
 	{ value: "2024", label: "2024" }
 ];
 
-export interface WriteReviewFormProps {
+interface WriteReviewFormProps {
 	courseCode: string;
 	onSubmit: (academicYear: string, description: string, rating: number) => void;
 	previousReview?: Review;
@@ -37,7 +37,7 @@ const reviewGuidelines = [
 ];
 
 // Keys for local storage
-export const reviewFormKeys = (courseCode: string) => ({
+const reviewFormKeys = (courseCode: string) => ({
 	academicYearKey: `reviewFormAcademicYear_${courseCode}`,
 	ratingKey: `reviewFormRating_${courseCode}`,
 	descriptionKey: `reviewFormDescription_${courseCode}`
