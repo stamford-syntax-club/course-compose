@@ -42,6 +42,11 @@ export default function CourseReview({ params }: CourseReviewProps): JSX.Element
 			return;
 		}
 
+		if (result.color === "green") {
+			setPageNumber(1);
+			scrollTo({ y: 0 });
+		}
+
 		notifications.show(result);
 		apiClient
 			.fetchCourseReviews(pageNumber, sessionData?.access_token || "")
