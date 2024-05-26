@@ -24,7 +24,6 @@ interface CourseReviewProps {
 }
 
 export default function CourseReview({ params }: CourseReviewProps): JSX.Element {
-	const courseCode = params.courseCode;
 	const [courseData, setCourseData] = useState<Course>();
 	const [reviewsData, setReviewsData] = useState<PaginatedResponse<Review>>();
 	const [sessionData, setSessionData] = useState<Session | null>();
@@ -159,7 +158,7 @@ export default function CourseReview({ params }: CourseReviewProps): JSX.Element
 								<MyReviewCard
 									key={`my_review_card_${review.id}`}
 									review={review}
-									onEditReview={(id, academicYear, description, rating) => {
+									onEditReview={(id, academicYear, description, rating) =>
 										apiClient
 											.submitEditedReview(
 												id,
@@ -170,9 +169,13 @@ export default function CourseReview({ params }: CourseReviewProps): JSX.Element
 											)
 											.then((result) => {
 												handleSubmitResponse(result);
+												return result.color === "green";
 											})
-											.catch(console.error);
-									}}
+											.catch((error) => {
+												console.error(error);
+												return false;
+											})
+									}
 									onDeleteReview={(id) => {
 										apiClient
 											.submitDeleteReview(id, sessionData?.access_token || "")
@@ -206,14 +209,18 @@ export default function CourseReview({ params }: CourseReviewProps): JSX.Element
 			</Title>
 			<WriteReviewForm
 				courseCode={params.courseCode}
-				onSubmit={(academicYear, description, rating) => {
+				onSubmit={(academicYear, description, rating) =>
 					apiClient
 						.submitNewReview(academicYear, description, rating, sessionData?.access_token || "")
 						.then((result) => {
 							handleSubmitResponse(result);
+							return result.color === "green";
 						})
-						.catch(console.error);
-				}}
+						.catch((error) => {
+							console.error(error);
+							return false;
+						})
+				}
 			/>
 		</Container>
 	);

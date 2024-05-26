@@ -18,8 +18,8 @@ const academicYearOptions = [
 ];
 
 interface WriteReviewFormProps {
-	courseCode: string;
-	onSubmit: (academicYear: string, description: string, rating: number) => void;
+	courseCode?: string;
+	onSubmit: (academicYear: string, description: string, rating: number) => Promise<boolean>;
 	previousReview?: Review;
 }
 
@@ -44,7 +44,7 @@ const reviewFormKeys = (courseCode: string) => ({
 });
 
 export default function WriteReviewForm({ courseCode, onSubmit, previousReview }: WriteReviewFormProps) {
-	const reviewKeys = useMemo(() => reviewFormKeys(courseCode), [courseCode]);
+	const reviewKeys = useMemo(() => reviewFormKeys(courseCode || ""), [courseCode]);
 	const [academicYear, setAcademicYear] = useState<string | null>(previousReview?.academicYear || null);
 	const [rating, setRating] = useState(previousReview?.rating || 0);
 
@@ -79,10 +79,7 @@ export default function WriteReviewForm({ courseCode, onSubmit, previousReview }
 	}, [previousReview, markdownEditor, reviewKeys]);
 
 	useEffect(() => {
-		localStorage.setItem(reviewKeys.ratingKey, rating.toString());
-	}, [rating, reviewKeys.ratingKey]);
-
-	useEffect(() => {
+		if (rating) localStorage.setItem(reviewKeys.ratingKey, rating.toString());
 		if (academicYear) localStorage.setItem(reviewKeys.academicYearKey, academicYear);
 		if (markdownEditor) {
 			const saveMarkdown = () => {
@@ -93,7 +90,7 @@ export default function WriteReviewForm({ courseCode, onSubmit, previousReview }
 				markdownEditor.off("update", saveMarkdown);
 			};
 		}
-	}, [markdownEditor, academicYear, reviewKeys]);
+	}, [markdownEditor, academicYear, reviewKeys, rating]);
 
 	const handleSubmit = (e: React.FormEvent<HTMLFormElement>): void => {
 		e.preventDefault();
@@ -108,14 +105,16 @@ export default function WriteReviewForm({ courseCode, onSubmit, previousReview }
 				autoClose: 5000
 			});
 			return;
-		} else {
-			resetForm();
-			localStorage.removeItem(reviewKeys.academicYearKey);
-			localStorage.removeItem(reviewKeys.ratingKey);
-			localStorage.removeItem(reviewKeys.descriptionKey);
 		}
 
-		onSubmit(academicYear, currentDescription, rating);
+		onSubmit(academicYear, currentDescription, rating).then((success) => {
+			if (success) {
+				resetForm();
+				localStorage.removeItem(reviewKeys.academicYearKey);
+				localStorage.removeItem(reviewKeys.ratingKey);
+				localStorage.removeItem(reviewKeys.descriptionKey);
+			}
+		});
 	};
 
 	return (
