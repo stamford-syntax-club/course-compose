@@ -6,7 +6,7 @@ import { useEffect, useMemo, useState } from "react";
 import type { PaginatedResponse } from "types/pagination";
 import type { Course } from "types/course";
 import type { Review } from "types/reviews";
-import { useDisclosure } from "@mantine/hooks";
+import { useDisclosure, useWindowScroll } from "@mantine/hooks";
 import Link from "next/link";
 import type { NotificationData } from "@mantine/notifications";
 import { notifications } from "@mantine/notifications";
@@ -17,17 +17,22 @@ import CourseComposeAPIClient from "lib/api/api";
 import { useAuth } from "hooks/use-auth";
 import { IconLock } from "@tabler/icons-react";
 
-export default function CourseReview({ params }: { params: { courseCode: string } }): JSX.Element {
+interface CourseReviewProps {
+	params: {
+		courseCode: string;
+	};
+}
+
+export default function CourseReview({ params }: CourseReviewProps): JSX.Element {
 	const [courseData, setCourseData] = useState<Course>();
 	const [reviewsData, setReviewsData] = useState<PaginatedResponse<Review>>();
 	const [sessionData, setSessionData] = useState<Session | null>();
 	const [showReviewLimitAlert, setShowReviewLimitAlert] = useState(false);
 	const [isLoading, setIsLoading] = useState(true);
 	const [pageNumber, setPageNumber] = useState(1);
+	const [scroll, scrollTo] = useWindowScroll();
 	const apiClient = useMemo(() => new CourseComposeAPIClient(params.courseCode), [params.courseCode]);
-
 	const { getSession } = useAuth();
-
 	const [opened, { open: openSessionModal, close: closeSessionModal }] = useDisclosure(false);
 
 	const handleSubmitResponse = (result: NotificationData): void => {
@@ -35,6 +40,11 @@ export default function CourseReview({ params }: { params: { courseCode: string 
 			// inform user to re-login when submit with missing or expired token
 			openSessionModal();
 			return;
+		}
+
+		if (result.color === "green") {
+			setPageNumber(1);
+			scrollTo({ y: 0 });
 		}
 
 		notifications.show(result);
@@ -153,7 +163,7 @@ export default function CourseReview({ params }: { params: { courseCode: string 
 								<MyReviewCard
 									key={`my_review_card_${review.id}`}
 									review={review}
-									onEditReview={(id, academicYear, description, rating) => {
+									onEditReview={(id, academicYear, description, rating) =>
 										apiClient
 											.submitEditedReview(
 												id,
@@ -164,9 +174,13 @@ export default function CourseReview({ params }: { params: { courseCode: string 
 											)
 											.then((result) => {
 												handleSubmitResponse(result);
+												return result.color === "green";
 											})
-											.catch(console.error);
-									}}
+											.catch((error) => {
+												console.error(error);
+												return false;
+											})
+									}
 									onDeleteReview={(id) => {
 										apiClient
 											.submitDeleteReview(id, sessionData?.access_token || "")
@@ -199,14 +213,19 @@ export default function CourseReview({ params }: { params: { courseCode: string 
 				Write a Review
 			</Title>
 			<WriteReviewForm
-				onSubmit={(academicYear, description, rating) => {
+				courseCode={params.courseCode}
+				onSubmit={(academicYear, description, rating) =>
 					apiClient
 						.submitNewReview(academicYear, description, rating, sessionData?.access_token || "")
 						.then((result) => {
 							handleSubmitResponse(result);
+							return result.color === "green";
 						})
-						.catch(console.error);
-				}}
+						.catch((error) => {
+							console.error(error);
+							return false;
+						})
+				}
 			/>
 		</Container>
 	);

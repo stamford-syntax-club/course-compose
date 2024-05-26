@@ -156,6 +156,7 @@ export function MyReviewCard({ review, onEditReview, onDeleteReview }: ReviewCar
 						// when user submit their edited review
 						if (onEditReview) onEditReview(review.id, academicYear, description, rating);
 						closeEdit();
+						return Promise.resolve(true);
 					}}
 					previousReview={review}
 				/>

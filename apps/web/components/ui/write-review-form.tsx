@@ -1,12 +1,12 @@
+import { useState, useEffect, useMemo } from "react";
 import { Box, Blockquote, Button, Flex, Rating, Paper, Select, Text } from "@mantine/core";
-import { MarkdownEditor } from "@components/ui/markdown-editor";
 import { IconAlertCircle, IconAlertTriangle } from "@tabler/icons-react";
-import { useState } from "react";
 import { useEditor } from "@tiptap/react";
 import { Placeholder } from "@tiptap/extension-placeholder";
 import { StarterKit } from "@tiptap/starter-kit";
 import { Markdown } from "tiptap-markdown";
 import { notifications } from "@mantine/notifications";
+import { MarkdownEditor } from "@components/ui/markdown-editor";
 import type { Review } from "types/reviews";
 
 const academicYearOptions = [
@@ -17,27 +17,37 @@ const academicYearOptions = [
 	{ value: "2024", label: "2024" }
 ];
 
+interface WriteReviewFormProps {
+	courseCode?: string;
+	onSubmit: (academicYear: string, description: string, rating: number) => Promise<boolean>;
+	previousReview?: Review;
+}
+
 const reviewGuidelines = [
 	{
-		text: "Your review will be displayed anonymously to the public after approved",
+		text: "Your review will be displayed anonymously to the public after approval.",
 		color: "blue",
 		displayIcon: <IconAlertCircle size={25} />
 	},
 	{
-		text: "Kindly refrain from mentioning names and write your reviews with respect. Constructive criticism is encouraged",
+		text: "Kindly refrain from mentioning names and write your reviews with respect. Constructive criticism is encouraged.",
 		color: "yellow",
 		displayIcon: <IconAlertTriangle size={25} />
 	}
 ];
 
-interface WriteReviewFormProps {
-	onSubmit: (academicYear: string, description: string, rating: number) => void;
-	previousReview?: Review;
-}
+// Keys for local storage
+const reviewFormKeys = (courseCode: string) => ({
+	academicYearKey: `reviewFormAcademicYear_${courseCode}`,
+	ratingKey: `reviewFormRating_${courseCode}`,
+	descriptionKey: `reviewFormDescription_${courseCode}`
+});
 
-export default function WriteReviewForm({ onSubmit, previousReview }: WriteReviewFormProps): JSX.Element {
+export default function WriteReviewForm({ courseCode, onSubmit, previousReview }: WriteReviewFormProps) {
+	const reviewKeys = useMemo(() => reviewFormKeys(courseCode || ""), [courseCode]);
 	const [academicYear, setAcademicYear] = useState<string | null>(previousReview?.academicYear || null);
 	const [rating, setRating] = useState(previousReview?.rating || 0);
+
 	const markdownEditor = useEditor({
 		extensions: [
 			StarterKit,
@@ -50,27 +60,67 @@ export default function WriteReviewForm({ onSubmit, previousReview }: WriteRevie
 		content: previousReview?.description || ""
 	});
 
-	return (
-		<Box
-			component="form"
-			onSubmit={(e) => {
-				e.preventDefault();
-				if (!academicYear || !markdownEditor?.storage.markdown.getMarkdown() || !rating) {
-					notifications.show({
-						title: "Hold on! Your review still contains some missing fields",
-						color: "red",
-						message:
-							"Make sure you have filled all the fields such as academic year, ratings, and review descriptions",
-						autoClose: 5000
-					});
-					return;
-				}
+	const resetForm = () => {
+		setAcademicYear(null);
+		setRating(0);
+		markdownEditor?.commands.setContent("");
+	};
 
-				onSubmit(academicYear, markdownEditor.storage.markdown.getMarkdown(), rating);
-			}}
-		>
+	useEffect(() => {
+		if (!previousReview) {
+			const savedAcademicYear = localStorage.getItem(reviewKeys.academicYearKey);
+			const savedRating = localStorage.getItem(reviewKeys.ratingKey);
+			const savedDescription = localStorage.getItem(reviewKeys.descriptionKey);
+
+			if (savedAcademicYear) setAcademicYear(savedAcademicYear);
+			if (savedRating) setRating(parseFloat(savedRating));
+			if (savedDescription && markdownEditor) markdownEditor.commands.setContent(savedDescription);
+		}
+	}, [previousReview, markdownEditor, reviewKeys]);
+
+	useEffect(() => {
+		if (rating) localStorage.setItem(reviewKeys.ratingKey, rating.toString());
+		if (academicYear) localStorage.setItem(reviewKeys.academicYearKey, academicYear);
+		if (markdownEditor) {
+			const saveMarkdown = () => {
+				localStorage.setItem(reviewKeys.descriptionKey, markdownEditor.storage.markdown.getMarkdown());
+			};
+			markdownEditor.on("update", saveMarkdown);
+			return () => {
+				markdownEditor.off("update", saveMarkdown);
+			};
+		}
+	}, [markdownEditor, academicYear, reviewKeys, rating]);
+
+	const handleSubmit = (e: React.FormEvent<HTMLFormElement>): void => {
+		e.preventDefault();
+		const currentDescription = markdownEditor?.storage.markdown.getMarkdown() || "";
+
+		if (!academicYear || !currentDescription || !rating) {
+			notifications.show({
+				title: "Hold on! Your review still contains some missing fields",
+				color: "red",
+				message:
+					"Make sure you have filled all the fields such as academic year, ratings, and review descriptions",
+				autoClose: 5000
+			});
+			return;
+		}
+
+		onSubmit(academicYear, currentDescription, rating).then((success) => {
+			if (success) {
+				resetForm();
+				localStorage.removeItem(reviewKeys.academicYearKey);
+				localStorage.removeItem(reviewKeys.ratingKey);
+				localStorage.removeItem(reviewKeys.descriptionKey);
+			}
+		});
+	};
+
+	return (
+		<Box component="form" onSubmit={handleSubmit}>
 			{reviewGuidelines.map((guide) => (
-				<Blockquote key={`"review_guideline_${guide.text}`} color={guide.color} w="100%" p="sm" mb="xs">
+				<Blockquote key={`review_guideline_${guide.text}`} color={guide.color} w="100%" p="sm" mb="xs">
 					<Flex justify="flex-start" gap="sm">
 						{guide.displayIcon}
 						<Text>{guide.text}</Text>
