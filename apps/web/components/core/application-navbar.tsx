@@ -19,7 +19,7 @@ export const navItems = [
 		icon: <IconHistory />
 	},
 	{
-		label: "Resource Hub",
+		label: "Resources",
 		href: "https://center.stamford.dev/resources",
 		newTab: true,
 		icon: <IconBooks />

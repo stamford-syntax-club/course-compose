@@ -1,6 +1,18 @@
 "use client";
 
-import { Center, Container, Divider, Flex, Pagination, Stack, Title, Text, Loader, Alert } from "@mantine/core";
+import {
+	Center,
+	Container,
+	Divider,
+	Flex,
+	Pagination,
+	Stack,
+	Title,
+	Text,
+	Loader,
+	Alert,
+	Blockquote
+} from "@mantine/core";
 import { MyReviewCard, ReviewCard } from "@components/ui/review-card";
 import { useEffect, useMemo, useState } from "react";
 import type { PaginatedResponse } from "types/pagination";
@@ -15,7 +27,7 @@ import SessionModal from "@components/ui/session-modal";
 import type { Session } from "@supabase/supabase-js";
 import CourseComposeAPIClient from "lib/api/api";
 import { useAuth } from "hooks/use-auth";
-import { IconLock } from "@tabler/icons-react";
+import { IconAlertCircle, IconLock } from "@tabler/icons-react";
 
 interface CourseReviewProps {
 	params: {
@@ -151,6 +163,10 @@ export default function CourseReview({ params }: CourseReviewProps): JSX.Element
 			) : null}
 
 			<Stack gap="sm">
+				<Alert color="blue" icon={<IconAlertCircle />}>
+					Reviews are based on individual experiences and may be subjective. Always consult your academic
+					advisors when selecting courses.
+				</Alert>
 				{showReviewLimitAlert ? (
 					<Alert color="yellow" icon={<IconLock />}>
 						Explore up to 2 reviews per course. Unlock this by submitting your first review in any courses
