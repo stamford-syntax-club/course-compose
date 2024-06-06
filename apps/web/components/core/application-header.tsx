@@ -7,6 +7,7 @@ import { navItems } from "./application-navbar";
 import { useDisclosure } from "@mantine/hooks";
 import type { Session } from "@supabase/supabase-js";
 import SigninConfirmationModal from "@components/ui/signin-confirmation";
+import Image from "next/image";
 
 interface ApplicationHeaderProps {
 	opened: boolean;
@@ -48,14 +49,19 @@ export default function ApplicationHeader({ opened, toggle }: ApplicationHeaderP
 	return (
 		<AppShell.Header>
 			<Group h="100%" px="md">
-				<Burger onClick={toggle} opened={opened} size="lg" />
+				<Burger className="block lg:hidden" onClick={toggle} opened={opened} size="lg" />
+				<div className="relative aspect-[3.664] h-4/6">
+					<Link href="https://reg.stamford.edu" target="_blank">
+						<Image src="/assets/images/stamford-logo-clearbg-white.png" alt="stamford logo" fill />
+					</Link>
+				</div>
 				<Link href="/">
 					<span className="hidden cursor-pointer select-none text-2xl font-bold uppercase sm:block">
 						Course Compose
 					</span>
 				</Link>
 
-				<div className="hidden cursor-pointer select-none flex-row gap-x-4 sm:flex">
+				<div className="hidden cursor-pointer select-none flex-row gap-x-4 lg:flex">
 					{navItems.map((item, index) => {
 						return (
 							<Link
