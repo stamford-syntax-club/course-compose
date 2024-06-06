@@ -1,7 +1,11 @@
 "use client";
 import React, { useState } from "react";
-import { guideline, aspects, plus, minus, book, key, list } from "./data";
-import { Container, Text, Title } from "@mantine/core";
+import { guideline, aspects} from "./data";
+import { Container, Text, Title, Button, Group, Collapse, Box, List, Flex, Center } from "@mantine/core";
+import { IconBook, IconKey, IconCirclePlus,IconOctagonMinus,IconBookmark  } from '@tabler/icons-react';
+import { Span } from "next/dist/trace";
+
+
 
 interface Aspects {
   title: string;
@@ -17,78 +21,90 @@ interface Guideline {
 }
 
 export default function Guideline(): JSX.Element {
-  const [openItem, setOpenItem] = useState<number[]>([]);
+  const [openedIndex, setOpenedIndex] = useState<number | null>(null);
 
-  const handleclick = (index: number) => {
-    setOpenItem((previous) => {
-      if (previous.includes(index)) {
-        return previous.filter((i) => i !== index);
-      } else {
-        return [...previous, index];
-      }
-    });
+  const toggleCollapse = (index: number) => {
+    setOpenedIndex(openedIndex === index ? null : index);
   };
 
   return (
     <Container>
-      <div className="max-w-4xl mx-auto px-4 pb-4">
-        <Title order={2} fw={700} className="flex items-center justify-center mb-6 gap-2">
-          <span className=" animate-bounce">{book}</span>
-          Guidelines for Writing Course Reviews
-          <span className=" animate-bounce">{book}</span>
-        </Title>
-        <Text c={"rgba(156, 163, 175, 1)"} className="mb-8">
-          While reviews are helpful, always consult with your academic advisors when selecting courses. This platform is
-          intended to supplement their guidance with student experiences. Remember that reading reviews is useful, but
-          you must study according to your curriculum and requirements.
-        </Text>
-        <div className="mb-9">
-          <Title order={2} fw={700} className="flex items-center justify-center mb-6 gap-2">
-            <span className=" animate-bounce">{key}</span>
-            Consider Key Aspects of the Course
-            <span className=" animate-bounce">{key}</span>
-          </Title>
+      <Box mx="auto" px={4} py={5} maw={"896px"}>
+        <Flex gap="md" wrap="wrap" direction="column" mb="xl">
+            <Group wrap="nowrap" justify="center" align="center" mb="sm">
+              <IconBook size={26} color="#3d41b8" className=" flex flex-shrink-0" />
+              <Title fw={700} className="text-[20px] text-center md:text-[25px]">
+                  Guidelines for Writing Course Reviews
+              </Title>
+              <IconBook size={26} color="#3d41b8" className=" flex flex-shrink-0" />   
+            </Group>
+           <Text c="dimmed">
+              While reviews are helpful, always consult with your academic
+              advisors when selecting courses. This platform is intended to
+              supplement their guidance with student experiences. Remember that
+              reading reviews is useful, but you must study according to your
+              curriculum and requirements.
+            </Text>
+        </Flex>
+
+        <Flex gap="lg" direction="column" wrap="wrap" mb="xl">
+            <Group wrap="nowrap" justify="center" align="center" mb="sm" >
+              <IconKey size={26} color="#eae210" className=" flex flex-shrink-0" />
+              <Title fw={700} className="text-[20px] text-center md:text-[25px]">
+                Consider Key Aspect of the course
+              </Title>
+              <IconKey size={26} color="#eae210" className=" flex flex-shrink-0" />
+                
+            </Group>
+       
           {aspects?.map((info: Aspects, index) => (
-            <div className="mb-7" key={index}>
-              <Title order={4} fw={700} className="flex items-center gap-2 mb-2">
-                {list}
+            <Box key={index}>
+              <Title order={4} fw={700} mb="md" className="flex items-center">
+                <IconBookmark fill="#eae210" color="transparent" size={24} />
                 {info.title}
               </Title>
-              <Text c={"rgba(156, 163, 175, 1)"}>{info.info}</Text>
-            </div>
+              <Text c="dimmed">{info.info}</Text>
+            </Box>
           ))}
-        </div>
+        </Flex>
+
         {guideline?.map((list: Guideline, index: number) => (
-          <div
-            className={`mb-6 rounded-md ${openItem.includes(index) ? "" : "bg-white text-black"}`}
-            onClick={() => handleclick(index)}
-            key={index}
-          >
-            <div
-              className={`flex select-none cursor-pointer justify-between items-center px-3 py-3 shadow-lg ${
-                openItem.includes(index) ? "bg-blue-600 rounded-md text-white" : ""
-              }`}
-            >
-              <Title order={4} fw={600}>
+          <Box maw={960} key={index}>
+            <Group mb={5}>
+              <Button
+                justify="space-between"
+                onClick={() => toggleCollapse(index)}
+                color="gray"
+                fullWidth
+                mb={12}
+                size="md"
+                variant="light"
+                rightSection={
+                  openedIndex == index ? (
+                    <IconOctagonMinus />
+                  ) : (
+                    <IconCirclePlus />
+                  )
+                }
+              >
                 {list.title}
-              </Title>
-              {openItem.includes(index) ? (
-                <span className=" cursor-pointer">{minus}</span>
-              ) : (
-                <span className=" cursor-pointer">{plus}</span>
-              )}
-            </div>
-            {openItem.includes(index) && (
-              <ul className="list-disc pl-6">
-                {list.rule1 && <li className="mb-2">{list.rule1}</li>}
-                {list.rule2 && <li className="mb-2">{list.rule2}</li>}
-                {list.rule3 && <li className="mb-2">{list.rule3}</li>}
-                {list.rule4 && <li className="mb-2">{list.rule4}</li>}
-              </ul>
-            )}
-          </div>
+              </Button>
+            </Group>
+            <Collapse
+              in={openedIndex === index}
+              transitionDuration={500}
+              transitionTimingFunction="linear"
+            >
+              <List pb="md" c="dimmed">
+                {list.rule1 && <List.Item>{list.rule1}</List.Item>}
+                {list.rule2 && <List.Item>{list.rule2}</List.Item>}
+                {list.rule3 && <List.Item>{list.rule3}</List.Item>}
+                {list.rule4 && <List.Item>{list.rule4}</List.Item>}
+              </List>
+            </Collapse>
+          </Box>
         ))}
-      </div>
+      </Box>
     </Container>
   );
 }
