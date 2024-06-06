@@ -11,7 +11,8 @@ import {
 	Text,
 	Loader,
 	Alert,
-	Blockquote
+	Blockquote,
+	Button
 } from "@mantine/core";
 import { MyReviewCard, ReviewCard } from "@components/ui/review-card";
 import { useEffect, useMemo, useState } from "react";
@@ -243,6 +244,19 @@ export default function CourseReview({ params }: CourseReviewProps): JSX.Element
 						})
 				}
 			/>
+			<Flex  justify="start" className=" mt-[-60px]">
+				<Link href="/guideline">
+						<Button component="a" my="sm" variant="outline" >
+							Review Guidelines
+						</Button>
+				</Link>	
+			</Flex>
+				
+
+			
+		
+				
+
 		</Container>
 	);
 }

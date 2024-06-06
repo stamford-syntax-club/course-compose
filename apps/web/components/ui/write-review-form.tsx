@@ -1,5 +1,5 @@
 import { useState, useEffect, useMemo } from "react";
-import { Box, Blockquote, Button, Flex, Rating, Paper, Select, Text } from "@mantine/core";
+import { Box, Blockquote, Button, Flex, Rating, Paper, Select, Text,} from "@mantine/core";
 import { IconAlertCircle, IconAlertTriangle } from "@tabler/icons-react";
 import { useEditor } from "@tiptap/react";
 import { Placeholder } from "@tiptap/extension-placeholder";
@@ -8,6 +8,7 @@ import { Markdown } from "tiptap-markdown";
 import { notifications } from "@mantine/notifications";
 import { MarkdownEditor } from "@components/ui/markdown-editor";
 import type { Review } from "types/reviews";
+
 
 const academicYearOptions = [
 	{ value: "2020", label: "2020" },
@@ -147,6 +148,7 @@ export default function WriteReviewForm({ courseCode, onSubmit, previousReview }
 						Submit Review
 					</Button>
 				</Flex>
+			
 			</Paper>
 		</Box>
 	);

@@ -4,7 +4,7 @@ import { useAuth } from "hooks/use-auth";
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { useDisclosure } from "@mantine/hooks";
-import { IconBooks, IconHistory, IconHome } from "@tabler/icons-react";
+import { IconBooks, IconHistory, IconHome,IconKey } from "@tabler/icons-react";
 import SigninConfirmationModal from "@components/ui/signin-confirmation";
 
 export const navItems = [
@@ -23,6 +23,12 @@ export const navItems = [
 		href: "https://center.stamford.dev/resources",
 		newTab: true,
 		icon: <IconBooks />
+	},
+	{
+		label: "Guidelines",
+		href: "/guideline",
+		newTab: true,
+		icon: <IconKey />
 	}
 ];
 

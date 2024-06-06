@@ -2,7 +2,7 @@
 import React, { useState } from "react";
 import { guideline, aspects} from "./data";
 import { Container, Text, Title, Button, Group, Collapse, Box, List, Flex, Center } from "@mantine/core";
-import { IconBook, IconKey, IconCirclePlus,IconOctagonMinus,IconBookmark  } from '@tabler/icons-react';
+import { IconBook, IconKey, IconCirclePlus,IconOctagonMinus,IconChecklist  } from '@tabler/icons-react';
 import { Span } from "next/dist/trace";
 
 
@@ -32,11 +32,11 @@ export default function Guideline(): JSX.Element {
       <Box mx="auto" px={4} py={5} maw={"896px"}>
         <Flex gap="md" wrap="wrap" direction="column" mb="xl">
             <Group wrap="nowrap" justify="center" align="center" mb="sm">
-              <IconBook size={26} color="#3d41b8" className=" flex flex-shrink-0" />
+              <IconBook size={26}  className=" flex flex-shrink-0" />
               <Title fw={700} className="text-[20px] text-center md:text-[25px]">
                   Guidelines for Writing Course Reviews
               </Title>
-              <IconBook size={26} color="#3d41b8" className=" flex flex-shrink-0" />   
+              <IconBook size={26}  className=" flex flex-shrink-0" />   
             </Group>
            <Text c="dimmed">
               While reviews are helpful, always consult with your academic
@@ -49,18 +49,18 @@ export default function Guideline(): JSX.Element {
 
         <Flex gap="lg" direction="column" wrap="wrap" mb="xl">
             <Group wrap="nowrap" justify="center" align="center" mb="sm" >
-              <IconKey size={26} color="#eae210" className=" flex flex-shrink-0" />
+              <IconKey size={26} className=" flex flex-shrink-0" />
               <Title fw={700} className="text-[20px] text-center md:text-[25px]">
                 Consider Key Aspect of the course
               </Title>
-              <IconKey size={26} color="#eae210" className=" flex flex-shrink-0" />
+              <IconKey size={26} className=" flex flex-shrink-0" />
                 
             </Group>
        
           {aspects?.map((info: Aspects, index) => (
             <Box key={index}>
               <Title order={4} fw={700} mb="md" className="flex items-center">
-                <IconBookmark fill="#eae210" color="transparent" size={24} />
+                <IconChecklist color="#44b8d5" size={24} />
                 {info.title}
               </Title>
               <Text c="dimmed">{info.info}</Text>
