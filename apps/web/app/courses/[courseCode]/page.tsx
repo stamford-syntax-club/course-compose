@@ -244,19 +244,13 @@ export default function CourseReview({ params }: CourseReviewProps): JSX.Element
 						})
 				}
 			/>
-			<Flex  justify="start" className=" mt-[-60px]">
+			<Flex justify="start" className=" mt-[-60px]">
 				<Link href="/guideline">
-						<Button component="a" my="sm" variant="outline" >
-							Review Guidelines
-						</Button>
-				</Link>	
+					<Button component="a" my="sm" variant="outline">
+						Review Guidelines
+					</Button>
+				</Link>
 			</Flex>
-				
-
-			
-		
-				
-
 		</Container>
 	);
 }
