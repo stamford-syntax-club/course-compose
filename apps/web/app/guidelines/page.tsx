@@ -13,14 +13,14 @@ export default function Guideline(): JSX.Element {
 
 	return (
 		<Container>
-			<Box mx="auto" px={4} py={5} maw={"896px"}>
+			<Box mx="auto">
 				<Flex gap="md" wrap="wrap" direction="column" mb="xl">
-					<Group wrap="nowrap" justify="center" align="center" mb="sm">
-						<IconBook size={26} className=" flex flex-shrink-0" />
-						<Title fw={700} className="text-center text-[20px] md:text-[25px]">
+					<Group wrap="nowrap" justify="center" align="center">
+						<IconBook size={26} className="flex flex-shrink-0" />
+						<Title fw={700} className="text-center text-2xl">
 							Guidelines for Writing Course Reviews
 						</Title>
-						<IconBook size={26} className=" flex flex-shrink-0" />
+						<IconBook size={26} className="flex flex-shrink-0" />
 					</Group>
 					<Text c="dimmed">
 						While reviews are helpful, always consult with your academic advisors when selecting courses.
@@ -28,10 +28,10 @@ export default function Guideline(): JSX.Element {
 						reading reviews is useful, but you must study according to your curriculum and requirements.
 					</Text>
 				</Flex>
-				<Flex gap="lg" direction="column" wrap="wrap" mb="xl">
-					<Group wrap="nowrap" justify="center" align="center" mb="sm">
+				<Flex gap="md" direction="column" wrap="wrap" mb="xl">
+					<Group wrap="nowrap" justify="center" align="center">
 						<IconKey size={26} className=" flex flex-shrink-0" />
-						<Title fw={700} className="text-center text-[20px] md:text-[25px]">
+						<Title fw={700} className="text-center text-2xl">
 							Consider Key Aspect of the course
 						</Title>
 						<IconKey size={26} className=" flex flex-shrink-0" />
@@ -40,7 +40,7 @@ export default function Guideline(): JSX.Element {
 					{aspects?.map((info, index) => (
 						<Box key={index}>
 							<Title order={4} fw={700} mb="md" className="flex items-center">
-								<IconChecklist className="mr-2" color="#44b8d5" size={24} />
+								<IconChecklist className="mr-2" color="lightblue" size={24} />
 								{info.title}
 							</Title>
 							<Text c="dimmed">{info.info}</Text>
@@ -65,10 +65,7 @@ export default function Guideline(): JSX.Element {
 						</Group>
 						<Collapse in={openedIndex === index} transitionDuration={300} transitionTimingFunction="linear">
 							<List pb="md" c="dimmed">
-								{list.rule1 && <List.Item>{list.rule1}</List.Item>}
-								{list.rule2 && <List.Item>{list.rule2}</List.Item>}
-								{list.rule3 && <List.Item>{list.rule3}</List.Item>}
-								{list.rule4 && <List.Item>{list.rule4}</List.Item>}
+								{<List.Item>{list.rules}</List.Item>}
 							</List>
 						</Collapse>
 					</Box>

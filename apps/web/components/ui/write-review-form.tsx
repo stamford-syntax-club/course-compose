@@ -143,14 +143,14 @@ export default function WriteReviewForm({ courseCode, onSubmit, previousReview }
 
 				<MarkdownEditor editor={markdownEditor} />
 
-				<Flex gap="sm" justify="space-between">
-					<Link href="/guideline">
-						<Button my="sm" variant="outline">
-							Review Guidelines
-						</Button>
+				<Flex gap="sm" justify="space-between" align="center">
+					<Link href="/guidelines" target="blank">
+						<Text c="lightblue" fw={500} className="underline">
+							Learn about our review guidelines here
+						</Text>
 					</Link>
 
-					<Button type="submit" my="sm">
+					<Button type="submit" my="sm" className="min-w-36">
 						Submit Review
 					</Button>
 				</Flex>

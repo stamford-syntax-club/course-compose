@@ -1,9 +1,6 @@
 interface Guideline {
 	title: string;
-	rule1?: string;
-	rule2?: string;
-	rule3?: string;
-	rule4?: string;
+	rules?: string[];
 }
 
 interface Aspect {
@@ -14,25 +11,33 @@ interface Aspect {
 export const guideline: Guideline[] = [
 	{
 		title: "Be Honest and Constructive",
-		rule1: "Share your genuine experience and opinions about the course by providing constructive criticism and avoiding using offensive language.",
-		rule2: "Remember that your review is subjective and based on your experience. Other students may have different opinions and experiences. Please do not consider any single review as the main reason to enroll in or avoid a course"
+		rules: [
+			"Share your genuine experience and opinions about the course by providing constructive criticism and avoiding using offensive language.",
+			"Remember that your review is subjective and based on your experience. Other students may have different opinions and experiences. Please do not consider any single review as the main reason to enroll in or avoid a course"
+		]
 	},
 	{
 		title: "Advice for Future Students",
-		rule1: "Offer tips or advice for students considering taking the course. For example, how to prepare for the course or what to expect",
-		rule2: "Use specific examples to illustrate your points. For instance, mention particular assignments, projects, or teaching methods that stood out"
+		rules: [
+			"Offer tips or advice for students considering taking the course. For example, how to prepare for the course or what to expect",
+			"Use specific examples to illustrate your points. For instance, mention particular assignments, projects, or teaching methods that stood out"
+		]
 	},
 	{
 		title: "Be Respectful and Fair",
-		rule1: "Write your review respectfully and avoid personal attacks on instructors or classmates.",
-		rule2: "Provide balanced feedback, mentioning both positives and areas for improvement.",
-		rule3: "Ensure your review does not encourage or suggest academic dishonesty. Respect the academic policies of your institution.",
-		rule4: "Avoid mentioning the names of individuals in your review unless it is to admire or positively acknowledge their contribution"
+		rules: [
+			"Write your review respectfully and avoid personal attacks on instructors or classmates.",
+			"Provide balanced feedback, mentioning both positives and areas for improvement.",
+			"Ensure your review does not encourage or suggest academic dishonesty. Respect the academic policies of your institution.",
+			"Avoid mentioning the names of individuals in your review unless it is to admire or positively acknowledge their contribution"
+		]
 	},
 	{
 		title: "Keep it Relevant",
-		rule1: "Focus on aspects directly related to the course and its delivery.",
-		rule2: "Avoid discussing unrelated personal grievances or issues outside the scope of the course."
+		rules: [
+			"Focus on aspects directly related to the course and its delivery.",
+			"Avoid discussing unrelated personal grievances or issues outside the scope of the course."
+		]
 	}
 ];
 
