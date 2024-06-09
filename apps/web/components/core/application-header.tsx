@@ -65,7 +65,14 @@ export default function ApplicationHeader({ opened, toggle }: ApplicationHeaderP
 					{navItems.map((item, index) => {
 						return (
 							<Link
-								target={item.newTab ? "_blank" : undefined}
+								onClick={(e) => {
+									// toggle();
+									if (item.href === window.location.pathname) {
+										e.preventDefault();
+										window.location.href = item.href;
+									} 
+								}}
+								target={item.newTab ? "_blank" : "_self"}
 								href={item.href}
 								key={`navitem-${item.label}`}
 							>

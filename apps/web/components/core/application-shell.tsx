@@ -26,3 +26,4 @@ export function ApplicationShell({ children }: { children: React.ReactNode }): J
 		</AppShell>
 	);
 }
+

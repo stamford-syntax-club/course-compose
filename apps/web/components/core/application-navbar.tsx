@@ -26,7 +26,7 @@ export const navItems = [
 	},
 	{
 		label: "Guidelines",
-		href: "/guideline",
+		href: "/guidelines",
 		newTab: true,
 		icon: <IconCheckbox />
 	}
@@ -51,14 +51,20 @@ export default function ApplicationNavbar({ opened, toggle }: { opened: boolean;
 		<AppShell.Navbar p="md" hidden={!opened}>
 			<Stack h="100%" gap="xs">
 				{navItems.map((item, index) => {
+					console.log(item.href, window.location.pathname)
 					return (
 						<Flex key={`navitem-${item.label}`} direction="row" align="center">
 							<NavLink
 								className="rounded-md"
 								label={item.label.toUpperCase()}
-								onClick={toggle}
+								onClick={(e) => {	
+									if (item.href === window.location.pathname) {
+										e.preventDefault();
+										window.location.href = item.href;
+									} else toggle();
+								}}
 								href={item.href}
-								target={item.newTab ? "_blank" : undefined}
+								target={item.newTab ? "_blank" : "_self"}
 								component={Link}
 								leftSection={item.icon}
 							/>

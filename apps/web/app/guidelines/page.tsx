@@ -3,7 +3,6 @@ import React, { useState } from "react";
 import { guideline, aspects } from "./data";
 import { Container, Text, Title, Button, Group, Collapse, Box, List, Flex, Center } from "@mantine/core";
 import { IconBook, IconKey, IconCirclePlus, IconOctagonMinus, IconChecklist } from "@tabler/icons-react";
-import { Span } from "next/dist/trace";
 
 export default function Guideline(): JSX.Element {
 	const [openedIndex, setOpenedIndex] = useState<number | null>(null);
