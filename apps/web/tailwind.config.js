@@ -23,7 +23,7 @@ module.exports = {
 				// dark5: "#2C2E33"
 				// Color keys are direct mapped from Figma Color Library used in Course Compose project.
 				// https://www.figma.com/file/PXPMF9wEKCCGy8x1t0DVPJ/Course-Compose?type=design&node-id=123-1049&mode=design&t=DKyRwf9n5wg79PeP-0
-			}, 
+			}
 		}
 	},
 	plugins: [],

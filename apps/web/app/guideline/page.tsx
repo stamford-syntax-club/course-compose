@@ -29,7 +29,6 @@ export default function Guideline(): JSX.Element {
 						reading reviews is useful, but you must study according to your curriculum and requirements.
 					</Text>
 				</Flex>
-
 				<Flex gap="lg" direction="column" wrap="wrap" mb="xl">
 					<Group wrap="nowrap" justify="center" align="center" mb="sm">
 						<IconKey size={26} className=" flex flex-shrink-0" />
@@ -49,7 +48,6 @@ export default function Guideline(): JSX.Element {
 						</Box>
 					))}
 				</Flex>
-
 				{guideline?.map((list, index: number) => (
 					<Box maw={960} key={index}>
 						<Group mb={5}>
