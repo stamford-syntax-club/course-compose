@@ -8,6 +8,7 @@ import { Markdown } from "tiptap-markdown";
 import { notifications } from "@mantine/notifications";
 import { MarkdownEditor } from "@components/ui/markdown-editor";
 import type { Review } from "types/reviews";
+import Link from "next/link";
 
 const academicYearOptions = [
 	{ value: "2020", label: "2020" },
@@ -25,12 +26,21 @@ interface WriteReviewFormProps {
 
 const reviewGuidelines = [
 	{
-		text: "Your review will be displayed anonymously to the public after approval.",
+		text: <Text>Your review will be displayed anonymously to the public after approval.</Text>,
 		color: "blue",
 		displayIcon: <IconAlertCircle size={25} />
 	},
 	{
-		text: "Kindly refrain from mentioning names and write your reviews with respect. Constructive criticism is encouraged.",
+		text: (
+			<div>
+				Kindly refrain from mentioning names and write your reviews with respect.{" "}
+				<span className="underline">
+					<Link href="/guidelines" target="_blank">
+						Click here to learn more
+					</Link>
+				</span>
+			</div>
+		),
 		color: "yellow",
 		displayIcon: <IconAlertTriangle size={25} />
 	}
@@ -123,7 +133,7 @@ export default function WriteReviewForm({ courseCode, onSubmit, previousReview }
 				<Blockquote key={`review_guideline_${guide.text}`} color={guide.color} w="100%" p="sm" mb="xs">
 					<Flex justify="flex-start" gap="sm">
 						{guide.displayIcon}
-						<Text>{guide.text}</Text>
+						{guide.text}
 					</Flex>
 				</Blockquote>
 			))}
@@ -142,8 +152,8 @@ export default function WriteReviewForm({ courseCode, onSubmit, previousReview }
 
 				<MarkdownEditor editor={markdownEditor} />
 
-				<Flex gap="sm" justify="end">
-					<Button type="submit" my="sm">
+				<Flex gap="sm" justify="end" align="center">
+					<Button type="submit" my="sm" className="min-w-36">
 						Submit Review
 					</Button>
 				</Flex>

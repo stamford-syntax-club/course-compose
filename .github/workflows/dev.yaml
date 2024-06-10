@@ -38,7 +38,7 @@ jobs:
                   run_install: false
 
             - name: Install turbo
-              run: pnpm install --global turbo
+              run: pnpm install --global turbo@1.13.4
 
             - name: Get modified packages
               run: |
