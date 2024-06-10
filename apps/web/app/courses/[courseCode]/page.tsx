@@ -1,6 +1,6 @@
 "use client";
 
-import { Center, Container, Divider, Flex, Pagination, Stack, Title, Text, Loader, Alert, Button } from "@mantine/core";
+import { Center, Container, Divider, Flex, Pagination, Stack, Title, Text, Loader, Alert } from "@mantine/core";
 import { MyReviewCard, ReviewCard } from "@components/ui/review-card";
 import { useEffect, useMemo, useState } from "react";
 import type { PaginatedResponse } from "types/pagination";

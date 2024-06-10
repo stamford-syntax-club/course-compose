@@ -1,7 +1,7 @@
 "use client";
 import React, { useState } from "react";
 import { guideline, aspects } from "./data";
-import { Container, Text, Title, Button, Group, Collapse, Box, List, Flex, Center } from "@mantine/core";
+import { Container, Text, Title, Button, Group, Collapse, Box, List, Flex } from "@mantine/core";
 import { IconBook, IconKey, IconCirclePlus, IconOctagonMinus, IconChecklist } from "@tabler/icons-react";
 
 export default function Guideline(): JSX.Element {
@@ -32,7 +32,7 @@ export default function Guideline(): JSX.Element {
 					<Group wrap="nowrap" justify="center" align="center">
 						<IconKey size={26} className=" flex flex-shrink-0" />
 						<Title fw={700} className="text-center text-2xl">
-							Consider Key Aspect of the course
+							Consider Key Aspect of the Course
 						</Title>
 						<IconKey size={26} className=" flex flex-shrink-0" />
 					</Group>

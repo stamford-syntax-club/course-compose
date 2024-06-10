@@ -27,7 +27,6 @@ export const navItems = [
 	{
 		label: "Guidelines",
 		href: "/guidelines",
-		newTab: false,
 		icon: <IconCheckbox />
 	}
 ];
