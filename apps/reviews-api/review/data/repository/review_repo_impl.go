@@ -96,6 +96,11 @@ func (r *reviewRepositoryImpl) SubmitReview(ctx context.Context, review *db.Revi
 		return nil, fiber.ErrInternalServerError
 	}
 
+	if r.reviewKafka == nil {
+		log.Println("kafka producer is missing, no value will be produced to topic")
+		return result, nil
+	}
+
 	msg := dto.ReviewDTO{
 		ID:           result.ID,
 		Rating:       result.Rating,
