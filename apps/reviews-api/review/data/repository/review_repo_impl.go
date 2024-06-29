@@ -89,6 +89,8 @@ func (r *reviewRepositoryImpl) SubmitReview(ctx context.Context, review *db.Revi
 		db.Review.Votes.Set(0),
 		db.Review.Status.Set("PENDING"),
 		db.Review.Course.Link(db.Course.ID.Equals(courseID)),
+		db.Review.Term.SetIfPresent(review.InnerReview.Term),
+		db.Review.Section.SetIfPresent(review.InnerReview.Section),
 		db.Review.Profile.Link(db.Profile.ID.Equals(userID)),
 	).Exec(ctx)
 	if err != nil {
@@ -148,6 +150,8 @@ func (r *reviewRepositoryImpl) EditReview(ctx context.Context, review *db.Review
 		db.Review.Description.SetIfPresent(&review.Description),
 		db.Review.Rating.SetIfPresent(&review.Rating),
 		db.Review.Status.Set("PENDING"), // edited review must be evaluated again
+		db.Review.Term.SetIfPresent(review.InnerReview.Term),
+		db.Review.Section.SetIfPresent(review.InnerReview.Section),
 	).Exec(ctx)
 	if err != nil {
 		log.Println("exec updating review: ", err)
