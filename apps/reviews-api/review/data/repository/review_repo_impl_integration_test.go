@@ -216,11 +216,17 @@ func (suite *ReviewRepoTestSuite) TestEditReview() {
 
 	suite.Run("update review as given in the model and set status back to pending for re-evaluation", func() {
 		editedReview, err := repo.EditReview(suite.ctx, newReview, validCourseCode, ownerID)
+		resultTerm, termOk := editedReview.Term()
+		resultSection, sectionOk := editedReview.Section()
 
 		suite.NoError(err)
+		suite.True(termOk)
+		suite.True(sectionOk)
 		suite.Equal(newReview.AcademicYear, editedReview.AcademicYear)
 		suite.Equal(newReview.Description, editedReview.Description)
 		suite.Equal(newReview.Rating, editedReview.Rating)
+		suite.Equal(term, resultTerm)
+		suite.Equal(section, resultSection)
 		suite.Equal("PENDING", editedReview.Status)
 	})
 
@@ -284,11 +290,17 @@ func (suite *ReviewRepoTestSuite) TestSubmitReview() {
 			},
 		}
 		result, err := repo.SubmitReview(suite.ctx, review, validCourseCode, userID)
+		resultTerm, termOk := result.Term()
+		resultSection, sectionOk := result.Section()
 
 		suite.NoError(err)
+		suite.True(termOk)
+		suite.True(sectionOk)
 		suite.Equal(review.AcademicYear, result.AcademicYear)
 		suite.Equal(review.Description, result.Description)
 		suite.Equal(review.Rating, result.Rating)
+		suite.Equal(term, resultTerm)
+		suite.Equal(section, resultSection)
 		suite.Equal("PENDING", result.Status)
 		suite.Equal(0, result.Votes)
 		suite.Equal(userID, result.UserID)
