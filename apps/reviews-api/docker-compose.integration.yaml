@@ -58,6 +58,7 @@ services:
             - PRISMA_PROVIDER=go run github.com/steebchen/prisma-client-go
             - PRISMA_OUTPUT=/review-app-integration/review/data/datasource/db
             - JWT_SECRET=test-jwt-token
+            - ENABLE_TERM_SECTION_VALIDATION=true
         depends_on:
             - postgres-integration
             - broker-integration
