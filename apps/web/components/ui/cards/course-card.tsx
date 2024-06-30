@@ -27,7 +27,7 @@ export function CourseCard({
 						{/* <Badge className="min-w-fit" color="blue">
 							IT
 						</Badge> */}
-						<IconBook />
+						<IconBook className="flex-shrink-0" />
 
 						<Text title={full_name} component="div" truncate="end">
 							{full_name}

@@ -82,7 +82,7 @@ export function MyReviewCard({ review, onEditReview, onDeleteReview }: ReviewCar
 				padding="md"
 				radius="md"
 				withBorder
-				className={`border-${getStatusColor(review.status)}-500`}
+				className={`border-${getStatusColor(review.status)}-500 break-words`}
 			>
 				<Flex direction="row" gap="md" justify="center">
 					{/* user profile and badges */}

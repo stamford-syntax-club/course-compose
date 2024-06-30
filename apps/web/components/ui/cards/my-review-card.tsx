@@ -14,7 +14,7 @@ export function MyReviewCard({ cardData }: { cardData: Review }): JSX.Element {
 		<div className="col-span-12 sm:col-span-6 xl:col-span-4">
 			<Card
 				bg="dark.7"
-				className="bg-transparent shadow-sm transition-colors duration-150 hover:border-gray-400"
+				className="bg-transparent shadow-sm transition-colors duration-150 hover:border-gray-400 h-full	"
 				padding="md"
 				radius="md"
 				withBorder
