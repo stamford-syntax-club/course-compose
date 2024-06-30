@@ -15,11 +15,23 @@ func MapReviewToReviewDTO(reviews []db.ReviewModel, userID string) []ReviewDTO {
 			continue
 		}
 
+		term, ok := review.Term()
+		if !ok {
+			log.Printf("term is missing in review id %d", review.ID)
+		}
+
+		section, ok := review.Section()
+		if !ok {
+			log.Printf("section is missing in review id %d", review.ID)
+		}
+
 		reviewJSONResponses = append(reviewJSONResponses, ReviewDTO{
 			ID:             review.ID,
 			AcademicYear:   review.AcademicYear,
 			Description:    review.Description,
 			IsOwner:        review.UserID == userID,
+			Term:           term,
+			Section:        section,
 			Rating:         review.Rating,
 			Status:         review.Status,
 			RejectedReason: review.RejectedReason,

@@ -12,7 +12,8 @@ services:
             POSTGRES_USER: syntax
             POSTGRES_PASSWORD: stamford
         volumes:
-            - ./review/data/datasource/db/init.sql:/docker-entrypoint-initdb.d/init.sql
+            - ./review/data/datasource/db/generated.sql:/docker-entrypoint-initdb.d/generated.sql
+            - ./review/data/datasource/db/seed.sql:/docker-entrypoint-initdb.d/seed.sql
         healthcheck:
             test: ["CMD-SHELL", "pg_isready"]
             interval: 10s
@@ -57,6 +58,7 @@ services:
             - PRISMA_PROVIDER=go run github.com/steebchen/prisma-client-go
             - PRISMA_OUTPUT=/review-app-integration/review/data/datasource/db
             - JWT_SECRET=test-jwt-token
+            - ENABLE_TERM_SECTION_VALIDATION=true
         depends_on:
             - postgres-integration
             - broker-integration

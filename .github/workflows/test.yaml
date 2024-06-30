@@ -21,7 +21,7 @@ jobs:
                   run_install: false
 
             - name: Install turbo
-              run: pnpm install --global turbo
+              run: pnpm install --global turbo@1.13.4
 
             - name: Install jest
               working-directory: ./apps/course-api

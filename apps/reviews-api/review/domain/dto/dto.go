@@ -14,6 +14,8 @@ type ReviewDTO struct {
 	AcademicYear   int       `json:"academicYear"`
 	Description    string    `json:"description"`
 	IsOwner        bool      `json:"isOwner,omitempty"`
+	Term           int       `json:"term,omitempty"`
+	Section        int       `json:"section,omitempty"`
 	Rating         float64   `json:"rating"`
 	Status         string    `json:"status"`
 	RejectedReason string    `json:"rejectedReason,omitempty"`

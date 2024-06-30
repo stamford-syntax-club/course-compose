@@ -6,6 +6,8 @@ import (
 	"log"
 
 	"github.com/gofiber/fiber/v2"
+
+	"github.com/stamford-syntax-club/course-compose/reviews/common/config"
 	"github.com/stamford-syntax-club/course-compose/reviews/common/utils"
 	"github.com/stamford-syntax-club/course-compose/reviews/review/data/datasource/db"
 	"github.com/stamford-syntax-club/course-compose/reviews/review/data/datasource/kafka"
@@ -61,6 +63,16 @@ func (rr *reviewRepositoryImpl) GetCourseReviews(ctx context.Context, courseCode
 }
 
 func (r *reviewRepositoryImpl) SubmitReview(ctx context.Context, review *db.ReviewModel, courseCode, userID string) (*db.ReviewModel, error) {
+	if config.GetBoolEnv("ENABLE_TERM_SECTION_VALIDATION") {
+		if err := isTermValid(review); err != nil {
+			return nil, err
+		}
+
+		if err := isSectionValid(review); err != nil {
+			return nil, err
+		}
+	}
+
 	courseID, err := getCourseID(ctx, r.reviewDB, courseCode)
 	if err != nil {
 		return nil, err
@@ -81,11 +93,18 @@ func (r *reviewRepositoryImpl) SubmitReview(ctx context.Context, review *db.Revi
 		db.Review.Votes.Set(0),
 		db.Review.Status.Set("PENDING"),
 		db.Review.Course.Link(db.Course.ID.Equals(courseID)),
+		db.Review.Term.SetIfPresent(review.InnerReview.Term),
+		db.Review.Section.SetIfPresent(review.InnerReview.Section),
 		db.Review.Profile.Link(db.Profile.ID.Equals(userID)),
 	).Exec(ctx)
 	if err != nil {
 		log.Println("exec create pending review: ", err)
 		return nil, fiber.ErrInternalServerError
+	}
+
+	if r.reviewKafka == nil {
+		log.Println("kafka producer is missing, no value will be produced to topic")
+		return result, nil
 	}
 
 	msg := dto.ReviewDTO{
@@ -107,6 +126,16 @@ func (r *reviewRepositoryImpl) SubmitReview(ctx context.Context, review *db.Revi
 }
 
 func (r *reviewRepositoryImpl) EditReview(ctx context.Context, review *db.ReviewModel, courseCode, userID string) (*db.ReviewModel, error) {
+	if config.GetBoolEnv("ENABLE_TERM_SECTION_VALIDATION") {
+		if err := isTermValid(review); err != nil {
+			return nil, err
+		}
+
+		if err := isSectionValid(review); err != nil {
+			return nil, err
+		}
+	}
+
 	courseID, err := getCourseID(ctx, r.reviewDB, courseCode)
 	if err != nil {
 		return nil, err
@@ -127,6 +156,8 @@ func (r *reviewRepositoryImpl) EditReview(ctx context.Context, review *db.Review
 		db.Review.Description.SetIfPresent(&review.Description),
 		db.Review.Rating.SetIfPresent(&review.Rating),
 		db.Review.Status.Set("PENDING"), // edited review must be evaluated again
+		db.Review.Term.SetIfPresent(review.InnerReview.Term),
+		db.Review.Section.SetIfPresent(review.InnerReview.Section),
 	).Exec(ctx)
 	if err != nil {
 		log.Println("exec updating review: ", err)

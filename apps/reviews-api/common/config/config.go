@@ -6,6 +6,7 @@ import (
 	"log"
 	"os"
 	"path/filepath"
+	"strconv"
 
 	"github.com/joho/godotenv"
 )
@@ -47,3 +48,17 @@ func LoadEnvFile(appEnv string) error {
 	return nil
 }
 
+func GetBoolEnv(key string) bool {
+	val := os.Getenv(key)
+	if val == "" {
+		log.Printf("value of %s not set, defaulting to false", key)
+		return false
+	}
+
+	ret, err := strconv.ParseBool(val)
+	if err != nil {
+		log.Fatalf("error while parsing boolean value: %v", err)
+	}
+
+	return ret
+}

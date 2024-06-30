@@ -29,8 +29,8 @@ func (suite *ReviewRepoTestSuite) SetupSuite() {
 	err := suite.prismaClient.Prisma.Connect()
 	suite.NoError(err)
 
-	reviewKafka, err := kafka.NewReviewKafka("compose_integration", "broker-integration:9092")	
-    suite.NoError(err)
+	reviewKafka, err := kafka.NewReviewKafka("compose_integration", "broker-integration:9092")
+	suite.NoError(err)
 	suite.kafkaClient = reviewKafka
 
 	suite.ctx = ctx
@@ -201,22 +201,32 @@ func (suite *ReviewRepoTestSuite) TestEditReview() {
 	*/
 	targetReview, err := suite.prismaClient.Review.FindFirst(db.Review.CourseID.Equals(2), db.Review.UserID.Equals(ownerID)).Exec(suite.ctx)
 	suite.NoError(err)
+	term := 1
+	section := 2
 	newReview := &db.ReviewModel{
 		InnerReview: db.InnerReview{
 			ID:           targetReview.ID,
 			AcademicYear: 2023,
 			Description:  "Some edited data",
 			Rating:       2,
+			Term:         &term,
+			Section:      &section,
 		},
 	}
 
 	suite.Run("update review as given in the model and set status back to pending for re-evaluation", func() {
 		editedReview, err := repo.EditReview(suite.ctx, newReview, validCourseCode, ownerID)
+		resultTerm, termOk := editedReview.Term()
+		resultSection, sectionOk := editedReview.Section()
 
 		suite.NoError(err)
+		suite.True(termOk)
+		suite.True(sectionOk)
 		suite.Equal(newReview.AcademicYear, editedReview.AcademicYear)
 		suite.Equal(newReview.Description, editedReview.Description)
 		suite.Equal(newReview.Rating, editedReview.Rating)
+		suite.Equal(term, resultTerm)
+		suite.Equal(section, resultSection)
 		suite.Equal("PENDING", editedReview.Status)
 	})
 
@@ -268,19 +278,29 @@ func (suite *ReviewRepoTestSuite) TestSubmitReview() {
 
 	suite.Run("should accept if user never writes a review for that course", func() {
 		userID := "8b84c3b5-5b87-4c9b-832d-60d0966d4f7d"
+		term := 1
+		section := 2
 		review := &db.ReviewModel{
 			InnerReview: db.InnerReview{
 				AcademicYear: 2022,
 				Description:  "This is a review that should be approved because I've never written one for this course before!",
 				Rating:       2,
+				Term:         &term,
+				Section:      &section,
 			},
 		}
 		result, err := repo.SubmitReview(suite.ctx, review, validCourseCode, userID)
+		resultTerm, termOk := result.Term()
+		resultSection, sectionOk := result.Section()
 
 		suite.NoError(err)
+		suite.True(termOk)
+		suite.True(sectionOk)
 		suite.Equal(review.AcademicYear, result.AcademicYear)
 		suite.Equal(review.Description, result.Description)
 		suite.Equal(review.Rating, result.Rating)
+		suite.Equal(term, resultTerm)
+		suite.Equal(section, resultSection)
 		suite.Equal("PENDING", result.Status)
 		suite.Equal(0, result.Votes)
 		suite.Equal(userID, result.UserID)
@@ -289,11 +309,15 @@ func (suite *ReviewRepoTestSuite) TestSubmitReview() {
 
 	suite.Run("should reject if the same user tries to submit another review for the same course", func() {
 		userID := "8b84c3b5-5b87-4c9b-832d-60d0966d4f7d"
+		term := 2
+		section := 1
 		review := &db.ReviewModel{
 			InnerReview: db.InnerReview{
 				AcademicYear: 2022,
 				Description:  "This is another review of the same course, it should be rejected",
 				Rating:       2,
+				Term:         &term,
+				Section:      &section,
 			},
 		}
 		result, err := repo.SubmitReview(suite.ctx, review, validCourseCode, userID)
@@ -305,11 +329,15 @@ func (suite *ReviewRepoTestSuite) TestSubmitReview() {
 
 	suite.Run("should reject course code does not exist", func() {
 		userID := "8b84c3b5-5b87-4c9b-832d-60d0966d4f7d"
+		term := 2
+		section := 1
 		review := &db.ReviewModel{
 			InnerReview: db.InnerReview{
 				AcademicYear: 2022,
 				Description:  "This is another review of the same course, it should be rejected",
 				Rating:       2,
+				Term:         &term,
+				Section:      &section,
 			},
 		}
 		result, err := repo.SubmitReview(suite.ctx, review, invalidCourseCode, userID)
@@ -321,11 +349,15 @@ func (suite *ReviewRepoTestSuite) TestSubmitReview() {
 
 	suite.Run("should reject course code does not exist", func() {
 		userID := "8b84c3b5-5b87-4c9b-832d-60d0966d4f7d"
+		term := 2
+		section := 1
 		review := &db.ReviewModel{
 			InnerReview: db.InnerReview{
 				AcademicYear: 2022,
 				Description:  "Some review data",
 				Rating:       2,
+				Term:         &term,
+				Section:      &section,
 			},
 		}
 		result, err := repo.SubmitReview(suite.ctx, review, invalidCourseCode, userID)
@@ -337,11 +369,15 @@ func (suite *ReviewRepoTestSuite) TestSubmitReview() {
 
 	suite.Run("should reject user does not exist", func() {
 		userID := "7b84c3b5-5b87-4c9b-832d-60d0966d4f7d" // some random uuid
+		term := 2
+		section := 1
 		review := &db.ReviewModel{
 			InnerReview: db.InnerReview{
 				AcademicYear: 2022,
 				Description:  "Some review data",
 				Rating:       2,
+				Term:         &term,
+				Section:      &section,
 			},
 		}
 		result, err := repo.SubmitReview(suite.ctx, review, validCourseCode, userID)

@@ -1,3 +1,5 @@
+//go:build unit
+
 package dto
 
 import (
@@ -8,10 +10,11 @@ import (
 )
 
 func TestMapReviewToReviewDTO(t *testing.T) {
-	const (
+	var (
 		courseID   = 333
 		courseCode = "ITE343"
-		myUserID   = "1"
+		term       = 2
+		section    = 1
 	)
 	reviewsData := []db.ReviewModel{
 		{
@@ -19,6 +22,8 @@ func TestMapReviewToReviewDTO(t *testing.T) {
 				ID:           2,
 				AcademicYear: 2023,
 				Description:  "This is a review from someone else",
+				Term:         &term,
+				Section:      &section,
 			},
 			RelationsReview: db.RelationsReview{
 				Course: &db.CourseModel{
@@ -65,11 +70,15 @@ func TestMapReviewToReviewDTO(t *testing.T) {
 		assert.Equal(t, reviewsData[0].ID, reviewsJSONResponses[0].ID)
 		assert.Equal(t, reviewsData[0].AcademicYear, reviewsJSONResponses[0].AcademicYear)
 		assert.Equal(t, reviewsData[0].Description, reviewsJSONResponses[0].Description)
+		assert.Equal(t, term, reviewsJSONResponses[0].Term)
+		assert.Equal(t, section, reviewsJSONResponses[0].Section)
 		assert.Equal(t, reviewsData[0].RelationsReview.Course.Code, reviewsJSONResponses[0].Course.Code)
 		assert.Equal(t, reviewsData[0].RelationsReview.Profile.ID, reviewsJSONResponses[0].Profile.ID)
 		assert.Equal(t, reviewsData[1].ID, reviewsJSONResponses[1].ID)
 		assert.Equal(t, reviewsData[1].AcademicYear, reviewsJSONResponses[1].AcademicYear)
 		assert.Equal(t, reviewsData[1].Description, reviewsJSONResponses[1].Description)
+		assert.Equal(t, 0, reviewsJSONResponses[1].Term)    // omitempty
+		assert.Equal(t, 0, reviewsJSONResponses[1].Section) // omitempty
 		assert.Equal(t, reviewsData[1].RelationsReview.Course.Code, reviewsJSONResponses[1].Course.Code)
 		assert.Equal(t, reviewsData[1].RelationsReview.Profile.ID, reviewsJSONResponses[1].Profile.ID)
 	})

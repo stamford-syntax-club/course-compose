@@ -241,6 +241,100 @@ func TestGetMyReview(t *testing.T) {
 	})
 }
 
+func TestIsTermValid(t *testing.T) {
+
+	tests := []struct {
+		name          string
+		term          int
+		expectedError error
+	}{
+		{
+			name: "term 1 should not throw any errror",
+			term: 1,
+		},
+		{
+			name: "term 2 should not throw any errror",
+			term: 2,
+		},
+		{
+			name: "term 3 should not throw any errror",
+			term: 3,
+		},
+		{
+			name:          "term 4 should throw invalid term",
+			term:          4,
+			expectedError: fiber.NewError(http.StatusBadRequest, "Invalid Term (must be between 1-3)"),
+		},
+		{
+			name:          "term 0 should throw invalid term",
+			term:          0,
+			expectedError: fiber.NewError(http.StatusBadRequest, "Invalid Term (must be between 1-3)"),
+		},
+		{
+			name:          "term -1 should throw invalid term",
+			term:          -1,
+			expectedError: fiber.NewError(http.StatusBadRequest, "Invalid Term (must be between 1-3)"),
+		},
+		{
+			name:          "empty term should throw invalid term",
+			expectedError: fiber.NewError(http.StatusBadRequest, "Invalid Term (must be between 1-3)"),
+		},
+	}
+
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			review := &db.ReviewModel{
+				InnerReview: db.InnerReview{
+					Term: &test.term,
+				}}
+
+			err := isTermValid(review)
+
+			if test.expectedError != nil {
+				assert.Error(t, test.expectedError, err)
+			} else {
+				assert.Nil(t, err)
+			}
+		})
+	}
+}
+
+func TestIsSectionValid(t *testing.T) {
+	tests := []struct {
+		name          string
+		section       int
+		expectedError error
+	}{
+		{
+			name:    "filled section should not throw any error",
+			section: 3,
+		},
+		{
+
+			name:          "empty section should throw missing section",
+			expectedError: fiber.NewError(http.StatusBadRequest, "Missing section"),
+		},
+	}
+
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			review := &db.ReviewModel{
+				InnerReview: db.InnerReview{
+					Section: &test.section,
+				},
+			}
+
+			err := isSectionValid(review)
+
+			if test.expectedError != nil {
+				assert.Error(t, test.expectedError, err)
+			} else {
+				assert.Nil(t, err)
+			}
+		})
+	}
+}
+
 func TestIsActiveUser(t *testing.T) {
 	client, mock, ensure := db.NewMock()
 	defer ensure(t)

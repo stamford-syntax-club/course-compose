@@ -125,6 +125,23 @@ func hasExistingReview(ctx context.Context, prisma *db.PrismaClient, courseID in
 	return nil
 }
 
+func isTermValid(review *db.ReviewModel) error {
+	term, ok := review.Term()
+	if !ok || term < 0 || term > 3 {
+		return fiber.NewError(http.StatusBadRequest, "Invalid Term (must be between 1-3)")
+	}
+
+	return nil
+}
+
+func isSectionValid(review *db.ReviewModel) error {
+	if _, ok := review.Section(); !ok {
+		return fiber.NewError(http.StatusBadRequest, "Missing section")
+	}
+
+	return nil
+}
+
 func isReviewOwner(ctx context.Context, prisma *db.PrismaClient, submittedID, courseID int, userID string) error {
 	myReviewCh := make(chan *db.ReviewModel)
 

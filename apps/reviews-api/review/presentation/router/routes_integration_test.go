@@ -23,6 +23,7 @@ import (
 	review_kafka "github.com/stamford-syntax-club/course-compose/reviews/review/data/datasource/kafka"
 	repository_impl "github.com/stamford-syntax-club/course-compose/reviews/review/data/repository"
 	review_controller "github.com/stamford-syntax-club/course-compose/reviews/review/domain/controller"
+	"github.com/steebchen/prisma-client-go/runtime/types/raw"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -101,10 +102,14 @@ func TestPrivateRoutes(t *testing.T) {
 					app, client    = setupTestRouter()
 					tokenExp       = time.Now().Add(test.tokenExp).Unix()
 					token, _       = utils.GenerateNewAccessToken(test.userID, test.email, tokenExp)
+					term           = 1
+					section        = 2
 					requestBody, _ = json.Marshal(db.RawReviewModel{
 						AcademicYear: 2023,
 						Description:  "This is a test review",
 						Rating:       3,
+						Term:         (*raw.Int)(&term),
+						Section:      (*raw.Int)(&section),
 					},
 					)
 					req = httptest.NewRequest(http.MethodPost, fmt.Sprintf("/api/courses/%s/reviews", test.courseCode), bytes.NewBuffer(requestBody))

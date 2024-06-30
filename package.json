@@ -5,6 +5,7 @@
 		"dev": "turbo run dev",
 		"bootstrap:unix": "turbo run bootstrap:unix && docker compose -f docker-compose.dev.yaml down -v && docker compose -f docker-compose.dev.yaml up -d --build --force-recreate",
 		"bootstrap:windows": "turbo run bootstrap:windows && docker compose -f docker-compose.dev.yaml down -v && docker compose -f docker-compose.dev.yaml up -d --build --force-recreate",
+		"migrate": "prisma migrate deploy --schema=../../packages/prisma/schema.prisma --skip-generate",
 		"test": "turbo run test",
 		"unit": "turbo run unit",
 		"integration": "turbo run integration",
