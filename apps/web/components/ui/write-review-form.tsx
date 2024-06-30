@@ -11,11 +11,10 @@ import type { Review } from "types/reviews";
 import Link from "next/link";
 
 const academicYearOptions = [
-	{ value: "2020", label: "2020" },
-	{ value: "2021", label: "2021" },
-	{ value: "2022", label: "2022" },
+	{ value: "2024", label: "2024" },
 	{ value: "2023", label: "2023" },
-	{ value: "2024", label: "2024" }
+	{ value: "2022", label: "2022" },
+	{ value: "2021", label: "2021" }
 ];
 
 interface WriteReviewFormProps {
@@ -33,7 +32,7 @@ const reviewGuidelines = [
 	{
 		text: (
 			<div>
-				Kindly refrain from mentioning names and write your reviews with respect.{" "}
+				Constructive criticism is encouraged.{" "}
 				<span className="underline">
 					<Link href="/guidelines" target="_blank">
 						Click here to learn more
@@ -57,6 +56,8 @@ export default function WriteReviewForm({ courseCode, onSubmit, previousReview }
 	const reviewKeys = useMemo(() => reviewFormKeys(courseCode || ""), [courseCode]);
 	const [academicYear, setAcademicYear] = useState<string | null>(previousReview?.academicYear || null);
 	const [rating, setRating] = useState(previousReview?.rating || 0);
+	const [term, setTerm] = useState<string | null>(null);
+	const [section, setSection] = useState<string | null>(null);
 
 	const markdownEditor = useEditor({
 		extensions: [
@@ -139,13 +140,30 @@ export default function WriteReviewForm({ courseCode, onSubmit, previousReview }
 			))}
 
 			<Paper w="100%" h="100%">
-				<Flex direction="row" gap="sm" my="sm">
+				<Flex align="end" wrap="wrap" direction="row" gap="xs" my="sm">
 					<Select
+						className="w-[100px]"
+						data={["1", "2", "3", "4", "5"]}
+						value={section}
+						label="Section"
+						onChange={setSection}
+						placeholder="Section"
+					/>
+					<Select
+						className="w-[100px]"
+						data={["1", "2", "3"]}
+						value={term}
+						label="Term"
+						onChange={setTerm}
+						placeholder="Term"
+					/>
+					<Select
+						className="w-[100px]"
 						data={academicYearOptions}
 						value={academicYear}
-						defaultSearchValue={academicYear || undefined}
+						label="Year"
 						onChange={setAcademicYear}
-						placeholder="Academic year"
+						placeholder="year"
 					/>
 					<Rating size="lg" defaultValue={0} fractions={2} value={rating} onChange={setRating} />
 				</Flex>
