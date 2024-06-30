@@ -20,8 +20,6 @@ CREATE TABLE "Profile" (
 -- CreateTable
 CREATE TABLE "Review" (
     "id" SERIAL NOT NULL,
-    "term" INTEGER,
-    "section" INTEGER,
     "academic_year" INTEGER NOT NULL,
     "description" TEXT NOT NULL,
     "rating" DOUBLE PRECISION NOT NULL,
@@ -32,6 +30,8 @@ CREATE TABLE "Review" (
     "user_id" UUID NOT NULL,
     "created_at" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updated_at" TIMESTAMP(3),
+    "section" INTEGER,
+    "term" INTEGER,
 
     CONSTRAINT "Review_pkey" PRIMARY KEY ("id")
 );
@@ -44,3 +44,4 @@ ALTER TABLE "Review" ADD CONSTRAINT "Review_course_id_fkey" FOREIGN KEY ("course
 
 -- AddForeignKey
 ALTER TABLE "Review" ADD CONSTRAINT "Review_user_id_fkey" FOREIGN KEY ("user_id") REFERENCES "Profile"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+
