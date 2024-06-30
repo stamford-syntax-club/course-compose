@@ -17,26 +17,26 @@ model Course {
 }
 
 model Profile {
-  id         String     @id @db.Uuid
-  username   String?
-  isActive   Boolean    @default(false)
-  Review     Review[]
+  id       String   @id @db.Uuid
+  username String?
+  isActive Boolean  @default(false)
+  Review   Review[]
 }
 
 model Review {
-  id            Int         @id @default(autoincrement())
-  term          Int?
-  section       Int?
-  academic_year Int
-  description   String
-  rating        Float 
-  votes         Int
-  status        String
-  rejectedReason String     @default("") 
-  course_id     Int
-  user_id       String      @db.Uuid
-  created_at    DateTime    @default(now())
-  updated_at    DateTime?   @updatedAt
-  course        Course      @relation(fields: [course_id], references: [id])
-  profile       Profile?    @relation(fields: [user_id], references: [id])
+  id             Int       @id @default(autoincrement())
+  term           Int?
+  section        Int?
+  academic_year  Int
+  description    String
+  rating         Float
+  votes          Int
+  status         String
+  rejectedReason String    @default("")
+  course_id      Int
+  user_id        String    @db.Uuid
+  created_at     DateTime  @default(now())
+  updated_at     DateTime? @updatedAt
+  course         Course    @relation(fields: [course_id], references: [id])
+  profile        Profile?  @relation(fields: [user_id], references: [id])
 }
