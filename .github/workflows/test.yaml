@@ -43,4 +43,4 @@ jobs:
               run: pnpm run test
 
             - name: Integration test
-              run: pnpm run integration --scope=reviews-api
+              run: pnpm run integration
