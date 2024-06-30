@@ -126,12 +126,14 @@ func (r *reviewRepositoryImpl) SubmitReview(ctx context.Context, review *db.Revi
 }
 
 func (r *reviewRepositoryImpl) EditReview(ctx context.Context, review *db.ReviewModel, courseCode, userID string) (*db.ReviewModel, error) {
-	if err := isTermValid(review); err != nil {
-		return nil, err
-	}
+	if config.GetBoolEnv("ENABLE_TERM_SECTION_VALIDATION") {
+		if err := isTermValid(review); err != nil {
+			return nil, err
+		}
 
-	if err := isSectionValid(review); err != nil {
-		return nil, err
+		if err := isSectionValid(review); err != nil {
+			return nil, err
+		}
 	}
 
 	courseID, err := getCourseID(ctx, r.reviewDB, courseCode)
