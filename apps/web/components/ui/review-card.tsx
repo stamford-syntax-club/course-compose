@@ -35,7 +35,22 @@ const getStatusColor = (status: string): string => {
 	}
 };
 
+//in case the desciption contian no space, to break long words
+const breakLongWords = (text: string, maxLength: number = 18): string => {
+	return text
+		.split(" ")
+		.map((word) => {
+			if (word.length > maxLength) {
+				return word.match(new RegExp(".{1," + maxLength + "}", "g"))?.join(" ") ?? word;
+			}
+			return word;
+		})
+		.join(" ");
+};
+
 export function ReviewCard({ review }: ReviewCardProps): JSX.Element {
+	const formattedDescription = breakLongWords(review.description);
+
 	return (
 		<Card radius="md" shadow="sm">
 			<Flex direction="row" gap="lg" justify="center">
@@ -60,7 +75,7 @@ export function ReviewCard({ review }: ReviewCardProps): JSX.Element {
 					</Text>
 					<Spoiler maxHeight={75} showLabel="Show more" hideLabel="Hide">
 						<TypographyStylesProvider mt="md">
-							<ReactMarkdown>{review.description}</ReactMarkdown>
+							<ReactMarkdown>{formattedDescription}</ReactMarkdown>
 						</TypographyStylesProvider>
 					</Spoiler>
 				</Flex>
@@ -74,6 +89,8 @@ export function ReviewCard({ review }: ReviewCardProps): JSX.Element {
 export function MyReviewCard({ review, onEditReview, onDeleteReview }: ReviewCardProps): JSX.Element {
 	const [openedEdit, { open: openEdit, close: closeEdit }] = useDisclosure(false);
 	const [openedDelete, { open: openDelete, close: closeDelete }] = useDisclosure(false);
+
+	const formattedDescription = breakLongWords(review.description);
 
 	return (
 		<>
@@ -118,7 +135,7 @@ export function MyReviewCard({ review, onEditReview, onDeleteReview }: ReviewCar
 						</Text>
 						<Spoiler maxHeight={75} showLabel="Show more" hideLabel="Hide">
 							<TypographyStylesProvider mt="sm">
-								<ReactMarkdown>{review.description}</ReactMarkdown>
+								<ReactMarkdown>{formattedDescription}</ReactMarkdown>
 							</TypographyStylesProvider>
 						</Spoiler>
 					</Flex>
