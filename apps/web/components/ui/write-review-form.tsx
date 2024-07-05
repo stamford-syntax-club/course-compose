@@ -10,16 +10,15 @@ import { MarkdownEditor } from "@components/ui/markdown-editor";
 import type { Review } from "types/reviews";
 import Link from "next/link";
 
-const academicYearOptions = [
-	{ value: "2024", label: "2024" },
-	{ value: "2023", label: "2023" },
-	{ value: "2022", label: "2022" },
-	{ value: "2021", label: "2021" }
-];
-
 interface WriteReviewFormProps {
 	courseCode?: string;
-	onSubmit: (academicYear: string, description: string, rating: number) => Promise<boolean>;
+	onSubmit: (
+		section: string,
+		term: string,
+		academicYear: string,
+		description: string,
+		rating: number
+	) => Promise<boolean>;
 	previousReview?: Review;
 }
 
@@ -139,7 +138,7 @@ export default function WriteReviewForm({ courseCode, onSubmit, previousReview }
 			});
 			return;
 		}
-		onSubmit(academicYear!!, currentDescription, rating).then((success) => {
+		onSubmit(section!!, term!!, academicYear!!, currentDescription, rating).then((success) => {
 			if (success) {
 				resetForm();
 				localStorage.removeItem(reviewKeys.academicYearKey);
@@ -182,11 +181,11 @@ export default function WriteReviewForm({ courseCode, onSubmit, previousReview }
 					/>
 					<Select
 						className="w-[100px]"
-						data={academicYearOptions}
+						data={["2021", "2022", "2023", "2024", "2025"]}
 						value={academicYear}
 						label="Year"
 						onChange={setAcademicYear}
-						placeholder="year"
+						placeholder="Year"
 					/>
 					<Rating size="lg" defaultValue={0} fractions={2} value={rating} onChange={setRating} />
 				</Flex>

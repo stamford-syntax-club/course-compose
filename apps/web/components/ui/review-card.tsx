@@ -20,7 +20,14 @@ import WriteReviewForm from "./write-review-form";
 
 interface ReviewCardProps {
 	review: Review;
-	onEditReview?: (id: number, academicYear: string, description: string, rating: number) => void;
+	onEditReview?: (
+		id: number,
+		section: string,
+		term: string,
+		academicYear: string,
+		description: string,
+		rating: number
+	) => void;
 	onDeleteReview?: (id: number) => void;
 }
 
@@ -169,9 +176,9 @@ export function MyReviewCard({ review, onEditReview, onDeleteReview }: ReviewCar
 			>
 				{/* Modal content */}
 				<WriteReviewForm
-					onSubmit={(academicYear, description, rating) => {
+					onSubmit={(section, term, academicYear, description, rating) => {
 						// when user submit their edited review
-						if (onEditReview) onEditReview(review.id, academicYear, description, rating);
+						if (onEditReview) onEditReview(review.id, section, term, academicYear, description, rating);
 						closeEdit();
 						return Promise.resolve(true);
 					}}
