@@ -19,15 +19,15 @@ export const navItems = [
 		icon: <IconHistory />
 	},
 	{
+		label: "Guidelines",
+		href: "/guidelines",
+		icon: <IconCheckbox />
+	},
+	{
 		label: "Resources",
 		href: "https://center.stamford.dev/resources",
 		newTab: true,
 		icon: <IconBooks />
-	},
-	{
-		label: "Guidelines",
-		href: "/guidelines",
-		icon: <IconCheckbox />
 	}
 ];
 

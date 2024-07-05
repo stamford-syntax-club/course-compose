@@ -82,6 +82,8 @@ export default class CourseComposeAPIClient {
 	}
 
 	async submitNewReview(
+		section: string,
+		term: string,
 		academicYear: string,
 		description: string,
 		rating: number,
@@ -90,6 +92,8 @@ export default class CourseComposeAPIClient {
 		const data = await fetch(this.reviewEndpoint, {
 			method: "POST",
 			body: JSON.stringify({
+				section: parseInt(section),
+				term: parseInt(term),
 				academic_year: parseInt(academicYear),
 				description,
 				rating
@@ -143,6 +147,8 @@ export default class CourseComposeAPIClient {
 
 	async submitEditedReview(
 		id: number,
+		section: string,
+		term: string,
 		academicYear: string,
 		description: string,
 		rating: number,
@@ -152,6 +158,8 @@ export default class CourseComposeAPIClient {
 			method: "PUT",
 			body: JSON.stringify({
 				id,
+				section: parseInt(section),
+				term: parseInt(term),
 				academic_year: parseInt(academicYear),
 				description,
 				rating

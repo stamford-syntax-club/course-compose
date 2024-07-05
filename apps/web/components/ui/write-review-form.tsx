@@ -10,17 +10,15 @@ import { MarkdownEditor } from "@components/ui/markdown-editor";
 import type { Review } from "types/reviews";
 import Link from "next/link";
 
-const academicYearOptions = [
-	{ value: "2020", label: "2020" },
-	{ value: "2021", label: "2021" },
-	{ value: "2022", label: "2022" },
-	{ value: "2023", label: "2023" },
-	{ value: "2024", label: "2024" }
-];
-
 interface WriteReviewFormProps {
 	courseCode?: string;
-	onSubmit: (academicYear: string, description: string, rating: number) => Promise<boolean>;
+	onSubmit: (
+		section: string,
+		term: string,
+		academicYear: string,
+		description: string,
+		rating: number
+	) => Promise<boolean>;
 	previousReview?: Review;
 }
 
@@ -33,7 +31,7 @@ const reviewGuidelines = [
 	{
 		text: (
 			<div>
-				Kindly refrain from mentioning names and write your reviews with respect.{" "}
+				Constructive criticism is encouraged.{" "}
 				<span className="underline">
 					<Link href="/guidelines" target="_blank">
 						Click here to learn more
@@ -48,6 +46,8 @@ const reviewGuidelines = [
 
 // Keys for local storage
 const reviewFormKeys = (courseCode: string) => ({
+	sectionKey: `reviewFormSection_${courseCode}`,
+	termKey: `reviewFormTerm_${courseCode}`,
 	academicYearKey: `reviewFormAcademicYear_${courseCode}`,
 	ratingKey: `reviewFormRating_${courseCode}`,
 	descriptionKey: `reviewFormDescription_${courseCode}`
@@ -57,6 +57,8 @@ export default function WriteReviewForm({ courseCode, onSubmit, previousReview }
 	const reviewKeys = useMemo(() => reviewFormKeys(courseCode || ""), [courseCode]);
 	const [academicYear, setAcademicYear] = useState<string | null>(previousReview?.academicYear || null);
 	const [rating, setRating] = useState(previousReview?.rating || 0);
+	const [term, setTerm] = useState<string | null>(null);
+	const [section, setSection] = useState<string | null>(null);
 
 	const markdownEditor = useEditor({
 		extensions: [
@@ -78,10 +80,14 @@ export default function WriteReviewForm({ courseCode, onSubmit, previousReview }
 
 	useEffect(() => {
 		if (!previousReview) {
+			const savedSection = localStorage.getItem(reviewKeys.sectionKey);
+			const savedTerm = localStorage.getItem(reviewKeys.termKey);
 			const savedAcademicYear = localStorage.getItem(reviewKeys.academicYearKey);
 			const savedRating = localStorage.getItem(reviewKeys.ratingKey);
 			const savedDescription = localStorage.getItem(reviewKeys.descriptionKey);
 
+			if (savedSection) setSection(savedSection);
+			if (savedTerm) setTerm(savedTerm);
 			if (savedAcademicYear) setAcademicYear(savedAcademicYear);
 			if (savedRating) setRating(parseFloat(savedRating));
 			if (savedDescription && markdownEditor) markdownEditor.commands.setContent(savedDescription);
@@ -91,6 +97,8 @@ export default function WriteReviewForm({ courseCode, onSubmit, previousReview }
 	useEffect(() => {
 		if (rating) localStorage.setItem(reviewKeys.ratingKey, rating.toString());
 		if (academicYear) localStorage.setItem(reviewKeys.academicYearKey, academicYear);
+		if (section) localStorage.setItem(reviewKeys.sectionKey, section);
+		if (term) localStorage.setItem(reviewKeys.termKey, term);
 		if (markdownEditor) {
 			const saveMarkdown = () => {
 				localStorage.setItem(reviewKeys.descriptionKey, markdownEditor.storage.markdown.getMarkdown());
@@ -100,29 +108,44 @@ export default function WriteReviewForm({ courseCode, onSubmit, previousReview }
 				markdownEditor.off("update", saveMarkdown);
 			};
 		}
-	}, [markdownEditor, academicYear, reviewKeys, rating]);
+	}, [markdownEditor, academicYear, reviewKeys, rating, section, term]);
 
 	const handleSubmit = (e: React.FormEvent<HTMLFormElement>): void => {
 		e.preventDefault();
 		const currentDescription = markdownEditor?.storage.markdown.getMarkdown() || "";
 
-		if (!academicYear || !currentDescription || !rating) {
+		const missingFields: string[] = [];
+		const fields = [
+			{ name: "academicYear", label: "academic year" },
+			{ name: "currentDescription", label: "review descriptions" },
+			{ name: "rating", label: "ratings" },
+			{ name: "section", label: "section" },
+			{ name: "term", label: "term" }
+		];
+
+		fields.forEach((field) => {
+			if (!eval(field.name)) {
+				missingFields.push(field.label);
+			}
+		});
+
+		if (missingFields.length > 0) {
 			notifications.show({
 				title: "Hold on! Your review still contains some missing fields",
 				color: "red",
-				message:
-					"Make sure you have filled all the fields such as academic year, ratings, and review descriptions",
+				message: `Please fill in the following fields: ${missingFields.join(", ")}`,
 				autoClose: 5000
 			});
 			return;
 		}
-
-		onSubmit(academicYear, currentDescription, rating).then((success) => {
+		onSubmit(section!!, term!!, academicYear!!, currentDescription, rating).then((success) => {
 			if (success) {
 				resetForm();
 				localStorage.removeItem(reviewKeys.academicYearKey);
 				localStorage.removeItem(reviewKeys.ratingKey);
 				localStorage.removeItem(reviewKeys.descriptionKey);
+				localStorage.removeItem(reviewKeys.termKey);
+				localStorage.removeItem(reviewKeys.sectionKey);
 			}
 		});
 	};
@@ -139,13 +162,30 @@ export default function WriteReviewForm({ courseCode, onSubmit, previousReview }
 			))}
 
 			<Paper w="100%" h="100%">
-				<Flex direction="row" gap="sm" my="sm">
+				<Flex align="end" wrap="wrap" direction="row" gap="xs" my="sm">
 					<Select
-						data={academicYearOptions}
+						className="w-[100px]"
+						data={["1", "2", "3", "4", "5"]}
+						value={section}
+						label="Section"
+						onChange={setSection}
+						placeholder="Section"
+					/>
+					<Select
+						className="w-[100px]"
+						data={["1", "2", "3"]}
+						value={term}
+						label="Term"
+						onChange={setTerm}
+						placeholder="Term"
+					/>
+					<Select
+						className="w-[100px]"
+						data={["2021", "2022", "2023", "2024", "2025"]}
 						value={academicYear}
-						defaultSearchValue={academicYear || undefined}
+						label="Year"
 						onChange={setAcademicYear}
-						placeholder="Academic year"
+						placeholder="Year"
 					/>
 					<Rating size="lg" defaultValue={0} fractions={2} value={rating} onChange={setRating} />
 				</Flex>

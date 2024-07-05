@@ -167,10 +167,12 @@ export default function CourseReview({ params }: CourseReviewProps): JSX.Element
 								<MyReviewCard
 									key={`my_review_card_${review.id}`}
 									review={review}
-									onEditReview={(id, academicYear, description, rating) =>
+									onEditReview={(id, section, term, academicYear, description, rating) =>
 										apiClient
 											.submitEditedReview(
 												id,
+												section,
+												term,
 												academicYear,
 												description,
 												rating,
@@ -218,9 +220,16 @@ export default function CourseReview({ params }: CourseReviewProps): JSX.Element
 			</Title>
 			<WriteReviewForm
 				courseCode={params.courseCode}
-				onSubmit={(academicYear, description, rating) =>
+				onSubmit={(section, term, academicYear, description, rating) =>
 					apiClient
-						.submitNewReview(academicYear, description, rating, sessionData?.access_token || "")
+						.submitNewReview(
+							section,
+							term,
+							academicYear,
+							description,
+							rating,
+							sessionData?.access_token || ""
+						)
 						.then((result) => {
 							handleSubmitResponse(result);
 							return result.color === "green";
