@@ -3,6 +3,8 @@ export interface Review {
 	academicYear: string;
 	description: string;
 	isOwner: boolean;
+	term: number;
+	section: number;
 	rating: number;
 	status: string;
 	rejectedReason: string;

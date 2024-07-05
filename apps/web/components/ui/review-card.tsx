@@ -78,7 +78,9 @@ export function ReviewCard({ review }: ReviewCardProps): JSX.Element {
 				<Flex direction="column" justify="flex-start" ml="3" gap="4" w="100%">
 					<Rating size="md" value={review.rating} fractions={2} defaultValue={0} readOnly />
 					<Text fw={800} size="sm">
-						Academic Year: {review.academicYear}
+						Academic Year:{" "}
+						{review.term ? `${review.term}/${review.academicYear}` : `${review.academicYear}`}
+						{review.section && ` - Section: ${review.section}`}
 					</Text>
 					<Spoiler maxHeight={75} showLabel="Show more" hideLabel="Hide">
 						<TypographyStylesProvider mt="md">
@@ -138,7 +140,9 @@ export function MyReviewCard({ review, onEditReview, onDeleteReview }: ReviewCar
 
 						<Rating size="md" value={review.rating} fractions={2} defaultValue={0} readOnly />
 						<Text fw={800} size="md">
-							Academic Year: {review.academicYear}
+							Academic Year:{" "}
+							{review.term ? `${review.term}/${review.academicYear}` : `${review.academicYear}`}
+							{review.section && ` - Section: ${review.section}`}
 						</Text>
 						<Spoiler maxHeight={75} showLabel="Show more" hideLabel="Hide">
 							<TypographyStylesProvider mt="sm">
