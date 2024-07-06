@@ -6,6 +6,7 @@ import "@mantine/notifications/styles.css";
 import "@mantine/tiptap/styles.css";
 import type { Metadata } from "next";
 import "./globals.css";
+import GoogleAnalytics from "@components/core/analytics/google-analytics";
 
 export const metadata: Metadata = {
 	title: "Course Compose",
@@ -27,6 +28,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }):
 	return (
 		<html lang="en">
 			<head>
+				<GoogleAnalytics />
 				<ColorSchemeScript defaultColorScheme="dark" />
 			</head>
 			<body>
